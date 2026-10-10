@@ -280,11 +280,12 @@ export default function CreatePool() {
                         <div className="rounded-lg border-2 border-dashed border-neutral-750 p-6 sm:p-8 text-center transition-colors hover:border-neutral-600">
                           <span className="iconify w-6 h-6 mx-auto mb-2 text-neutral-500 ph--upload-bold" />
                           <p className="text-neutral-500 text-xs mb-3">
-                            {field.state.value?.name ?? 'PNG, JPG or SVG (max. 2MB)'}
+                            {field.state.value?.name ?? 'PNG, JPG, GIF or WebP (max. 2MB)'}
                           </p>
                           <input
                             type="file"
                             id="tokenLogo"
+                            accept="image/png,image/jpeg,image/gif,image/webp"
                             className="hidden"
                             onChange={(e) => {
                               const file = e.target.files?.[0];

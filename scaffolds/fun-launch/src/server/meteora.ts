@@ -61,6 +61,27 @@ const lock = new LockClient(connection, 'confirmed');
 
 // ---------- reads ----------
 
+/**
+ * Short-lived in-memory cache for chain reads. Free-tier RPCs rate-limit heavy calls like
+ * getProgramAccounts; this keeps polling clients from repeating them. Failures aren't cached.
+ */
+const cache = new Map<string, { expires: number; value: Promise<unknown> }>();
+function cached<T>(key: string, ttlMs: number, load: () => Promise<T>): Promise<T> {
+  const hit = cache.get(key);
+  if (hit && hit.expires > Date.now()) return hit.value as Promise<T>;
+  const value = load().catch((error) => {
+    cache.delete(key);
+    throw error;
+  });
+  cache.set(key, { expires: Date.now() + ttlMs, value });
+  return value;
+}
+
+/** Drop cached reads for a launch after a transaction changes it. */
+export function invalidateCache() {
+  cache.clear();
+}
+
 export type TokenMeta = { name: string; symbol: string; uri: string };
 
 /** Parse name/symbol/uri from Metaplex metadata accounts (borsh strings, NUL-padded). */
@@ -135,7 +156,11 @@ function summarize(
 }
 
 /** All launches on Ratchet's preset configs, closest to graduation first. */
-export async function listLaunches(): Promise<LaunchSummary[]> {
+export function listLaunches(): Promise<LaunchSummary[]> {
+  return cached('launches', 10_000, loadLaunches);
+}
+
+async function loadLaunches(): Promise<LaunchSummary[]> {
   const configs = getAllPresetConfigs();
   const results = await Promise.all(
     configs.map(async (config) => {
@@ -250,7 +275,11 @@ async function getLadder(
   return rungs.sort((a, b) => a.binId - b.binId);
 }
 
-export async function getLaunch(baseMint: PublicKey): Promise<LaunchDetail | null> {
+export function getLaunch(baseMint: PublicKey): Promise<LaunchDetail | null> {
+  return cached(`launch:${baseMint.toBase58()}`, 4_000, () => loadLaunch(baseMint));
+}
+
+async function loadLaunch(baseMint: PublicKey): Promise<LaunchDetail | null> {
   const pool = await dbc.state.getPoolByBaseMint(baseMint);
   if (!pool) return null;
   const state = pool.account.poolState;
@@ -554,7 +583,11 @@ async function getUserDammPositions(user: PublicKey) {
 }
 
 /** Everything `user` can claim on Ratchet launches, as creator and/or partner (fee claimer). */
-export async function getEarnings(user: PublicKey): Promise<Earning[]> {
+export function getEarnings(user: PublicKey): Promise<Earning[]> {
+  return cached(`earnings:${user.toBase58()}`, 15_000, () => loadEarnings(user));
+}
+
+async function loadEarnings(user: PublicKey): Promise<Earning[]> {
   const configs = getAllPresetConfigs();
   const configStates = await Promise.all(configs.map((c) => dbc.state.getPoolConfig(c)));
   const pools = (

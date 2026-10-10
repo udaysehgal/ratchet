@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Connection, Keypair, sendAndConfirmRawTransaction, Transaction } from '@solana/web3.js';
+import { invalidateCache } from '@/server/meteora';
 
 const RPC_URL = process.env.RPC_URL as string;
 
@@ -53,6 +54,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Wait for confirmation
     // await connection.confirmTransaction(signature, 'confirmed');
+
+    invalidateCache(); // the tx changed chain state; next reads should be fresh
 
     res.status(200).json({
       success: true,

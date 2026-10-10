@@ -1,29 +1,14 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { PutObjectCommand, PutObjectCommandOutput, S3Client } from '@aws-sdk/client-s3';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { DynamicBondingCurveClient } from '@meteora-ag/dynamic-bonding-curve-sdk';
 import { getPresetConfig } from '@/presets';
+import { uploadPublic } from '@/server/storage';
 
-// Environment variables with type assertions
-const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID as string;
-const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY as string;
-const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID as string;
-const R2_BUCKET = process.env.R2_BUCKET as string;
 const RPC_URL = process.env.RPC_URL as string;
-const PUBLIC_R2_URL = process.env.R2_PUBLIC_URL as string;
 
-if (
-  !R2_ACCESS_KEY_ID ||
-  !R2_SECRET_ACCESS_KEY ||
-  !R2_ACCOUNT_ID ||
-  !R2_BUCKET ||
-  !RPC_URL ||
-  !PUBLIC_R2_URL
-) {
-  throw new Error('Missing required environment variables');
+if (!RPC_URL) {
+  throw new Error('Missing RPC_URL');
 }
-
-const PRIVATE_R2_URL = `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;
 
 // Types
 type UploadRequest = {
@@ -48,16 +33,6 @@ type MetadataUploadParams = {
   image: string;
 };
 
-// R2 client setup
-const r2 = new S3Client({
-  endpoint: PRIVATE_R2_URL,
-  credentials: {
-    accessKeyId: R2_ACCESS_KEY_ID,
-    secretAccessKey: R2_SECRET_ACCESS_KEY,
-  },
-  region: 'auto',
-});
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -80,7 +55,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Upload image and metadata
     const imageUrl = await uploadImage(tokenLogo, mint);
     if (!imageUrl) {
-      return res.status(400).json({ error: 'Failed to upload image' });
+      return res
+        .status(400)
+        .json({ error: 'Logo must be a PNG, JPEG, GIF or WebP under 2 MB' });
     }
 
     const metadataUrl = await uploadMetadata({ tokenName, tokenSymbol, mint, image: imageUrl });
@@ -125,12 +102,19 @@ async function uploadImage(tokenLogo: string, mint: string): Promise<string | fa
     return false;
   }
 
+  // Public storage: only plain raster images (no SVG/HTML), max 2 MB
+  const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+  if (!ALLOWED_TYPES.includes(contentType)) {
+    return false;
+  }
   const fileBuffer = Buffer.from(base64Data, 'base64');
+  if (fileBuffer.length > 2 * 1024 * 1024) {
+    return false;
+  }
   const fileName = `images/${mint}.${contentType.split('/')[1]}`;
 
   try {
-    await uploadToR2(fileBuffer, contentType, fileName);
-    return `${PUBLIC_R2_URL}/${fileName}`;
+    return await uploadPublic(fileName, fileBuffer, contentType);
   } catch (error) {
     console.error('Error uploading image:', error);
     return false;
@@ -146,27 +130,11 @@ async function uploadMetadata(params: MetadataUploadParams): Promise<string | fa
   const fileName = `metadata/${params.mint}.json`;
 
   try {
-    await uploadToR2(Buffer.from(JSON.stringify(metadata, null, 2)), 'application/json', fileName);
-    return `${PUBLIC_R2_URL}/${fileName}`;
+    return await uploadPublic(fileName, Buffer.from(JSON.stringify(metadata, null, 2)), 'application/json');
   } catch (error) {
     console.error('Error uploading metadata:', error);
     return false;
   }
-}
-
-async function uploadToR2(
-  fileBuffer: Buffer,
-  contentType: string,
-  fileName: string
-): Promise<PutObjectCommandOutput> {
-  return r2.send(
-    new PutObjectCommand({
-      Bucket: R2_BUCKET,
-      Key: fileName,
-      Body: fileBuffer,
-      ContentType: contentType,
-    })
-  );
 }
 
 async function createPoolTransaction({
