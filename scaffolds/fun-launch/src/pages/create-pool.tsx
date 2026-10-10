@@ -40,6 +40,7 @@ export default function CreatePool() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [poolCreated, setPoolCreated] = useState(false);
+  const [createdMint, setCreatedMint] = useState<string | null>(null);
 
   const form = useForm({
     defaultValues: {
@@ -123,6 +124,7 @@ export default function CreatePool() {
         const { success } = await sendResponse.json();
         if (success) {
           toast.success('Pool created successfully');
+          setCreatedMint(keyPair.publicKey.toBase58());
           setPoolCreated(true);
         }
       } catch (error) {
@@ -169,7 +171,7 @@ export default function CreatePool() {
           </div>
 
           {poolCreated && !isLoading ? (
-            <PoolCreationSuccess />
+            <PoolCreationSuccess mint={createdMint} />
           ) : (
             <form
               onSubmit={(e) => {
@@ -425,32 +427,41 @@ const SubmitButton = ({ isSubmitting }: { isSubmitting: boolean }) => {
   );
 };
 
-const PoolCreationSuccess = () => {
+const PoolCreationSuccess = ({ mint }: { mint: string | null }) => {
   return (
     <>
       <div className="rounded-xl border border-neutral-850 bg-neutral-925 p-6 sm:p-8 text-center">
         <div className="bg-emerald/15 p-4 rounded-full inline-flex mb-6">
           <span className="iconify ph--check-bold w-12 h-12 text-emerald" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold mb-4">Pool Created Successfully!</h2>
+        <h2 className="text-2xl md:text-3xl font-bold mb-4">Your token is live</h2>
         <p className="text-neutral-400 mb-8 max-w-lg mx-auto">
-          Your token pool has been created and is now live on the Virtual Curve platform. Users can
-          now buy and trade your tokens.
+          It&apos;s trading on its Meteora DBC curve now. Share the token page: once it raises
+          enough to graduate, it moves to a locked DAMM v2 pool and your team allocation starts
+          vesting.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+          {mint && (
+            <Link
+              href={`/token/${mint}`}
+              className="rounded-full bg-primary px-6 py-3 font-semibold text-primary-950 transition-colors hover:bg-primary-300"
+            >
+              View your token
+            </Link>
+          )}
           <Link
             href="/"
             className="rounded-full border border-neutral-750 px-6 py-3 font-medium text-neutral-200 transition-colors hover:bg-neutral-900"
           >
-            Explore Pools
+            All launches
           </Link>
           <button
             onClick={() => {
               window.location.reload();
             }}
-            className="cursor-pointer rounded-full bg-primary px-6 py-3 font-semibold text-primary-950 transition-colors hover:bg-primary-300"
+            className="cursor-pointer rounded-full border border-neutral-750 px-6 py-3 font-medium text-neutral-200 transition-colors hover:bg-neutral-900"
           >
-            Create Another Pool
+            Launch another
           </button>
         </div>
       </div>
