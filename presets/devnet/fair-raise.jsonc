@@ -64,5 +64,13 @@
       "poolCreationFee": 0.01,
       "enableFirstSwapWithMinFee": false
     }
+  },
+  "dbcPool": {
+    "creator": "CT5tcqimUmUy9Tg99iHWk2w65whFGJ7u7xsjaPTFA1yq",
+    "name": "Ratchet Fair Two",
+    "symbol": "RFAIR2",
+    "metadata": {
+      "uri": "https://example.com/rfair2.json"
+    }
   }
 }

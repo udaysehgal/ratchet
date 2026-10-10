@@ -6,6 +6,7 @@ import { Toaster } from 'sonner';
 import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { NETWORK } from '@/presets';
 import { useWindowWidthListener } from '@/lib/device';
 
 function AppProviders({ Component, pageProps }: AppProps) {
@@ -28,7 +29,7 @@ function AppProviders({ Component, pageProps }: AppProps) {
       <UnifiedWalletProvider
         wallets={wallets}
         config={{
-          env: 'mainnet-beta',
+          env: NETWORK === 'mainnet' ? 'mainnet-beta' : 'devnet',
           autoConnect: true,
           metadata: {
             name: 'UnifiedWallet',
