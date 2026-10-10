@@ -1,0 +1,35 @@
+{
+  "name": "@meteora-invent/config-eslint",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared ESLint configuration for Meteora Invent monorepo",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./index.js": "./index.js",
+    "./node": "./node.js",
+    "./node.js": "./node.js",
+    "./next": "./next.js",
+    "./next.js": "./next.js"
+  },
+  "files": [
+    "index.js",
+    "next.js",
+    "node.js"
+  ],
+  "scripts": {
+    "clean": "rm -rf node_modules .turbo"
+  },
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-import-resolver-typescript": "^3.10.1",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.6"
+  },
+  "peerDependencies": {
+    "eslint": "^9.39.5",
+    "typescript": "^5.9.3"
+  }
+}

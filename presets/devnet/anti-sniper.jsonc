@@ -1,0 +1,80 @@
+{
+  "rpcUrl": "https://api.devnet.solana.com",
+  "dryRun": false,
+  "keypairFilePath": "./keypair.json",
+  "computeUnitPriceMicroLamports": 100000,
+  "quoteMint": "So11111111111111111111111111111111111111112",
+  "dbcConfig": {
+    "token": {
+      "totalTokenSupply": 1000000000,
+      "tokenBaseDecimal": 6,
+      "tokenQuoteDecimal": 9,
+      "tokenType": 0,
+      "tokenAuthorityOption": 1,
+      "leftover": 0
+    },
+    "migration": {
+      "migrationOption": 1,
+      "migrationFeeOption": 6,
+      "migrationFee": {
+        "feePercentage": 0,
+        "creatorFeePercentage": 0
+      },
+      "migratedPoolFee": {
+        "collectFeeMode": 2,
+        "dynamicFee": 1,
+        "poolFeeBps": 100,
+        "compoundingFeeBps": 5000
+      }
+    },
+    "liquidityDistribution": {
+      "partnerLiquidityPercentage": 0,
+      "creatorLiquidityPercentage": 0,
+      "partnerPermanentLockedLiquidityPercentage": 50,
+      "creatorPermanentLockedLiquidityPercentage": 50
+    },
+    "lockedVesting": {
+      "totalLockedVestingAmount": 100000000,
+      "numberOfVestingPeriod": 10,
+      "cliffUnlockAmount": 0,
+      "totalVestingDuration": 600,
+      "cliffDurationFromMigrationTime": 60
+    },
+    "activationType": 1,
+    "leftoverReceiver": "CT5tcqimUmUy9Tg99iHWk2w65whFGJ7u7xsjaPTFA1yq",
+    "feeClaimer": "CT5tcqimUmUy9Tg99iHWk2w65whFGJ7u7xsjaPTFA1yq",
+    "buildCurveMode": 0,
+    "percentageSupplyOnMigration": 20,
+    "migrationQuoteThreshold": 1,
+    "fee": {
+      "baseFeeParams": {
+        "baseFeeMode": 1,
+        "feeSchedulerParam": {
+          "startingFeeBps": 5000,
+          "endingFeeBps": 100,
+          "numberOfPeriod": 60,
+          "totalDuration": 120
+        }
+      },
+      "dynamicFeeEnabled": true,
+      "collectFeeMode": 0,
+      "creatorTradingFeePercentage": 50,
+      "poolCreationFee": 0.01,
+      "enableFirstSwapWithMinFee": true
+    }
+  },
+  "dbcPool": {
+    "creator": "CT5tcqimUmUy9Tg99iHWk2w65whFGJ7u7xsjaPTFA1yq",
+    "name": "Ratchet Test One",
+    "symbol": "RTST1",
+    "metadata": {
+      "uri": "https://example.com/rtst1.json"
+    }
+  },
+  "dbcSwap": {
+    "amountIn": 0.5,
+    "slippageBps": 5000,
+    "swapBaseForQuote": false,
+    "referralTokenAccount": null
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "extends": "@meteora-invent/config/typescript/base",
+  "compilerOptions": {
+    "paths": {
+      "@meteora-invent/config/*": ["./packages/config/*"],
+      "@meteora-invent/studio": ["./studio"],
+      "@meteora-invent/scaffold/*": ["./scaffolds/*"]
+    }
+  },
+  "references": [
+    { "path": "./packages/config" },
+    { "path": "./packages/shared/utils" },
+    { "path": "./studio" },
+    { "path": "./scaffolds/fun-launch" }
+  ],
+  "exclude": ["node_modules", "dist", "build", ".next", ".turbo"]
+}

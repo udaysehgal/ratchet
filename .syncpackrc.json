@@ -1,0 +1,37 @@
+{
+  "versionGroups": [
+    {
+      "label": "Use workspace protocol for internal packages",
+      "dependencies": ["@meteora-invent/**"],
+      "dependencyTypes": ["dev", "prod", "peer"],
+      "pinVersion": "workspace:*"
+    }
+  ],
+  "semverGroups": [
+    {
+      "label": "@ledgerhq/errors must stay pinned: 6.37.0 (latest, deprecated) ships a broken ESM build that crashes next build",
+      "range": "",
+      "dependencies": ["@ledgerhq/errors"],
+      "packages": ["**"]
+    },
+    {
+      "range": "^",
+      "dependencies": ["**"],
+      "packages": ["**"]
+    }
+  ],
+  "sortFirst": [
+    "name",
+    "version",
+    "private",
+    "description",
+    "author",
+    "license",
+    "main",
+    "scripts",
+    "dependencies",
+    "devDependencies",
+    "peerDependencies"
+  ],
+  "sortAz": ["scripts", "dependencies", "devDependencies", "peerDependencies"]
+}

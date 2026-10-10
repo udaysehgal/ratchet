@@ -1,0 +1,79 @@
+{
+  "name": "meteora-invent",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Meteora Invent - Monorepo for studio actions and scaffold templates",
+  "author": "Dann Wee <dann@raccoons.dev>",
+  "license": "ISC",
+  "packageManager": "pnpm@10.27.0",
+  "engines": {
+    "node": ">=22.12",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "turbo format",
+    "format:check": "turbo format:check",
+    "type-check": "tsc --noEmit -p tsconfig.typecheck.json",
+    "clean": "turbo clean && rm -rf node_modules && rm -rf test-ledger",
+    "studio": "pnpm --filter @meteora-invent/studio",
+    "scaffold": "pnpm --filter '@meteora-invent/scaffold-*'",
+    "validate-env": "turbo validate-env",
+    "studio:damm-v1": "pnpm --filter @meteora-invent/studio run damm-v1:*",
+    "studio:damm-v2": "pnpm --filter @meteora-invent/studio run damm-v2:*",
+    "studio:dlmm": "pnpm --filter @meteora-invent/studio run dlmm:*",
+    "studio:dbc": "pnpm --filter @meteora-invent/studio run dbc:*",
+    "studio:alpha-vault": "pnpm --filter @meteora-invent/studio run alpha-vault:*",
+    "prepare": "husky install",
+    "syncpack:check": "syncpack list-mismatches",
+    "syncpack:fix": "syncpack fix-mismatches"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "eslint": "^9.39.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.9.6",
+    "syncpack": "^13.0.4",
+    "turbo": "^2.10.7",
+    "typescript": "^5.9.3"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "pnpm": {
+    "overrides": {
+      "@ledgerhq/errors": "6.22.0",
+      "protobufjs@7": "^7.6.5",
+      "lodash": "^4.18.0",
+      "minimatch@9": "^9.0.7",
+      "postcss@8": "^8.5.25",
+      "next": "^15.5.24",
+      "eslint-config-next>@typescript-eslint/eslint-plugin": "^8.65.0",
+      "eslint-config-next>@typescript-eslint/parser": "^8.65.0",
+      "sharp": "^0.35.4",
+      "ws@8": "^8.21.0",
+      "uuid@8": "^11.1.1",
+      "uuid@9": "^11.1.1",
+      "bn.js@5": "^5.2.5",
+      "node-fetch@2": "^2.7.0",
+      "toml": "^4.2.0",
+      "@meteora-ag/farming-sdk>@solana/web3.js": "^1.98.4"
+    },
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-3gc7-fjrx-p6mg",
+        "GHSA-848j-6mx2-7j84",
+        "GHSA-mh99-v99m-4gvg"
+      ]
+    }
+  }
+}

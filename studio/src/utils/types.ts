@@ -1,0 +1,844 @@
+import { Creator, Collection, Uses } from '@metaplex-foundation/mpl-token-metadata';
+import { ILockedVestingArgs, IPresaleArgs, IPresaleRegistryArgs } from '@meteora-ag/presale';
+import { PublicKey } from '@solana/web3.js';
+import BN from 'bn.js';
+
+export interface CliArguments {
+  config?: string | undefined;
+  network?: string | undefined;
+  baseMint?: string | undefined;
+  poolAddress?: string | undefined;
+  vault?: string | undefined;
+  escrow?: string | undefined;
+  farm?: string | undefined;
+  limitOrder?: string | undefined;
+  airdrop?: boolean | undefined;
+  help?: boolean | undefined;
+}
+
+export interface CommandOption {
+  flag: string;
+  description: string;
+  required: boolean;
+  type: 'string' | 'boolean';
+  example?: string;
+}
+
+/* COMMON */
+
+export type MeteoraConfig =
+  | DammV1Config
+  | DammV2Config
+  | DlmmConfig
+  | DbcConfig
+  | AlphaVaultConfig
+  | DynamicVaultConfig
+  | FarmingConfig
+  | FeeSharingConfig
+  | ZapConfig
+  | LockConfig;
+
+export interface CreateTokenMintOptions {
+  dryRun: boolean;
+  computeUnitPriceMicroLamports: number;
+  tokenConfig?: TokenConfig;
+}
+
+export interface TokenConfig {
+  supply: number;
+  decimals: number;
+  tokenMintKeypairFilePath?: string;
+  name: string;
+  symbol: string;
+  metadata: TokenMetadata;
+  authorities: {
+    mint: string | null;
+    freeze: string | null;
+    update: string | null;
+  };
+  sellerFeeBasisPoints: number;
+  creators: Creator[] | null;
+  collection: Collection | null;
+  uses: Uses | null;
+}
+
+export interface TokenMetadata {
+  uri?: string;
+  image?: string;
+  description?: string;
+  website?: string;
+  twitter?: string;
+  telegram?: string;
+}
+
+export type MeteoraConfigBase = {
+  rpcUrl: string;
+  dryRun: boolean;
+  keypairFilePath: string;
+  computeUnitPriceMicroLamports?: number;
+  quoteMint?: string | null;
+};
+
+export type AllocationByAmount = {
+  address: PublicKey;
+  amount: BN;
+  percentage: number;
+};
+
+export interface NetworkConfig {
+  rpcUrl: string;
+  airdropAmount: number;
+}
+
+export enum PriceRoundingConfig {
+  Up = 'up',
+  Down = 'down',
+}
+
+/* DAMM v1 */
+
+export type DammV1Config = MeteoraConfigBase & {
+  createBaseToken: TokenConfig | null;
+  dammV1Config: DynamicAmmV1Config | null;
+  dammV1LockLiquidity: LockLiquidityConfig | null;
+  stake2EarnFarm: Stake2EarnFarmConfig | null;
+  alphaVault: FcfsAlphaVaultConfig | ProrataAlphaVaultConfig | null;
+  dammV1Swap?: DammV1SwapConfig | null;
+  stake2EarnStake?: Stake2EarnStakeConfig | null;
+  stake2EarnClaim?: Stake2EarnClaimConfig | null;
+  stake2EarnUnstake?: Stake2EarnUnstakeConfig | null;
+  stake2EarnWithdraw?: Stake2EarnWithdrawConfig | null;
+};
+
+export interface DynamicAmmV1Config {
+  baseAmount: number | string;
+  quoteAmount: number | string;
+  tradeFeeNumerator: number;
+  activationType: number;
+  activationPoint: number | null;
+  hasAlphaVault: boolean;
+}
+
+export interface LockLiquidityConfig {
+  allocations: LockLiquidityAllocation[];
+}
+
+export interface LockLiquidityAllocation {
+  percentage: number;
+  address: string;
+}
+
+export interface Stake2EarnFarmConfig {
+  topListLength: number;
+  unstakeLockDurationSecs: number;
+  secondsToFullUnlock: number;
+  startFeeDistributeTimestamp: number;
+}
+
+export interface Stake2EarnStakeConfig {
+  amount: number; // stake-mint human units to stake (passed as the stake instruction's maxAmount)
+}
+
+export interface Stake2EarnClaimConfig {
+  maxFee: number | string | null; // null = claim everything pending (u64::MAX); else a raw base-unit ceiling applied to both feeA and feeB (they can have different decimals — see other-products.md)
+}
+
+export interface Stake2EarnUnstakeConfig {
+  amount: number; // stake-mint human units to unstake; must not exceed the wallet's current staked amount
+}
+
+export interface Stake2EarnWithdrawConfig {
+  unstakeKey: string | null; // unstake account pubkey logged by stake2earn-unstake; null = list this wallet's open unstake requests and stop (also reused by stake2earn-cancel-unstake)
+}
+
+/* DAMM v2 */
+
+export type DammV2Config = MeteoraConfigBase & {
+  createBaseToken: TokenConfig | null;
+  dammV2Config: DynamicAmmV2Config | null;
+  addLiquidity: AddLiquidityConfig | null;
+  splitPosition: SplitPositionConfig | null;
+  alphaVault: FcfsAlphaVaultConfig | ProrataAlphaVaultConfig | null;
+  dammV2Swap?: DammV2SwapConfig | null;
+};
+
+export interface DynamicAmmV2Config {
+  creator: string;
+  baseAmount: number | string;
+  quoteAmount: number | string | null;
+  initPrice: number | string;
+  minPrice: number | string | null;
+  maxPrice: number | string | null;
+  poolFees: {
+    baseFee: DammV2BaseFee;
+    dynamicFeeEnabled: boolean;
+    dynamicFeeConfig: DynamicFee | null;
+    compoundingFeeBps?: number;
+  };
+  collectFeeMode: number;
+  activationType: number;
+  activationPoint: number | null;
+  hasAlphaVault: boolean;
+}
+
+export type DammV2BaseFee =
+  | {
+      baseFeeMode: 0 | 1;
+      feeTimeSchedulerParam: FeeSchedulerParams;
+    }
+  | {
+      baseFeeMode: 2;
+      rateLimiterParam: RateLimiterParams & { maxFeeBps: number };
+    }
+  | {
+      baseFeeMode: 3 | 4;
+      feeMarketCapSchedulerParam: FeeMarketCapSchedulerParams;
+    };
+
+export interface DynamicFee {
+  filterPeriod: number;
+  decayPeriod: number;
+  reductionFactor: number;
+  variableFeeControl: number;
+  maxVolatilityAccumulator: number;
+}
+
+export interface SplitPositionConfig {
+  newPositionOwner: string;
+  unlockedLiquidityPercentage: number;
+  permanentLockedLiquidityPercentage: number;
+  innerVestingLiquidityPercentage: number;
+  feeAPercentage: number;
+  feeBPercentage: number;
+  reward0Percentage: number;
+  reward1Percentage: number;
+}
+
+export interface AddLiquidityConfig {
+  amountIn: number;
+  isTokenA: boolean;
+}
+
+/* DLMM */
+
+export type DlmmConfig = MeteoraConfigBase & {
+  createBaseToken: TokenConfig | null;
+  dlmmConfig: DynamicLmmConfig | null;
+  alphaVault: FcfsAlphaVaultConfig | ProrataAlphaVaultConfig | null;
+  lfgSeedLiquidity: LfgSeedLiquidityConfig | null;
+  singleBinSeedLiquidity: SingleBinSeedLiquidityConfig | null;
+  setDlmmPoolStatus: SetDlmmPoolStatusConfig | null;
+  placeLimitOrder?: DlmmPlaceLimitOrderConfig | null;
+  cancelLimitOrder?: DlmmCancelLimitOrderConfig | null;
+  dlmmSwap?: DlmmSwapConfig | null;
+};
+
+export interface DynamicLmmConfig {
+  binStep: number;
+  feeBps: number;
+  initialPrice: number;
+  activationType: number;
+  activationPoint: number | null;
+  priceRounding: PriceRoundingConfig;
+  hasAlphaVault: boolean;
+  // Allow creator to turn on/off the pool
+  creatorPoolOnOffControl: boolean;
+  // 0 - LimitOrder | 1 - LiquidityMining (defaults to LimitOrder when omitted)
+  concreteFunctionType?: number;
+  // 0 - InputOnly | 1 - OnlyY (defaults to InputOnly when omitted)
+  collectFeeMode?: number;
+}
+
+export interface LfgSeedLiquidityConfig {
+  minPrice: number;
+  maxPrice: number;
+  curvature: number;
+  seedAmount: string;
+  operatorKeypairFilepath: string;
+  positionOwner: string;
+  feeOwner: string;
+  lockReleasePoint: number;
+  seedTokenXToPositionOwner: boolean;
+}
+
+export interface SingleBinSeedLiquidityConfig {
+  price: number;
+  priceRounding: string;
+  seedAmount: string;
+  operatorKeypairFilepath: string;
+  positionOwner: string;
+  feeOwner: string;
+  lockReleasePoint: number;
+  seedTokenXToPositionOwner: boolean;
+}
+
+export interface SetDlmmPoolStatusConfig {
+  enabled: boolean;
+}
+
+export interface DlmmLimitOrderBinConfig {
+  // price in quote token per base token
+  price: number;
+  // amount in token units: base token for "ask" orders, quote token for "bid" orders
+  amount: number | string;
+}
+
+export interface DlmmPlaceLimitOrderConfig {
+  // "ask" sells the base token above the active bin, "bid" buys with the quote token below it
+  side: 'ask' | 'bid';
+  bins: DlmmLimitOrderBinConfig[];
+}
+
+export interface DlmmCancelLimitOrderConfig {
+  // when true and no --limitOrder flag is passed, cancels every open order on the pool
+  cancelAll: boolean;
+}
+/* DBC */
+
+export type DbcConfig = MeteoraConfigBase & {
+  dbcConfig?:
+    | (BuildCurve & { buildCurveMode: 0 })
+    | (BuildCurveWithMarketCap & { buildCurveMode: 1 })
+    | (BuildCurveWithTwoSegments & { buildCurveMode: 2 })
+    | (BuildCurveWithLiquidityWeights & { buildCurveMode: 3 })
+    | (BuildCurveWithMidPrice & { buildCurveMode: 4 })
+    | (BuildCurveWithCustomSqrtPrices & { buildCurveMode: 5 })
+    | null;
+  dbcPool?: DbcPool | null;
+  dbcSwap?: DbcSwap | null;
+  dbcTransferPoolCreator?: DbcTransferPoolCreator | null;
+};
+
+export type DbcBaseFee =
+  | {
+      baseFeeMode: 0 | 1;
+      feeSchedulerParam: FeeSchedulerParams;
+    }
+  | {
+      baseFeeMode: 2;
+      rateLimiterParam: RateLimiterParams;
+    };
+
+export type FeeSchedulerParams = {
+  startingFeeBps: number;
+  endingFeeBps: number;
+  numberOfPeriod: number;
+  totalDuration: number;
+};
+
+export type RateLimiterParams = {
+  baseFeeBps: number;
+  feeIncrementBps: number;
+  referenceAmount: number;
+  maxLimiterDuration: number;
+};
+
+export type FeeMarketCapSchedulerParams = {
+  startingFeeBps: number;
+  endingFeeBps: number;
+  numberOfPeriod: number;
+  // ratio of ending market cap over starting market cap, must be greater than 1
+  priceMultiple: number;
+  schedulerExpirationDuration: number;
+};
+
+export type LockedVesting = {
+  totalLockedVestingAmount: number;
+  numberOfVestingPeriod: number;
+  cliffUnlockAmount: number;
+  totalVestingDuration: number;
+  cliffDurationFromMigrationTime: number;
+};
+
+export type LiquidityVestingInfoParams = {
+  vestingPercentage: number;
+  bpsPerPeriod: number;
+  numberOfPeriods: number;
+  cliffDurationFromMigrationTime: number;
+  totalDuration: number;
+};
+
+export type MigratedPoolMarketCapFeeSchedulerConfigParams = {
+  endingBaseFeeBps: number;
+  numberOfPeriod: number;
+  // ratio of ending market cap over starting market cap, must be greater than 1
+  priceMultiple: number;
+  schedulerExpirationDuration: number;
+};
+
+export type DbcTokenConfig = {
+  totalTokenSupply: number;
+  tokenBaseDecimal: number;
+  tokenQuoteDecimal: number;
+  tokenType: number;
+  tokenAuthorityOption: number;
+  leftover: number;
+};
+
+export type DbcFeeConfig = {
+  baseFeeParams: DbcBaseFee;
+  dynamicFeeEnabled: boolean;
+  collectFeeMode: number;
+  creatorTradingFeePercentage: number;
+  poolCreationFee: number; // in SOL
+  enableFirstSwapWithMinFee?: boolean; // If true, first swap uses minimum fee (useful for creator bundled buys)
+};
+
+export type DbcMigratedPoolFeeConfig = {
+  collectFeeMode: number; // 0 - Quote Token | 1 - Output Token | 2 - Compounding
+  dynamicFee: number; // 0: Disabled, 1: Enabled
+  poolFeeBps: number; // The pool fee in basis points. Required when marketCapFeeSchedulerParams is configured.
+  compoundingFeeBps?: number; // Portion of trading fees compounded back into liquidity (collectFeeMode 2 only)
+  baseFeeMode?: 3 | 4; // 3 - FeeMarketCapSchedulerLinear | 4 - FeeMarketCapSchedulerExponential (DAMM v2 only)
+  marketCapFeeSchedulerParams?: MigratedPoolMarketCapFeeSchedulerConfigParams;
+};
+
+export type DbcMigrationConfig = {
+  migrationOption: number;
+  migrationFeeOption: number;
+  migrationFee: {
+    feePercentage: number;
+    creatorFeePercentage: number;
+  };
+  migratedPoolFee?: DbcMigratedPoolFeeConfig; // DAMM v2 only, for Customizable (6) or marketCapFeeScheduler
+};
+
+export type DbcLiquidityDistributionConfig = {
+  partnerLiquidityPercentage: number;
+  creatorLiquidityPercentage: number;
+  partnerPermanentLockedLiquidityPercentage: number;
+  creatorPermanentLockedLiquidityPercentage: number;
+  partnerLiquidityVestingInfoParams?: LiquidityVestingInfoParams; // DAMM v2 only
+  creatorLiquidityVestingInfoParams?: LiquidityVestingInfoParams; // DAMM v2 only
+};
+
+export type BuildCurveBase = {
+  token: DbcTokenConfig;
+  fee: DbcFeeConfig;
+  migration: DbcMigrationConfig;
+  liquidityDistribution: DbcLiquidityDistributionConfig;
+  lockedVesting: LockedVesting;
+  activationType: number;
+  leftoverReceiver: string;
+  feeClaimer: string;
+  // Token2022 transfer hook program for the base mint; requires token.tokenType 1 (Token2022)
+  transferHookProgram?: string | null;
+};
+
+export type BuildCurve = BuildCurveBase & {
+  percentageSupplyOnMigration: number;
+  migrationQuoteThreshold: number;
+};
+
+export type BuildCurveWithMarketCap = BuildCurveBase & {
+  initialMarketCap: number;
+  migrationMarketCap: number;
+};
+
+export type BuildCurveWithTwoSegments = BuildCurveBase & {
+  initialMarketCap: number;
+  migrationMarketCap: number;
+  percentageSupplyOnMigration: number;
+};
+
+export type BuildCurveWithLiquidityWeights = BuildCurveBase & {
+  initialMarketCap: number;
+  migrationMarketCap: number;
+  liquidityWeights: number[];
+};
+
+export type BuildCurveWithMidPrice = BuildCurveBase & {
+  initialMarketCap: number;
+  migrationMarketCap: number;
+  midPrice: number;
+  percentageSupplyOnMigration: number;
+};
+
+export type BuildCurveWithCustomSqrtPrices = BuildCurveBase & {
+  prices: number[];
+  liquidityWeights?: number[];
+};
+
+export type DbcPool = {
+  baseMintKeypairFilepath?: string;
+  creator: string;
+  name: string;
+  symbol: string;
+  metadata: TokenMetadata;
+  // Required when the target config was created with a transfer hook; must match the config's hook program
+  transferHookProgram?: string | null;
+};
+
+export type DlmmSwapConfig = {
+  amountIn: number;
+  slippageBps: number;
+  swapForY: boolean;
+};
+
+export type DammV2SwapConfig = {
+  inputMint: string;
+  amountIn: number;
+  slippage: number;
+};
+
+export type DammV1SwapConfig = {
+  inputMint: string;
+  amountIn: number;
+  slippage: number;
+};
+
+export type DbcSwap = {
+  amountIn: number;
+  slippageBps: number;
+  swapBaseForQuote: boolean;
+  referralTokenAccount?: string | null;
+};
+
+export type DbcTransferPoolCreator = {
+  newCreator: string;
+};
+
+/* Alpha Vault */
+
+export type AlphaVaultConfig = MeteoraConfigBase & {
+  alphaVault: FcfsAlphaVaultConfig | ProrataAlphaVaultConfig | null;
+  alphaVaultDeposit?: AlphaVaultDepositConfig | null;
+  alphaVaultWithdraw?: AlphaVaultWithdrawConfig | null;
+  alphaVaultClaim?: AlphaVaultClaimConfig | null;
+};
+
+export interface FcfsAlphaVaultConfig {
+  poolType: PoolTypeConfig;
+  alphaVaultType: AlphaVaultTypeConfig;
+  // absolute value, depend on the pool activation type it will be the timestamp in secs or the slot number
+  depositingPoint: number;
+  // absolute value
+  startVestingPoint: number;
+  // absolute value
+  endVestingPoint: number;
+  // total max deposit
+  maxDepositCap: number;
+  // user max deposit
+  individualDepositingCap: number;
+  // fee to create stake escrow account
+  escrowFee: number;
+  // whitelist mode: permissionless / permission_with_merkle_proof / permission_with_authority
+  whitelistMode: WhitelistModeConfig;
+  merkleProofBaseUrl: string;
+  whitelistFilepath?: string;
+  chunkSize?: number;
+  kvProofFilepath?: string;
+  cloudflareKvProofUpload?: CloudflareKvProofUploadConfig;
+}
+
+export interface ProrataAlphaVaultConfig {
+  poolType: PoolTypeConfig;
+  alphaVaultType: AlphaVaultTypeConfig;
+  // absolute value, depend on the pool activation type it will be the timestamp in secs or the slot number
+  depositingPoint: number;
+  // absolute value
+  startVestingPoint: number;
+  // absolute value
+  endVestingPoint: number;
+  // total max deposit
+  maxBuyingCap: number;
+  // fee to create stake escrow account
+  escrowFee: number;
+  // whitelist mode: permissionless / permission_with_merkle_proof / permission_with_authority
+  whitelistMode: WhitelistModeConfig;
+  merkleProofBaseUrl: string;
+  whitelistFilepath?: string;
+  chunkSize?: number;
+  kvProofFilepath?: string;
+  cloudflareKvProofUpload?: CloudflareKvProofUploadConfig;
+}
+
+export interface AlphaVaultDepositConfig {
+  amount: number; // quote token human units to deposit
+}
+
+export interface AlphaVaultWithdrawConfig {
+  amount: number; // quote token human units to withdraw (prorata vaults, deposit phase only)
+}
+
+export interface AlphaVaultClaimConfig {
+  closeEscrowWhenDone: boolean; // close the escrow account (reclaim rent) once fully claimed
+}
+
+export enum AlphaVaultTypeConfig {
+  Fcfs = 'fcfs',
+  Prorata = 'prorata',
+}
+
+export enum PoolTypeConfig {
+  Dlmm = 'dlmm',
+  DammV1 = 'dynamic',
+  DammV2 = 'damm2',
+}
+
+export enum WhitelistModeConfig {
+  Permissionless = 'permissionless',
+  PermissionedWithMerkleProof = 'permissioned_with_merkle_proof',
+  PermissionedWithAuthority = 'permissioned_with_authority',
+}
+
+export interface CloudflareKvProofUploadConfig {
+  kvNamespaceId: string;
+  accountId: string;
+  apiKey: string;
+}
+
+export interface WhitelistCsv {
+  address: string;
+  maxAmount: string;
+}
+
+export interface ProofRecord {
+  [key: string]: {
+    merkle_tree: string;
+    amount: number;
+    proof: Array<number[]>;
+  };
+}
+
+export interface BodyItem {
+  base64: boolean;
+  key: string;
+  value: string;
+}
+
+export interface KvMerkleProof {
+  [key: string]: {
+    merkle_root_config: string;
+    max_cap: number;
+    proof: number[][];
+  };
+}
+
+/* Stake2Earn */
+
+export type Stake2EarnConfig = MeteoraConfigBase & {
+  createBaseToken: TokenConfig | null;
+  dammV1LockLiquidity: LockLiquidityConfig | null;
+  alphaVault: FcfsAlphaVaultConfig | ProrataAlphaVaultConfig | null;
+};
+
+/* Presale */
+
+export type PresaleConfig = MeteoraConfigBase & {
+  presaleVault: PresaleVaultConfig | null;
+  presaleVaultType: PresaleVaultTypeConfig;
+  presaleDeposit?: PresaleDepositConfig | null;
+  presaleWithdraw?: PresaleWithdrawConfig | null;
+  presaleClaim?: PresaleClaimConfig | null;
+  presaleCreatorWithdraw?: PresaleCreatorWithdrawConfig | null;
+};
+
+export enum PresaleVaultTypeConfig {
+  Fcfs = 'fcfs',
+  Prorata = 'prorata',
+  FixedPrice = 'fixed_price',
+  PermissionedFixedPriceWithAuthority = 'permissioned_fixed_price_with_authority',
+  PermissionedFixedPriceWithMerkleProof = 'permissioned_fixed_price_with_merkle_proof',
+}
+
+export interface PresaleVaultConfig {
+  presaleArgs: IPresaleArgs;
+  presaleRegistries: IPresaleRegistryArgs[];
+  lockedVestingArgs?: ILockedVestingArgs;
+  fixedPricePresaleConfig?: FixedPricePresaleVaultConfig;
+}
+
+export interface FixedPricePresaleVaultConfig {
+  price: number;
+  rounding: 'up' | 'down';
+  disableWithdraw?: boolean; // fixed-price only: block withdrawals after deposit (default false)
+}
+
+export interface PresaleDepositConfig {
+  amount: number; // quote token human units to deposit
+  registryIndex: number; // presale tier index; serialized as u8 on-chain (0-255)
+}
+
+export interface PresaleWithdrawConfig {
+  amount: number; // quote token human units to withdraw
+  registryIndex: number; // presale tier index; serialized as u8 on-chain (0-255)
+}
+
+export interface PresaleClaimConfig {
+  registryIndex: number; // presale tier index; serialized as u8 on-chain (0-255)
+}
+
+export interface PresaleCreatorWithdrawConfig {
+  collectFee: boolean; // also call creatorCollectFee() right after creatorWithdraw, when eligible
+}
+
+/* Dynamic Vault */
+
+export type DynamicVaultConfig = MeteoraConfigBase & {
+  dynamicVaultDeposit?: DynamicVaultDepositConfig | null;
+  dynamicVaultWithdraw?: DynamicVaultWithdrawConfig | null;
+};
+
+export interface DynamicVaultDepositConfig {
+  amount: number; // baseMint human units to deposit (converted via the mint's own decimals)
+}
+
+export interface DynamicVaultWithdrawConfig {
+  // VAULT LP TOKEN human units to redeem — NOT baseMint units. The SDK's own
+  // `withdraw(owner, baseTokenAmount)` parameter name is misleading: it burns LP/vault shares
+  // (the on-chain args are `unmintAmount` + `minOutAmount`). The LP mint's decimals always equal baseMint's decimals
+  // on-chain, so this is scaled the same way, but 1 LP token != 1 baseMint token once the vault
+  // has earned yield — see dynamic_vault_config.jsonc for the full note.
+  amount: number;
+}
+
+/* Pool Farms (reward-pool) */
+
+export type FarmingConfig = MeteoraConfigBase & {
+  farmStake?: FarmStakeConfig | null;
+  farmUnstake?: FarmUnstakeConfig | null;
+  farmClaimAll?: FarmClaimAllConfig | null;
+};
+
+export interface FarmStakeConfig {
+  amount: number; // DAMM v1 LP (staking mint) human units to stake
+}
+
+export interface FarmUnstakeConfig {
+  amount: number | null; // DAMM v1 LP (staking mint) human units to unstake; null = unstake everything currently staked
+}
+
+export interface FarmClaimAllConfig {
+  // Farm ADDRESSES to batch-claim from in one run (NOT staking-mint/LP addresses — despite the
+  // SDK naming this parameter `farmMints` throughout, it is fed straight into
+  // program.account.pool.fetchMultiple). Batched 2 farms per transaction
+  // by PoolFarmImpl.claimAll (MAX_CLAIM_ALL_ALLOWED) — see other-products.md's Pool Farms section.
+  farms: string[];
+}
+
+/* Dynamic Fee Sharing */
+
+export type FeeSharingConfig = MeteoraConfigBase & {
+  feeSharingCreate?: FeeSharingCreateConfig | null;
+  feeSharingFund?: FeeSharingFundConfig | null;
+  feeSharingFundDbc?: FeeSharingFundDbcConfig | null;
+  feeSharingFundDammV2Reward?: FeeSharingFundDammV2RewardConfig | null;
+};
+
+export interface FeeSharingUserShareConfig {
+  address: string; // recipient wallet
+  share: number; // relative integer weight (u32) — NOT a percentage; a user's cut is share / sum(all shares)
+}
+
+export interface FeeSharingCreateConfig {
+  // 2-5 entries — the program allows at most 5 recipients per vault
+  userShares: FeeSharingUserShareConfig[];
+  // true = createFeeVault (fresh feeVault KEYPAIR co-signs once; vault address = its pubkey)
+  // false = createFeeVaultPda (fresh `base` KEYPAIR co-signs once; vault address is a PDA derived from base + tokenMint)
+  useKeypairVault: boolean;
+}
+
+export interface FeeSharingFundConfig {
+  amount: number; // vault's tokenMint human units to fund directly from the wallet
+}
+
+export interface FeeSharingFundDbcConfig {
+  role: 'creator' | 'partner'; // which side of the DBC pool config the fee vault is assigned as
+  source: 'tradingFee' | 'surplus' | 'migrationFee'; // which DBC fee bucket to sweep into the vault
+}
+
+export interface FeeSharingFundDammV2RewardConfig {
+  rewardIndex: number; // DAMM v2 reward slot to claim into the vault (0 or 1 — pools have 2 reward slots)
+}
+
+/* Zap */
+
+export type ZapConfig = MeteoraConfigBase & {
+  zapInDammV2?: ZapInDammV2Config | null;
+  zapInDlmm?: ZapInDlmmConfig | null;
+  zapOut?: ZapOutConfig | null;
+};
+
+export interface ZapInDammV2Config {
+  inputMint: string; // must be tokenA or tokenB of the pool — direct route only, no Jupiter fallback
+  amountIn: number; // inputMint human units, converted via the mint's own decimals
+  slippageBps: number; // swap slippage tolerance in basis points (SDK param name: slippageBps)
+  maxSqrtPriceChangeBps: number; // max allowed pool sqrt-price impact from the internal rebalance swap, in bps
+  maxTransferAmountExtendPercentage: number; // % buffer the SDK adds on top of the swap estimate's max-transfer ceiling
+  // "new" generates a fresh position-NFT keypair and creates an empty position first (that
+  // keypair co-signs once); "existing" deposits into the wallet's own position on this pool
+  // (prompts when there is more than one).
+  positionMode: 'new' | 'existing';
+}
+
+export interface ZapInDlmmConfig {
+  inputMint: string; // must be tokenX or tokenY of the lbPair — direct route only
+  amountIn: number; // inputMint human units, converted via the mint's own decimals
+  // Slippage tolerance (bps) for the rebalancing swap between the position's two sides. Unlike
+  // zapInDammV2, this swap is JUPITER-QUOTED: the SDK's estimateDlmmDirectSwap always calls
+  // Jupiter's live quote API and compares it against the pool's own bin quote, keeping whichever
+  // pays out more — there is no Jupiter-free mode for DLMM zap-in.
+  swapSlippageBps: number;
+  minDeltaId: number; // lower edge of the position's bin range, as an offset from the CURRENT active bin (e.g. -34)
+  maxDeltaId: number; // upper edge of the position's bin range, as an offset from the current active bin (e.g. 34)
+  strategyType: 0 | 1 | 2; // liquidity distribution across the range: 0 Spot | 1 Curve | 2 BidAsk
+  // "x" | "y" deposits only that side (skipping the swap on the other side entirely); null is a
+  // balanced two-sided deposit across the range.
+  singleSided: 'x' | 'y' | null;
+  // Tie-break for how the active bin itself splits between X and Y. Ignored — forced to match
+  // singleSided — whenever singleSided is not null (mirrors the SDK's own example).
+  favorXInActiveId: boolean;
+  maxActiveBinSlippage: number; // bins the active bin id may drift between quoting and landing on-chain
+  maxAccounts: number; // account budget passed to Jupiter's quote/swap-instructions API for the rebalancing swap
+  maxTransferAmountExtendPercentage: number; // % buffer the SDK adds on top of the swap estimate's max-transfer ceiling
+  // NOTE: zap-in-dlmm ALWAYS creates a brand-new position (a throwaway keypair co-signs once) —
+  // the zap-sdk's buildZapInDlmmTransaction has no "existing position" mode; depositing into an
+  // existing DLMM position is a BUILD-path task (see SKILL.md / studio-actions.md).
+}
+
+export type ZapOutProtocolConfig = 'damm-v2' | 'dlmm';
+
+export interface ZapOutConfig {
+  protocol: ZapOutProtocolConfig;
+  outputMint: string; // token the position gets fully converted into (must be one of the pool's two tokens)
+  // Applied to the swap that converts the removed non-output side into outputMint (basis points).
+  slippageBps: number;
+}
+
+/* Met Lock */
+
+export type LockConfig = MeteoraConfigBase & {
+  lockCreateEscrow?: LockCreateEscrowConfig | null;
+  lockEscrowMetadata?: LockEscrowMetadataConfig | null;
+  lockClaim?: LockClaimConfig | null;
+  lockList?: LockListConfig | null;
+};
+
+export interface LockCreateEscrowConfig {
+  recipient: string;
+  vestingStartTime: number; // unix seconds
+  cliffTime: number; // unix seconds
+  frequency: number; // seconds between unlock periods
+  cliffUnlockAmount: number; // human token units unlocked at cliffTime
+  amountPerPeriod: number; // human token units unlocked every `frequency` seconds after the cliff
+  numberOfPeriod: number; // total number of periods after the cliff
+  updateRecipientMode: number; // 0 NONE | 1 CREATOR_ONLY | 2 RECIPIENT_ONLY | 3 CREATOR_RECIPIENT
+  cancelMode: number; // 0 NONE | 1 CREATOR_ONLY | 2 RECIPIENT_ONLY | 3 CREATOR_RECIPIENT
+  isSenderMultiSig: boolean;
+}
+
+export interface LockEscrowMetadataConfig {
+  name: string;
+  description: string;
+  creatorEmail: string;
+  recipientEmail: string;
+}
+
+export interface LockClaimConfig {
+  maxAmount: number | null; // human token units; null = claim everything currently vested
+}
+
+export interface LockListConfig {
+  role: 'recipient' | 'creator';
+}

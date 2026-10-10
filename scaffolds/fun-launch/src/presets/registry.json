@@ -1,0 +1,13 @@
+{
+  "devnet": {
+    "anti-sniper": {
+      "config": "B31Lz5XgPUXQRmVeTPjEe9pTVU9PCHYpSqVbvjWc6SSr",
+      "file": "presets/devnet/anti-sniper.jsonc"
+    },
+    "fair-raise": {
+      "config": "9yZFoiD4JU6PKcU8uMUjbFijNXZBNMLhBog8uAKdGURh",
+      "file": "presets/devnet/fair-raise.jsonc"
+    }
+  },
+  "mainnet": {}
+}
