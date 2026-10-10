@@ -10,6 +10,7 @@ import { Keypair, Transaction } from '@solana/web3.js';
 import { useUnifiedWalletContext, useWallet } from '@jup-ag/wallet-adapter';
 import { toast } from 'sonner';
 import { PRESETS, type PresetId } from '@/presets';
+import { PresetPreview } from '@/components/Ratchet/PresetPreview';
 
 // Define the schema for form validation
 const poolSchema = z.object({
@@ -211,6 +212,13 @@ export default function CreatePool() {
                     </div>
                   )}
                 </form.Field>
+                <form.Subscribe selector={(state) => state.values.presetId}>
+                  {(presetId) => (
+                    <div className="mt-6">
+                      <PresetPreview presetId={presetId} />
+                    </div>
+                  )}
+                </form.Subscribe>
               </div>
 
               {/* Token Details Section */}

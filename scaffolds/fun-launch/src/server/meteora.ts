@@ -18,6 +18,8 @@ import {
   deriveEscrow,
   deriveMintMetadata,
   getCurrentPoint,
+  getDeltaAmountQuoteUnsigned,
+  Rounding,
   getPriceFromSqrtPrice,
   type PoolConfig,
   type VirtualPool,
@@ -746,4 +748,102 @@ export async function buildClaimFeesTx(baseMint: PublicKey, user: PublicKey): Pr
 
   if (parts.length === 0) throw new Error('Nothing to claim yet');
   return { tx: await finalize(tx, user), description: `claim ${[...new Set(parts)].join(', ')}` };
+}
+
+// ---------- preset previews (launch form) ----------
+
+const TOTAL_SUPPLY = 1_000_000_000; // every Ratchet preset mints 1B tokens
+
+export type PresetPreview = {
+  id: PresetId;
+  config: string;
+  thresholdSol: number;
+  startMcapSol: number;
+  graduationMcapSol: number;
+  startFeePct: number;
+  endFeePct: number;
+  feeDecaySeconds: number;
+  dynamicFee: boolean;
+  launchFeeSol: number;
+  creatorFeeSharePct: number;
+  teamAllocationPct: number;
+  teamCliffUnlockPct: number;
+  teamCliffSeconds: number;
+  teamPeriods: number;
+  teamPeriodSeconds: number;
+  points: { raisedSol: number; mcapSol: number }[]; // market cap vs SOL raised along the curve
+};
+
+/** Read each preset's DBC config from chain and describe what a launch on it looks like. */
+export function getPresetPreviews(): Promise<PresetPreview[]> {
+  return cached('presets', 300_000, loadPresetPreviews);
+}
+
+async function loadPresetPreviews(): Promise<PresetPreview[]> {
+  const { PRESETS, getPresetConfig } = await import('@/presets');
+  return Promise.all(
+    PRESETS.map(async (preset) => {
+      const configAddress = getPresetConfig(preset.id)!;
+      const config = await dbc.state.getPoolConfig(configAddress);
+      const decimals = config.tokenDecimal;
+      const priceAt = (sqrt: BN) => Number(getPriceFromSqrtPrice(sqrt, decimals, QUOTE_DECIMALS));
+
+      // SOL raised to reach sqrt price `s`: sum quote over each curve segment below `s`
+      const raisedAt = (s: BN) => {
+        let total = new BN(0);
+        let lower = config.sqrtStartPrice;
+        for (const point of config.curve) {
+          if (point.liquidity.isZero() || lower.gte(s)) break;
+          const upper = BN.min(point.sqrtPrice, s);
+          if (upper.gt(lower)) {
+            total = total.add(getDeltaAmountQuoteUnsigned(lower, upper, point.liquidity, Rounding.Up));
+          }
+          lower = point.sqrtPrice;
+        }
+        return Number(total.toString()) / 10 ** QUOTE_DECIMALS;
+      };
+
+      const start = config.sqrtStartPrice;
+      const end = config.migrationSqrtPrice;
+      const SAMPLES = 48;
+      const points = Array.from({ length: SAMPLES + 1 }, (_, i) => {
+        const s = start.add(end.sub(start).muln(i).divn(SAMPLES));
+        return { raisedSol: raisedAt(s), mcapSol: priceAt(s) * TOTAL_SUPPLY };
+      });
+
+      const fee = config.poolFees.baseFee;
+      const cliff = Number(fee.cliffFeeNumerator.toString()) / 1e9;
+      const periods = Number(fee.firstFactor);
+      const periodSeconds = Number(fee.secondFactor.toString());
+      const reduction = Number(fee.thirdFactor.toString());
+      const endFee =
+        fee.baseFeeMode === 1
+          ? cliff * Math.pow(1 - reduction / 10_000, periods) // exponential scheduler
+          : Math.max(cliff - (periods * reduction) / 1e9, 0); // linear scheduler
+
+      const vest = config.lockedVestingConfig;
+      const toPct = (raw: BN) => (Number(raw.toString()) / 10 ** decimals / TOTAL_SUPPLY) * 100;
+      const teamTotal = vest.cliffUnlockAmount.add(vest.amountPerPeriod.mul(vest.numberOfPeriod));
+
+      return {
+        id: preset.id,
+        config: configAddress,
+        thresholdSol: Number(config.migrationQuoteThreshold.toString()) / 10 ** QUOTE_DECIMALS,
+        startMcapSol: priceAt(start) * TOTAL_SUPPLY,
+        graduationMcapSol: priceAt(end) * TOTAL_SUPPLY,
+        startFeePct: cliff * 100,
+        endFeePct: endFee * 100,
+        feeDecaySeconds: periods * periodSeconds,
+        dynamicFee: config.poolFees.dynamicFee.initialized === 1,
+        launchFeeSol: Number(config.poolCreationFee.toString()) / 1e9,
+        creatorFeeSharePct: config.creatorTradingFeePercentage,
+        teamAllocationPct: toPct(teamTotal),
+        teamCliffUnlockPct: toPct(vest.cliffUnlockAmount),
+        teamCliffSeconds: Number(vest.cliffDurationFromMigrationTime.toString()),
+        teamPeriods: Number(vest.numberOfPeriod.toString()),
+        teamPeriodSeconds: Number(vest.frequency.toString()),
+        points,
+      };
+    })
+  );
 }

@@ -35,6 +35,8 @@
   --neutral-950: 255 255 255;
 
   --primary: 77 124 15;
+  /* Data line for charts; validated (dataviz) against each theme's background */
+  --chart-line: 77 124 15;
   --primary-200: 77 124 15;
   --primary-300: 63 98 18;
   --primary-400: 101 163 13;
@@ -80,6 +82,7 @@
   --neutral-950: 11 14 19;
 
   --primary: 199 242 132;
+  --chart-line: 111 168 58;
   --primary-200: 199 242 132;
   --primary-300: 161 197 110;
   --primary-400: 105 132 83;

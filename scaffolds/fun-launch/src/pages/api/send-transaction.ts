@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Connection, Keypair, sendAndConfirmRawTransaction, Transaction } from '@solana/web3.js';
+import { Connection, sendAndConfirmRawTransaction, Transaction } from '@solana/web3.js';
 import { invalidateCache } from '@/server/meteora';
 
 const RPC_URL = process.env.RPC_URL as string;
@@ -10,7 +10,6 @@ if (!RPC_URL) {
 
 type SendTransactionRequest = {
   signedTransaction: string; // base64 encoded signed transaction
-  additionalSigners: Keypair[];
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -19,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { signedTransaction, additionalSigners } = req.body as SendTransactionRequest;
+    const { signedTransaction } = req.body as SendTransactionRequest;
 
     if (!signedTransaction) {
       return res.status(400).json({ error: 'Missing signed transaction' });

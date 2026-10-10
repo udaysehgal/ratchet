@@ -52,7 +52,7 @@ export function useWindowWidthListener(): void {
   const setWindowWidth = useSetAtom(windowWidthAtom);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return undefined;
 
     // Update initial width - only after the component is mounted on the client
     setWindowWidth(window.innerWidth);

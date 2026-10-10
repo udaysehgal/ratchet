@@ -6,7 +6,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"],
-      "env": ["NEXT_PUBLIC_*"]
+      "env": ["NEXT_PUBLIC_*", "RPC_URL", "BLOB_READ_WRITE_TOKEN", "R2_*"]
     },
     "dev": {
       "cache": false,
