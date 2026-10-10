@@ -62,3 +62,7 @@ studio/keypair.json
 studio/baseMintKeypair.json
 studio/data/kv_proofs/
 studio/data/whitelist_wallet.csv
+# Solana keypairs
+keypair*.json
+**/keypair*.json
+mint-keypair*.json

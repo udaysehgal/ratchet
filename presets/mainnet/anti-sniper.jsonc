@@ -1,0 +1,66 @@
+{
+  "rpcUrl": "https://api.mainnet-beta.solana.com",
+  "dryRun": true,
+  "keypairFilePath": "./keypair-mainnet.json",
+  "computeUnitPriceMicroLamports": 100000,
+  "quoteMint": "So11111111111111111111111111111111111111112",
+  "dbcConfig": {
+    "token": {
+      "totalTokenSupply": 1000000000,
+      "tokenBaseDecimal": 6,
+      "tokenQuoteDecimal": 9,
+      "tokenType": 0,
+      "tokenAuthorityOption": 1,
+      "leftover": 0
+    },
+    "migration": {
+      "migrationOption": 1,
+      "migrationFeeOption": 6,
+      "migrationFee": {
+        "feePercentage": 0,
+        "creatorFeePercentage": 0
+      },
+      "migratedPoolFee": {
+        "collectFeeMode": 2,
+        "dynamicFee": 1,
+        "poolFeeBps": 100,
+        "compoundingFeeBps": 5000
+      }
+    },
+    "liquidityDistribution": {
+      "partnerLiquidityPercentage": 0,
+      "creatorLiquidityPercentage": 0,
+      "partnerPermanentLockedLiquidityPercentage": 50,
+      "creatorPermanentLockedLiquidityPercentage": 50
+    },
+    "lockedVesting": {
+      "totalLockedVestingAmount": 100000000,
+      "numberOfVestingPeriod": 30,
+      "cliffUnlockAmount": 10000000,
+      "totalVestingDuration": 2592000,
+      "cliffDurationFromMigrationTime": 3600
+    },
+    "activationType": 1,
+    "leftoverReceiver": "4re4BQy2z4BXFuGxV2bJAZA8ed67F4pKXVNb3vnaEMLV",
+    "feeClaimer": "4re4BQy2z4BXFuGxV2bJAZA8ed67F4pKXVNb3vnaEMLV",
+    "buildCurveMode": 0,
+    "percentageSupplyOnMigration": 20,
+    "migrationQuoteThreshold": 10,
+    "fee": {
+      "baseFeeParams": {
+        "baseFeeMode": 1,
+        "feeSchedulerParam": {
+          "startingFeeBps": 5000,
+          "endingFeeBps": 100,
+          "numberOfPeriod": 60,
+          "totalDuration": 120
+        }
+      },
+      "dynamicFeeEnabled": true,
+      "collectFeeMode": 0,
+      "creatorTradingFeePercentage": 50,
+      "poolCreationFee": 0.02,
+      "enableFirstSwapWithMinFee": true
+    }
+  }
+}

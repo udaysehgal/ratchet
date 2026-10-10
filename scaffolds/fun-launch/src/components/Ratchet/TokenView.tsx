@@ -3,7 +3,13 @@ import { useWallet } from '@jup-ag/wallet-adapter';
 import { PRESETS } from '@/presets';
 import { Button } from '@/components/ui/button';
 import { useLaunch, useRatchetTx, type LaunchDetail } from '@/hooks/useRatchet';
-import { explorerUrl, formatPercent, formatSol, formatTokens } from '@/lib/format/ratchet';
+import {
+  explorerUrl,
+  formatDuration,
+  formatPercent,
+  formatSol,
+  formatTokens,
+} from '@/lib/format/ratchet';
 import { ProgressBar } from './ProgressBar';
 
 const inputClassName =
@@ -249,7 +255,7 @@ function UnlocksCard({ launch }: { launch: LaunchDetail }) {
               <Stat label="Claimable now" value={formatTokens(vesting.claimable)} />
               <Stat
                 label="Schedule"
-                value={`${vesting.periods} × every ${Math.round(vesting.frequency / 60)} min`}
+                value={`${vesting.periods} × every ${formatDuration(vesting.frequency)}`}
               />
             </div>
           )}

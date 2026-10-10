@@ -20,3 +20,10 @@ export function explorerUrl(address: string, kind: 'address' | 'tx' = 'address')
   const cluster = process.env.NEXT_PUBLIC_NETWORK === 'mainnet' ? '' : '?cluster=devnet';
   return `https://solscan.io/${kind === 'tx' ? 'tx' : 'account'}/${address}${cluster}`;
 }
+
+export function formatDuration(seconds: number): string {
+  if (seconds % 86400 === 0) return seconds === 86400 ? 'day' : `${seconds / 86400} days`;
+  if (seconds % 3600 === 0) return seconds === 3600 ? 'hour' : `${seconds / 3600} hours`;
+  if (seconds % 60 === 0) return seconds === 60 ? 'min' : `${seconds / 60} min`;
+  return `${seconds}s`;
+}
