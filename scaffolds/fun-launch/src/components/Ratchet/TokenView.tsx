@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { useWallet } from '@jup-ag/wallet-adapter';
 import { PRESETS } from '@/presets';
 import { Button } from '@/components/ui/button';
-import { useLaunch, useRatchetTx, type LaunchDetail } from '@/hooks/useRatchet';
+import { useEarnings, useLaunch, useRatchetTx, type LaunchDetail } from '@/hooks/useRatchet';
+import { EarningRow } from './EarningRow';
 import {
   explorerUrl,
   formatDuration,
@@ -56,21 +57,15 @@ function TradeCard({ launch }: { launch: LaunchDetail }) {
   const [side, setSide] = useState<'buy' | 'sell'>('buy');
   const [amount, setAmount] = useState('');
 
-  if (launch.migrated) {
-    return (
-      <Card title="Trade">
-        <p className="text-sm text-neutral-400">
-          This token graduated. It now trades on its Meteora DAMM v2 pool, where 100% of LP is
-          permanently locked and fees compound into liquidity.
-        </p>
-        <ChainLink label="DAMM v2 pool" address={launch.dammV2Pool} />
-      </Card>
-    );
-  }
-
   const value = Number(amount);
   return (
-    <Card title="Trade on the curve">
+    <Card title={launch.migrated ? 'Trade on DAMM v2' : 'Trade on the curve'}>
+      {launch.migrated && (
+        <p className="text-sm text-neutral-400">
+          Graduated: trades route to the Meteora DAMM v2 pool, where 100% of LP is permanently
+          locked and half of all fees compound into liquidity.
+        </p>
+      )}
       <div className="grid grid-cols-2 gap-2" role="tablist">
         {(['buy', 'sell'] as const).map((s) => (
           <button
@@ -99,7 +94,7 @@ function TradeCard({ launch }: { launch: LaunchDetail }) {
           onChange={(e) => setAmount(e.target.value)}
         />
       </label>
-      {side === 'buy' && (
+      {side === 'buy' && !launch.migrated && (
         <p className="text-xs text-neutral-500">
           Buys fill up to the graduation threshold and refund the rest.
         </p>
@@ -270,6 +265,18 @@ function UnlocksCard({ launch }: { launch: LaunchDetail }) {
   );
 }
 
+function FeesCard({ launch }: { launch: LaunchDetail }) {
+  const { publicKey } = useWallet();
+  const { data } = useEarnings(publicKey?.toBase58());
+  const earning = data?.find((e) => e.baseMint === launch.baseMint);
+  if (!earning) return null;
+  return (
+    <Card title="Fees">
+      <EarningRow earning={earning} showToken={false} />
+    </Card>
+  );
+}
+
 export function TokenView({ mint }: { mint: string }) {
   const { data: launch, isLoading, error } = useLaunch(mint);
 
@@ -317,7 +324,10 @@ export function TokenView({ mint }: { mint: string }) {
       </Card>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <UnlocksCard launch={launch} />
+        <div className="flex flex-col gap-4">
+          <UnlocksCard launch={launch} />
+          <FeesCard launch={launch} />
+        </div>
         <TradeCard launch={launch} />
       </div>
     </div>

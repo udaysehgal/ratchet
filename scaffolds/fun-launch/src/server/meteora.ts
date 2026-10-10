@@ -22,7 +22,15 @@ import {
   type PoolConfig,
   type VirtualPool,
 } from '@meteora-ag/dynamic-bonding-curve-sdk';
-import { CpAmm, getPriceFromSqrtPrice as getDammV2Price } from '@meteora-ag/cp-amm-sdk';
+import {
+  CpAmm,
+  SwapMode as DammSwapMode,
+  getCurrentPoint as getDammCurrentPoint,
+  getPriceFromSqrtPrice as getDammV2Price,
+  getTokenProgram as getDammTokenProgram,
+  getUnClaimLpFee,
+  type PoolState as DammPoolState,
+} from '@meteora-ag/cp-amm-sdk';
 import DLMM, {
   LBCLMM_PROGRAM_IDS,
   deriveCustomizablePermissionlessLbPair,
@@ -216,7 +224,6 @@ function dlmmPairAddress(baseMint: PublicKey, quoteMint: PublicKey) {
 async function getLadder(
   pair: PublicKey,
   owner: PublicKey,
-  baseDecimals: number,
   graduationPrice: number
 ): Promise<LadderRung[]> {
   const dlmm = await DLMM.create(connection, pair, { cluster: DLMM_CLUSTER });
@@ -276,7 +283,7 @@ export async function getLaunch(baseMint: PublicKey): Promise<LaunchDetail | nul
   const pair = dlmmPairAddress(baseMint, config.quoteMint);
   const pairExists = (await connection.getAccountInfo(pair)) !== null;
   const ladder = pairExists
-    ? await getLadder(pair, state.creator, baseDecimals, graduationPrice)
+    ? await getLadder(pair, state.creator, graduationPrice)
     : [];
 
   return {
@@ -455,4 +462,255 @@ export async function buildLadderTx(params: {
     description: 'place unlock ladder on DLMM',
     limitOrder: limitOrder.publicKey.toBase58(),
   };
+}
+
+// ---------- DAMM v2 trading (after graduation) ----------
+
+async function getDammPoolForMint(baseMint: PublicKey, quoteMint: PublicKey) {
+  const pools = await cpAmm.fetchPoolStatesByTokenAMint(baseMint);
+  const match = pools.find((p) => p.account.tokenBMint.equals(quoteMint));
+  if (!match) throw new Error('DAMM v2 pool not found');
+  return match;
+}
+
+/** Swap on the token's graduated DAMM v2 pool (token A = launched token, token B = SOL). */
+export async function buildDammSwapTx(params: {
+  baseMint: PublicKey;
+  user: PublicKey;
+  side: 'buy' | 'sell';
+  amount: number; // SOL for buy, tokens for sell
+  slippageBps: number;
+}): Promise<BuiltTx> {
+  const pool = await dbc.state.getPoolByBaseMint(params.baseMint);
+  if (!pool) throw new Error('Pool not found');
+  if (pool.account.poolState.isMigrated !== 1) throw new Error('Token is still on the curve');
+  const config = await dbc.state.getPoolConfig(pool.account.poolState.config);
+  const damm = await getDammPoolForMint(params.baseMint, config.quoteMint);
+  const state: DammPoolState = damm.account;
+
+  const selling = params.side === 'sell';
+  const inputMint = selling ? state.tokenAMint : state.tokenBMint;
+  const outputMint = selling ? state.tokenBMint : state.tokenAMint;
+  const inDecimals = selling ? config.tokenDecimal : QUOTE_DECIMALS;
+  const amountIn = new BN(Math.floor(params.amount * 10 ** inDecimals).toString());
+
+  const quote = cpAmm.getQuote2({
+    inputTokenMint: inputMint,
+    slippage: params.slippageBps,
+    currentPoint: await getDammCurrentPoint(connection, state.activationType),
+    poolState: state,
+    tokenADecimal: config.tokenDecimal,
+    tokenBDecimal: QUOTE_DECIMALS,
+    hasReferral: false,
+    swapMode: DammSwapMode.ExactIn,
+    amountIn,
+  });
+
+  const tx = await cpAmm.swap2({
+    payer: params.user,
+    pool: damm.publicKey,
+    inputTokenMint: inputMint,
+    outputTokenMint: outputMint,
+    tokenAMint: state.tokenAMint,
+    tokenBMint: state.tokenBMint,
+    tokenAVault: state.tokenAVault,
+    tokenBVault: state.tokenBVault,
+    tokenAProgram: getDammTokenProgram(state.tokenAFlag),
+    tokenBProgram: getDammTokenProgram(state.tokenBFlag),
+    referralTokenAccount: null,
+    poolState: state,
+    swapMode: DammSwapMode.ExactIn,
+    amountIn,
+    minimumAmountOut: quote.minimumAmountOut ?? new BN(0),
+  });
+  return { tx: await finalize(tx, params.user), description: `${params.side} on DAMM v2` };
+}
+
+// ---------- earnings: creator + partner fees across DBC and DAMM v2 ----------
+
+const PARTNER_CREATION_FEE_CLAIMED_MASK = 0b10; // virtual_pool.rs
+const PROTOCOL_POOL_CREATION_FEE_PERCENT = 10;
+
+export type Earning = {
+  baseMint: string;
+  symbol: string;
+  pool: string;
+  roles: ('creator' | 'partner')[];
+  dbcQuote: number; // SOL of unclaimed DBC trading fees for this wallet's roles
+  dbcBase: number; // tokens
+  creationFee: number; // SOL, partner share of the launch fee, if unclaimed
+  dammQuote: number; // SOL of unclaimed DAMM v2 LP fees on this wallet's positions
+  dammBase: number; // tokens
+};
+
+async function getUserDammPositions(user: PublicKey) {
+  const positions = await cpAmm.getPositionsByUser(user);
+  const byPool = new Map<string, typeof positions>();
+  for (const p of positions) {
+    const key = p.positionState.pool.toBase58();
+    byPool.set(key, [...(byPool.get(key) ?? []), p]);
+  }
+  return byPool;
+}
+
+/** Everything `user` can claim on Ratchet launches, as creator and/or partner (fee claimer). */
+export async function getEarnings(user: PublicKey): Promise<Earning[]> {
+  const configs = getAllPresetConfigs();
+  const configStates = await Promise.all(configs.map((c) => dbc.state.getPoolConfig(c)));
+  const pools = (
+    await Promise.all(
+      configs.map(async (c, i) =>
+        (await dbc.state.getPoolsByConfig(c)).map((p) => ({ ...p, config: configStates[i]! }))
+      )
+    )
+  ).flat();
+
+  const mine = pools.filter(
+    (p) => p.account.poolState.creator.equals(user) || p.config.feeClaimer.equals(user)
+  );
+  if (mine.length === 0) return [];
+
+  const [metas, positionsByPool] = await Promise.all([
+    getTokenMetas(mine.map((p) => p.account.poolState.baseMint)),
+    getUserDammPositions(user),
+  ]);
+
+  const earnings: Earning[] = [];
+  for (const p of mine) {
+    const state = p.account.poolState;
+    const isCreator = state.creator.equals(user);
+    const isPartner = p.config.feeClaimer.equals(user);
+    const baseDecimals = p.config.tokenDecimal;
+    const toBase = (v: BN) => Number(v.toString()) / 10 ** baseDecimals;
+    const toQuote = (v: BN) => Number(v.toString()) / 10 ** QUOTE_DECIMALS;
+
+    let dbcQuote = 0;
+    let dbcBase = 0;
+    if (isCreator) {
+      dbcQuote += toQuote(state.creatorQuoteFee);
+      dbcBase += toBase(state.creatorBaseFee);
+    }
+    if (isPartner) {
+      dbcQuote += toQuote(state.partnerQuoteFee);
+      dbcBase += toBase(state.partnerBaseFee);
+    }
+
+    let creationFee = 0;
+    if (isPartner && (state.creationFeeBits & PARTNER_CREATION_FEE_CLAIMED_MASK) === 0) {
+      const fee = Number(p.config.poolCreationFee.toString());
+      creationFee = (fee - Math.floor((fee * PROTOCOL_POOL_CREATION_FEE_PERCENT) / 100)) / 1e9;
+    }
+
+    let dammQuote = 0;
+    let dammBase = 0;
+    if (state.isMigrated === 1) {
+      try {
+        const damm = await getDammPoolForMint(state.baseMint, p.config.quoteMint);
+        for (const pos of positionsByPool.get(damm.publicKey.toBase58()) ?? []) {
+          const fee = getUnClaimLpFee(damm.account, pos.positionState);
+          dammBase += toBase(fee.feeTokenA);
+          dammQuote += toQuote(fee.feeTokenB);
+        }
+      } catch {
+        // migrated but DAMM v2 pool not indexed yet
+      }
+    }
+
+    earnings.push({
+      baseMint: state.baseMint.toBase58(),
+      symbol: metas.get(state.baseMint.toBase58())?.symbol ?? '???',
+      pool: p.publicKey.toBase58(),
+      roles: [...(isCreator ? ['creator' as const] : []), ...(isPartner ? ['partner' as const] : [])],
+      dbcQuote,
+      dbcBase,
+      creationFee,
+      dammQuote,
+      dammBase,
+    });
+  }
+  return earnings;
+}
+
+/** One transaction claiming everything `user` is owed on one launch. */
+export async function buildClaimFeesTx(baseMint: PublicKey, user: PublicKey): Promise<BuiltTx> {
+  const pool = await dbc.state.getPoolByBaseMint(baseMint);
+  if (!pool) throw new Error('Pool not found');
+  const state = pool.account.poolState;
+  const config = await dbc.state.getPoolConfig(state.config);
+  const isCreator = state.creator.equals(user);
+  const isPartner = config.feeClaimer.equals(user);
+  if (!isCreator && !isPartner) throw new Error('Nothing to claim for this wallet');
+
+  const U64_MAX = new BN('18446744073709551615');
+  const tx = new Transaction();
+  const parts: string[] = [];
+
+  if (isCreator && (!state.creatorQuoteFee.isZero() || !state.creatorBaseFee.isZero())) {
+    tx.add(
+      ...(
+        await dbc.creator.claimCreatorTradingFee({
+          creator: user,
+          payer: user,
+          pool: pool.publicKey,
+          maxBaseAmount: U64_MAX,
+          maxQuoteAmount: U64_MAX,
+        })
+      ).instructions
+    );
+    parts.push('creator DBC fees');
+  }
+  if (isPartner && (!state.partnerQuoteFee.isZero() || !state.partnerBaseFee.isZero())) {
+    tx.add(
+      ...(
+        await dbc.partner.claimPartnerTradingFee({
+          feeClaimer: user,
+          payer: user,
+          pool: pool.publicKey,
+          maxBaseAmount: U64_MAX,
+          maxQuoteAmount: U64_MAX,
+        })
+      ).instructions
+    );
+    parts.push('partner DBC fees');
+  }
+  if (
+    isPartner &&
+    !config.poolCreationFee.isZero() &&
+    (state.creationFeeBits & PARTNER_CREATION_FEE_CLAIMED_MASK) === 0
+  ) {
+    tx.add(
+      ...(await dbc.partner.claimPartnerPoolCreationFee({ pool: pool.publicKey, feeReceiver: user }))
+        .instructions
+    );
+    parts.push('launch fee');
+  }
+  if (state.isMigrated === 1) {
+    const damm = await getDammPoolForMint(baseMint, config.quoteMint);
+    const positions = await cpAmm.getUserPositionByPool(damm.publicKey, user);
+    for (const pos of positions) {
+      const fee = getUnClaimLpFee(damm.account, pos.positionState);
+      if (fee.feeTokenA.isZero() && fee.feeTokenB.isZero()) continue;
+      tx.add(
+        ...(
+          await cpAmm.claimPositionFee2({
+            owner: user,
+            receiver: user,
+            position: pos.position,
+            pool: damm.publicKey,
+            positionNftAccount: pos.positionNftAccount,
+            tokenAMint: damm.account.tokenAMint,
+            tokenBMint: damm.account.tokenBMint,
+            tokenAVault: damm.account.tokenAVault,
+            tokenBVault: damm.account.tokenBVault,
+            tokenAProgram: getDammTokenProgram(damm.account.tokenAFlag),
+            tokenBProgram: getDammTokenProgram(damm.account.tokenBFlag),
+          })
+        ).instructions
+      );
+      parts.push('DAMM v2 LP fees');
+    }
+  }
+
+  if (parts.length === 0) throw new Error('Nothing to claim yet');
+  return { tx: await finalize(tx, user), description: `claim ${[...new Set(parts)].join(', ')}` };
 }

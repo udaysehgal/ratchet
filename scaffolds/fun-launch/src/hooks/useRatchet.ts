@@ -3,9 +3,9 @@ import { Transaction } from '@solana/web3.js';
 import { useWallet } from '@jup-ag/wallet-adapter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import type { LaunchDetail, LaunchSummary } from '@/server/meteora';
+import type { Earning, LaunchDetail, LaunchSummary } from '@/server/meteora';
 
-export type { LaunchDetail, LaunchSummary, LadderRung } from '@/server/meteora';
+export type { Earning, LaunchDetail, LaunchSummary, LadderRung } from '@/server/meteora';
 
 async function getJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, init);
@@ -29,9 +29,18 @@ export function useLaunch(mint: string | undefined) {
   );
 }
 
+export function useEarnings(user: string | undefined) {
+  return useQuery(
+    ['earnings', user],
+    () => getJson<{ earnings: Earning[] }>(`/api/earnings?user=${user}`),
+    { enabled: !!user, select: (d) => d.earnings, refetchInterval: 30_000 }
+  );
+}
+
 type TxAction =
   | { action: 'swap'; side: 'buy' | 'sell'; amount: number; slippageBps?: number }
   | { action: 'claim-vesting' }
+  | { action: 'claim-fees' }
   | { action: 'create-dlmm-pair' }
   | { action: 'ladder'; rungs: { multiple: number; amount: number }[] };
 
@@ -64,6 +73,7 @@ export function useRatchetTx(mint: string | undefined) {
         toast.success(`Done: ${description}`);
         await queryClient.invalidateQueries(['launch', mint]);
         await queryClient.invalidateQueries(['launches']);
+        await queryClient.invalidateQueries(['earnings']);
         return signature;
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'Transaction failed');
