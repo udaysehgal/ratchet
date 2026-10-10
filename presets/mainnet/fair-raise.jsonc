@@ -41,8 +41,8 @@
       "cliffDurationFromMigrationTime": 3600
     },
     "activationType": 1,
-    "leftoverReceiver": "4re4BQy2z4BXFuGxV2bJAZA8ed67F4pKXVNb3vnaEMLV",
-    "feeClaimer": "4re4BQy2z4BXFuGxV2bJAZA8ed67F4pKXVNb3vnaEMLV",
+    "leftoverReceiver": "5mjWGA1zJbeLnjBhpwAodCP5AXkdhvpebjnmCxcSsyBi",
+    "feeClaimer": "5mjWGA1zJbeLnjBhpwAodCP5AXkdhvpebjnmCxcSsyBi",
     "buildCurveMode": 5,
     "prices": [
       2.15e-08,

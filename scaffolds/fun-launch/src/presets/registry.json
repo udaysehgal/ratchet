@@ -9,5 +9,14 @@
       "file": "presets/devnet/fair-raise.jsonc"
     }
   },
-  "mainnet": {}
+  "mainnet": {
+    "anti-sniper": {
+      "config": "6tMtkfHkvvSVsCSpXbcCqVCAJYEg7SJQkDmvYH2urYh9",
+      "file": "presets/mainnet/anti-sniper.jsonc"
+    },
+    "fair-raise": {
+      "config": "Ery2mGuMQ27iV3wCqCd7Ne45XkRCV6fSf2s1j87WwwBW",
+      "file": "presets/mainnet/fair-raise.jsonc"
+    }
+  }
 }
