@@ -1,689 +1,131 @@
-# Meteora Invent
+# Ratchet
 
-A toolkit consisting of everything you need to invent innovative token launches on Meteora.
+**A Meteora launchpad where team unlocks only sell into strength.**
 
-## 📋 Table of Contents
+Live on Solana mainnet: **https://ratchet-olive.vercel.app**
 
-- [🚀 Getting Started](#-getting-started)
-- [📦 Workspaces](#-workspaces)
-  - [Studio](#studio-meteora-inventstudio)
-  - [Scaffolds](#scaffolds)
-- [🤖 Agent Skill](#-agent-skill)
-- [🏗️ Structure](#%EF%B8%8F-structure)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
+Every Ratchet token:
 
-## 🚀 Getting Started
+1. **Launches on a Meteora DBC bonding curve** from a preset config (anti-sniper or fair raise).
+2. **Graduates into a Meteora DAMM v2 pool** with 100% of LP permanently locked and half of all
+   trading fees compounding back into liquidity.
+3. **Commits its team allocation as Meteora DLMM limit orders** above the graduation price. The
+   team's tokens vest from DBC's locker, and Ratchet only lets them be placed as sell orders at
+   1.25× the graduation price or higher, laddered upward. Holders can see the whole ladder
+   on the token page.
 
-### Prerequisites
-
-- Node.js >= 22.12.0
-- pnpm >= 10.0.0
-
-### Clone the repository
-
-```bash
-git clone https://github.com/MeteoraAg/meteora-invent.git
-```
-
-### Installation
-
-```bash
-# Install pnpm if you haven't already
-npm install -g pnpm
-
-# Install all dependencies
-pnpm install
-```
-
-## 📦 Workspaces
+Team unlocks are the classic way launches die: a cliff hits and the team market-sells. Ratchet
+turns every unlock into resting sell orders above the price people paid at graduation. If
+the team sells, it sells into strength.
 
 ---
 
-### Studio (`@meteora-invent/studio`)
+## Meteora integration
+
+Every on-chain action in Ratchet goes through a Meteora program. The server layer is one file,
+[`scaffolds/fun-launch/src/server/meteora.ts`](scaffolds/fun-launch/src/server/meteora.ts).
+
+| Program / SDK | What Ratchet uses it for | Calls |
+|---|---|---|
+| **DBC** (`@meteora-ag/dynamic-bonding-curve-sdk`) | Preset configs, launches, curve trading, fee claims, vesting locker, preset previews | `partner.createConfig` (via Invent studio), `creator.createPool`, `pool.swap2` (PartialFill buys so the last buyer can't overshoot graduation) + `pool.swapQuote2`, `creator.claimCreatorTradingFee`, `partner.claimPartnerTradingFee`, `partner.claimPartnerPoolCreationFee`, `state.getPoolsByConfig`, `state.getPoolByBaseMint`, `state.getPoolConfig`, `deriveEscrow(deriveBaseKeyForLocker(pool))`, `getDeltaAmountQuoteUnsigned` (curve preview) |
+| **DAMM v2** (`@meteora-ag/cp-amm-sdk`) | Post-graduation trading and locked-LP fee claims | `fetchPoolStatesByTokenAMint`, `getQuote2` + `swap2`, `getPositionsByUser`, `getUserPositionByPool`, `getUnClaimLpFee`, `claimPositionFee2` |
+| **DLMM** (`@meteora-ag/dlmm`) | The unlock ladder | `createCustomizablePermissionlessLbPair2` (limit-order function type), `placeLimitOrder` (ask side, one order per ladder), `getLimitOrderByUserAndLbPair`, `getBinIdFromPrice`, `getPriceOfBinByBinId` |
+| **Met Lock** (`@meteora-ag/met-lock-sdk`) | Team vesting escrow created by DBC at migration | `getEscrow`, `claimV2` |
+| **Invent studio** (`studio/`) | Creating and rehearsing presets on devnet and mainnet | `dbc-create-config`, `dbc-create-pool`, `dbc-swap`, `dbc-migrate-to-damm-v2`, `dlmm-create-pool`, `dlmm-place-limit-order`, `lock-claim` |
+| **fun-launch scaffold** | Frontend base (heavily rewritten; Jupiter data stream removed) | |
+
+### DBC preset configuration (mainnet)
+
+| | Anti-sniper | Fair raise |
+|---|---|---|
+| Config | [`6tMtkf…YhH9`](https://solscan.io/account/6tMtkfHkvvSVsCSpXbcCqVCAJYEg7SJQkDmvYH2urYh9) | [`Ery2mG…wwBW`](https://solscan.io/account/Ery2mGuMQ27iV3wCqCd7Ne45XkRCV6fSf2s1j87WwwBW) |
+| Curve | `buildCurve`, 20% supply to migration | `buildCurveWithCustomSqrtPrices`, price moves 5% start → graduation |
+| Graduation | 10 SOL | ~10 SOL |
+| Market cap | ~4 → 50 SOL | ~21.5 → 22.6 SOL |
+| Base fee | exponential fee scheduler, 50% → 1% over 2 min | 1% flat |
+| Dynamic fee | on | off |
+| Pool creation fee | 0.02 SOL (90% partner) | 0.02 SOL (90% partner) |
+| Curve fee split | 50% creator / 50% partner | 50% creator / 50% partner |
+| Team allocation | 10% via DBC locked vesting: 1% at 1 h after graduation, 9% daily over 30 days | same |
+| Migration | DAMM v2, customizable fee: 1% pool fee, dynamic fee, **compounding** (50% of fees back into liquidity) | same |
+| LP | 100% permanently locked (50% creator / 50% partner) | same |
+
+Preset sources: [`presets/mainnet/`](presets/mainnet), built with the Invent studio CLI.
 
 ---
 
-The studio workspace contains all the actions for interacting with Meteora's programs.
+## How a launch flows
 
-#### Setup
-
-1. Copy the `.env.example` file to `.env` and configure the environment variables.
-
-```bash
-cp studio/.env.example studio/.env
+```
+creator ──createPool──▶ DBC pool (preset config)
+traders ──swap2──────▶ curve fills to migration threshold
+        ──migrate────▶ DAMM v2 pool (LP locked, fees compound) + Met Lock vesting escrow
+creator ──claimV2────▶ vested team tokens
+        ──createCustomizablePermissionlessLbPair2──▶ DLMM pair (limit-order type)
+        ──placeLimitOrder (asks ≥ 1.25× graduation price)──▶ public unlock ladder
+traders ──swap2──────▶ DAMM v2; DLMM asks fill only if price rises to them
+creator/partner ──claim fees──▶ DBC creator/partner fees + launch fee + locked-LP fees (one tx)
 ```
 
-2. (Optional) Start a Local Test Validator
+### Trust model
 
-_You can also run the studio actions on localnet - http://localhost:8899 with the following command_
+Today the ladder is a **public commitment enforced by Ratchet's API**: the server refuses to
+build ladder orders below 1.25× the graduation price, and every order is visible on-chain
+and on the token page. The creator's wallet owns the orders, so it could cancel them directly.
 
-```bash
-pnpm studio start-test-validator
-```
+The next version makes this binding. Verified against the DBC and DLMM programs:
 
-3. Generate a keypair from your private key:
-
-```bash
-pnpm studio generate-keypair
-
-# For devnet (airdrops 5 SOL)
-pnpm studio generate-keypair --network devnet --airdrop
-
-# For localnet (airdrops 5 SOL)
-# Ensure that you have already started the local validator with pnpm start-test-validator
-pnpm studio generate-keypair --network localnet --airdrop
-```
-
-4. Configure the config files in the `studio/config` directory.
-
-- Configure [DLMM](./studio/config/dlmm_config.jsonc)
-- Configure [DAMM v2](./studio/config/damm_v2_config.jsonc)
-- Configure [DAMM v1](./studio/config/damm_v1_config.jsonc)
-- Configure [DBC](./studio/config/dbc_config.jsonc)
-- Configure [Alpha Vault](./studio/config/alpha_vault_config.jsonc)
-- Configure [Dynamic Vault](./studio/config/dynamic_vault_config.jsonc)
-- Configure [Pool Farms](./studio/config/farming_config.jsonc)
-- Configure [Fee Sharing](./studio/config/fee_sharing_config.jsonc)
-- Configure [Zap](./studio/config/zap_config.jsonc)
-- Configure [Met Lock](./studio/config/lock_config.jsonc)
-
-**Note:** You can use the provided example configurations as a starting point. Make sure to replace
-the placeholders with your actual values.
-
-5. (Optional) Airdrop SOL to your generated keypair if you need SOL to test on devnet or localnet:
-
-```bash
-# Airdrop 5 SOL on devnet
-pnpm studio airdrop-sol --network devnet
-
-# Airdrop 5 SOL on localnet
-# Ensure that you have already started the local validator with pnpm start-test-validator
-pnpm studio airdrop-sol --network localnet
-```
+- DBC's `transfer_pool_creator` works at any point before the curve completes. Moving the
+  creator role to a vault PDA sends the vesting escrow, creator fees and creator LP to the vault.
+- DLMM's `place_limit_order` does not require the order `owner` to sign, but
+  `cancel_limit_order` does. A vault PDA can own the ladder, and only the vault program can
+  cancel or re-place it (only upward).
 
 ---
 
-#### DLMM Actions
+## App
 
-##### Create a Customizable Permissionless DLMM Pool
+| Page | What it does |
+|---|---|
+| `/` | Launch board from chain: near graduation, live on the curve, graduated |
+| `/create-pool` | Pick a preset (live curve chart + on-chain parameters), upload a logo, launch |
+| `/token/[mint]` | Curve progress, trade (DBC curve, then DAMM v2), vesting status, the public DLMM ladder, creator unlock controls, fees |
+| `/earnings` | Everything the connected wallet can claim as creator or partner, one-click claims |
 
-Configure `dlmmConfig` in `dlmm_config.jsonc` file and run the following command to create the DLMM
-pool.
+### Public graduation feed
 
-_If you don't have a base mint, you can configure `createBaseToken` in the config file and run the
-following command._
-
-```bash
-pnpm studio dlmm-create-pool
+```
+GET https://ratchet-olive.vercel.app/api/feed?minProgress=0.8&status=live
 ```
 
-_If you already have a base mint created, you can provide it via the CLI with a `--baseMint` flag
-and run the following command._
-
-```bash
-pnpm studio dlmm-create-pool --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
-##### Seed Liquidity (LFG)
-
-Configure `lfgSeedLiquidity` in `dlmm_config.jsonc` file and run the following command to seed the
-liquidity in the already deployed DLMM pool.
-
-**Note:** You need to ensure that the deployed DLMM pool is not trading yet.
-
-```bash
-pnpm studio dlmm-seed-liquidity-lfg --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
-##### Seed Liquidity (Single Bin)
-
-Configure `singleBinSeedLiquidity` in `dlmm_config.jsonc` file and run the following command to seed
-the liquidity in a single bin in the already deployed DLMM pool.
-
-**Note:** You need to ensure that the deployed DLMM pool is not trading yet.
-
-```bash
-pnpm studio dlmm-seed-liquidity-single-bin --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
-##### Set DLMM Pool Status
-
-Configure `setDlmmPoolStatus` in `dlmm_config.jsonc` file and run the following command to set the
-trading status of the DLMM pool. This command is used by the operator of the pool to either enable
-or disable trading for the DLMM pool.
-
-```bash
-pnpm studio dlmm-set-pool-status --poolAddress <YOUR_POOL_ADDRESS>
-```
-
-##### Place a Limit Order
-
-Configure `placeLimitOrder` in `dlmm_config.jsonc` file and run the following command to place a
-limit order on the DLMM pool. The order deposits into one or more bins (max 50) and fills as the
-market price crosses them.
-
-**Note:** The pool must have been created with the limit order function type
-(`concreteFunctionType: 0`, the default).
-
-```bash
-pnpm studio dlmm-place-limit-order --poolAddress <YOUR_POOL_ADDRESS>
-```
-
-##### Get Limit Orders
-
-Run the following command to list all open limit orders owned by your wallet on the DLMM pool,
-including per-bin fill status, fees earned, and withdrawable amounts.
-
-```bash
-pnpm studio dlmm-get-limit-orders --poolAddress <YOUR_POOL_ADDRESS>
-```
-
-##### Cancel a Limit Order
-
-Run the following command to cancel a limit order. Cancelling withdraws unfilled deposits, filled
-proceeds, and earned fees, then closes the order account and refunds its rent.
-
-**Note:** Omit the `--limitOrder` flag and set `cancelLimitOrder.cancelAll` to `true` in
-`dlmm_config.jsonc` to cancel every open order on the pool.
-
-```bash
-pnpm studio dlmm-cancel-limit-order --poolAddress <YOUR_POOL_ADDRESS> --limitOrder <YOUR_LIMIT_ORDER_ADDRESS>
-```
+CORS-open JSON of every Ratchet launch: mint, DBC pool and config, SOL raised, graduation
+threshold, progress, graduated flag. Built for terminals and bots that want pools about to
+migrate into DAMM v2.
 
 ---
 
-#### DAMM v2 Actions
+## Verified on devnet, end to end
 
-##### Create a Balanced Constant Product Pool
+The full lifecycle was run on devnet before going to mainnet: config → launch →
+anti-sniper fee (a buy 20 s after launch paid ~26%) → graduation → DAMM v2 migration →
+vesting claim → DLMM pair → ask ladder at 1.25× to 6× → DAMM v2 trades → one-transaction
+claim of creator fees, partner fees, launch fee and locked-LP fees.
 
-Configure `dammV2Config` in `damm_v2_config.jsonc` file and run the following command to create the
-DAMM v2 pool.
-
-_If you don't have a base mint, you can configure `createBaseToken` in the config file and run the
-following command._
-
-```bash
-pnpm studio damm-v2-create-balanced-pool
-```
-
-_If you already have a base mint, you can provide it via the CLI with a `--baseMint` flag and run
-the following command._
-
-```bash
-pnpm studio damm-v2-create-balanced-pool --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
-##### Create a One-Sided Pool
-
-Configure `dammV2Config` in `damm_v2_config.jsonc` file and run the following command to create the
-DAMM v2 one-sided pool.
-
-_If you don't have a base mint, you can configure `createBaseToken` in the config file and run the
-following command._
-
-```bash
-pnpm studio damm-v2-create-one-sided-pool
-```
-
-_If you already have a base mint, you can provide it via the CLI with a `--baseMint` flag and run
-the following command._
-
-```bash
-pnpm studio damm-v2-create-one-sided-pool --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
-##### Split Position
-
-Configure `splitPosition` in `damm_v2_config.jsonc` file and run the following command to split an
-existing position in the already deployed DAMM v2 pool.
-
-```bash
-pnpm studio damm-v2-split-position --poolAddress <YOUR_POOL_ADDRESS>
-```
-
-##### Claim Position Fee
-
-If you already have an existing position in a DAMM v2 pool with unclaimed fees, you can run the
-following command to claim the fees.
-
-```bash
-pnpm studio damm-v2-claim-position-fee --poolAddress <YOUR_POOL_ADDRESS>
-```
-
-##### Add Liquidity
-
-Configure `addLiquidity` in `damm_v2_config.jsonc` file and run the following command to add
-liquidity to an existing position in the already deployed DAMM v2 pool.
-
-```bash
-pnpm studio damm-v2-add-liquidity --poolAddress <YOUR_POOL_ADDRESS>
-```
-
-##### Remove Liquidity
-
-If you already have an existing position in a DAMM v2 pool with liquidity, you can run the following
-command to remove the liquidity and close the position.
-
-```bash
-pnpm studio damm-v2-remove-liquidity --poolAddress <YOUR_POOL_ADDRESS>
-```
-
-##### Refresh Vesting
-
-If you already have an existing position in a DAMM v2 pool with vested liquidity, you can run the
-following command to refresh the vesting of the position if the vesting of the LP has already ended.
-
-```bash
-pnpm studio damm-v2-refresh-vesting --poolAddress <YOUR_POOL_ADDRESS>
-```
-
-##### Close Position
-
-If you already have an existing position in a DAMM v2 pool without liquidity, you can run the
-following command to close the position.
-
-```bash
-pnpm studio damm-v2-close-position --poolAddress <YOUR_POOL_ADDRESS>
-```
-
----
-
-#### DAMM v1 Actions
-
-##### Create a Constant Product Pool
-
-Configure `dammV1Config` in `damm_v1_config.jsonc` file and run the following command to create the
-DAMM v1 pool.
-
-_If you don't have a base mint, you can configure `createBaseToken` in the config file and run the
-following command._
-
-```bash
-pnpm studio damm-v1-create-pool
-```
-
-_If you already have a base mint created, you can provide it via the CLI with a `--baseMint` flag
-and run the following command._
-
-```bash
-pnpm studio damm-v1-create-pool --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
-##### Lock Liquidity
-
-Configure `dammV1LockLiquidity` in `damm_v1_config.jsonc` file and run the following command to lock
-the liquidity in the already deployed DAMM v1 pool.
-
-```bash
-pnpm studio damm-v1-lock-liquidity --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
-##### Create a Stake2Earn Farm
-
-Configure `stake2EarnFarm` in `damm_v1_config.jsonc` file and run the following command to create
-the Stake2Earn farm on top of the already deployed DAMM v1 pool.
-
-```bash
-pnpm studio damm-v1-create-stake2earn-farm --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
-##### Lock Liquidity (Stake2Earn)
-
-Configure `dammV1LockLiquidity` in `damm_v1_config.jsonc` file and run the following command to lock
-the liquidity in the already deployed DAMM v1 pool with the Stake2Earn farm.
-
-```bash
-pnpm studio damm-v1-lock-liquidity-stake2earn --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
----
-
-#### DBC Actions
-
-##### Create a DBC Config
-
-Configure `dbcConfig` in `dbc_config.jsonc` file and run the following command to create the DBC
-config key. This config key is used to create the DBC pool and contains all the settings for the
-pre-graduation and post-graduation pools.
-
-**Note:** To launch Token 2022 tokens with a transfer hook, set `token.tokenType` to `1` and
-`transferHookProgram` in `dbcConfig`. The config is then created with
-`createConfigWithTransferHook` and every token launched on it executes the hook program on each
-transfer.
-
-```bash
-pnpm studio dbc-create-config
-```
-
-##### Create a DBC Pool
-
-Configure `dbcPool` in `dbc_config.jsonc` file and run the following command to create the DBC pool.
-
-**Note:** When the target config was created with a transfer hook, set
-`dbcPool.transferHookProgram` to the same hook program so the pool is created with
-`createPoolWithTransferHook`.
-
-_If you don't have a DBC config key, you can run the following command and the config key + pool
-will be created together._
-
-```bash
-pnpm studio dbc-create-pool
-```
-
-_If you already have an existing DBC config key, you can provide it via the CLI with a `--config`
-flag and run the following command._
-
-```bash
-pnpm studio dbc-create-pool --config <YOUR_DBC_CONFIG_KEY>
-```
-
-##### Claim Trading Fees
-
-If you already have an existing DBC pool with accumulated fees, you can run the following command
-with the `--baseMint` flag to claim the fees. Pools whose base mint carries a transfer hook are
-claimed through the transfer-hook-aware instructions automatically.
-
-```bash
-pnpm studio dbc-claim-trading-fee --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
-##### Migrate to DAMM v1
-
-If you already have an existing DBC pool, with `poolState.quoteReserve` >
-`poolConfig.migrationQuoteThreshold` (100% bonding curve progress), you can run the following
-command with the `--baseMint` flag to migrate the DBC pool to DAMM v1.
-
-```bash
-pnpm studio dbc-migrate-to-damm-v1 --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
-##### Migrate to DAMM v2
-
-If you already have an existing DBC pool, with `poolState.quoteReserve` >
-`poolConfig.migrationQuoteThreshold` (100% bonding curve progress), you can run the following
-command with the `--baseMint` flag to migrate the DBC pool to DAMM v2.
-
-```bash
-pnpm studio dbc-migrate-to-damm-v2 --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
-##### Swap (Buy/Sell)
-
-Configure `dbcSwap` in `dbc_config.jsonc` file and run the following command to swap in the DBC
-pool. Pools whose base mint carries a transfer hook are swapped through the transfer-hook-aware
-instruction automatically.
-
-```bash
-pnpm studio dbc-swap --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
-##### Transfer Pool Creator
-
-Configure `dbcTransferPoolCreator` in `dbc_config.jsonc` file and run the following command to
-transfer the pool creator of the DBC pool.
-
-```bash
-pnpm studio dbc-transfer-pool-creator --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
----
-
-#### Alpha Vault Actions
-
-##### Create an Alpha Vault
-
-Configure `alphaVault` in `alpha_vault_config.jsonc` file and run the following command to create
-the alpha vault with an existing DAMM v1 or DAMM v2 or DLMM pool.
-
-```bash
-pnpm studio alpha-vault-create --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
----
-
-#### Presale Vault Actions
-
-##### Create a Presale Vault
-
-Configure `presaleVault` in `presale_vault_config.jsonc` file and run the following command to
-create the presale vault for a specific base token.
-
-```bash
-pnpm studio presale-vault-create --baseMint <YOUR_BASE_MINT_ADDRESS>
-```
-
----
-
-### Scaffolds
-
----
-
-#### Fun Launch (`@meteora-invent/scaffold-fun-launch`)
-
-A Next.js application template for creating a launchpad.
-
-#### Getting Started
-
-Copy the `.env.example` file to `.env` and configure the environment variables.
-
-```bash
-cp scaffolds/fun-launch/.env.example scaffolds/fun-launch/.env
-```
-
-#### Install Dependencies
+## Running locally
 
 ```bash
 pnpm install
+cd scaffolds/fun-launch
+cp .env.example .env.local   # RPC_URL, NEXT_PUBLIC_NETWORK=devnet|mainnet, storage
+pnpm dev
 ```
 
-#### Running the Scaffold
+Preset tooling (Invent studio, with config-path overrides added for Ratchet):
 
 ```bash
-# Run the fun-launch scaffold in development
-pnpm --filter @meteora-invent/scaffold/fun-launch dev
-
-# Build the fun-launch scaffold
-pnpm --filter @meteora-invent/scaffold/fun-launch build
+cd studio
+DBC_CONFIG_PATH=../presets/devnet/anti-sniper.jsonc pnpm tsx src/ratchet/preview_preset.ts
+DBC_CONFIG_PATH=../presets/devnet/anti-sniper.jsonc pnpm dbc-create-config
 ```
 
-## 🤖 Agent Skill
-
-`skills/meteora` is the official [Agent Skill](https://agentskills.io) for Meteora: it
-teaches AI agents (Claude Code, OpenClaw, Hermes, Cursor, and any Agent-Skills-compatible
-runtime) how to run every studio action safely — devnet-first, dry-run-first, with explicit
-owner confirmation gates — and how to write correct TypeScript against the Meteora SDKs
-(version-pinned reference packs for DBC, DAMM v1/v2, and DLMM, plus runnable one-shot
-scripts for swaps, quotes, positions, and fee claims).
-
-**Install:**
-
-```bash
-# Claude Code (user-level) — or any runtime reading the cross-client convention path:
-cp -R skills/meteora ~/.claude/skills/meteora
-cp -R skills/meteora ~/.agents/skills/meteora
-
-# Working inside this repo with Claude Code? The skill is picked up from skills/ directly.
-```
-
-The skill is validated in CI (`.github/scripts/validate-skills.mjs`): spec-compliant
-frontmatter, no broken references, SDK version pins matched against `studio/package.json`,
-config templates synced with `studio/config`, and all bundled scripts type-checked against
-the installed SDKs.
-
-## 🏗️ Structure
-
-```
-meteora-invent/
-├── packages/          # Shared packages
-│   └── config/
-│       ├── eslint/
-│       ├── prettier/
-│       └── typescript/
-├── scaffolds/         # Scaffolds - production-ready frontend application templates
-│   └── fun-launch/
-├── skills/            # Agent Skill - teaches AI agents the Meteora stack (ACT + BUILD)
-│   ├── evals/
-│   └── meteora/
-│       ├── SKILL.md
-│       ├── references/
-│       └── scripts/
-└── studio/            # Studio - a collection of actions for you to innovate and create
-    ├── config
-    │   ├── alpha_vault_config.jsonc
-    │   ├── damm_v1_config.jsonc
-    │   ├── damm_v2_config.jsonc
-    │   ├── dbc_config.jsonc
-    │   ├── dlmm_config.jsonc
-    │   ├── dynamic_vault_config.jsonc
-    │   ├── farming_config.jsonc
-    │   ├── fee_sharing_config.jsonc
-    │   ├── lock_config.jsonc
-    │   └── zap_config.jsonc
-    ├── data
-    │   ├── image
-    │   │   └── test-token.jpg
-    │   ├── kv_proof_example.json
-    │   └── whitelist_wallet_example.csv
-    ├── package.json
-    ├── README.md
-    ├── src
-    │   ├── actions
-    │   │   ├── alpha_vault
-    │   │   │   ├── claim.ts
-    │   │   │   ├── crank_fill.ts
-    │   │   │   ├── create_alpha_vault.ts
-    │   │   │   ├── deposit.ts
-    │   │   │   ├── get_status.ts
-    │   │   │   ├── withdraw.ts
-    │   │   │   └── withdraw_remaining_quote.ts
-    │   │   ├── damm_v1
-    │   │   │   ├── create_pool.ts
-    │   │   │   ├── create_stake2earn_farm.ts
-    │   │   │   ├── lock_liquidity_stake2earn.ts
-    │   │   │   ├── lock_liquidity.ts
-    │   │   │   ├── stake2earn_cancel_unstake.ts
-    │   │   │   ├── stake2earn_claim_fee.ts
-    │   │   │   ├── stake2earn_get_status.ts
-    │   │   │   ├── stake2earn_stake.ts
-    │   │   │   ├── stake2earn_unstake.ts
-    │   │   │   └── stake2earn_withdraw.ts
-    │   │   ├── damm_v2
-    │   │   │   ├── add_liquidity.ts
-    │   │   │   ├── claim_position_fee.ts
-    │   │   │   ├── close_position.ts
-    │   │   │   ├── create_balanced_pool.ts
-    │   │   │   ├── create_one_sided_pool.ts
-    │   │   │   ├── refresh_vesting.ts
-    │   │   │   ├── remove_liquidity.ts
-    │   │   │   └── split_position.ts
-    │   │   ├── dbc
-    │   │   │   ├── claim_trading_fee.ts
-    │   │   │   ├── create_config.ts
-    │   │   │   ├── create_pool.ts
-    │   │   │   ├── migrate_damm_v1.ts
-    │   │   │   ├── migrate_damm_v2.ts
-    │   │   │   ├── swap.ts
-    │   │   │   └── transfer_pool_creator.ts
-    │   │   ├── dlmm
-    │   │   │   ├── create_pool.ts
-    │   │   │   ├── seed_liquidity_lfg.ts
-    │   │   │   ├── seed_liquidity_single_bin.ts
-    │   │   │   └── set_pool_status.ts
-    │   │   ├── dynamic_vault
-    │   │   │   ├── deposit.ts
-    │   │   │   ├── get_status.ts
-    │   │   │   └── withdraw.ts
-    │   │   ├── farming
-    │   │   │   ├── claim.ts
-    │   │   │   ├── get_status.ts
-    │   │   │   ├── stake.ts
-    │   │   │   └── unstake.ts
-    │   │   ├── fee_sharing
-    │   │   │   ├── claim.ts
-    │   │   │   ├── create_vault.ts
-    │   │   │   ├── fund.ts
-    │   │   │   ├── fund_from_damm_v2.ts
-    │   │   │   ├── fund_from_dbc.ts
-    │   │   │   └── get_status.ts
-    │   │   ├── lock
-    │   │   │   ├── claim.ts
-    │   │   │   ├── create_escrow_metadata.ts
-    │   │   │   ├── create_vesting_escrow.ts
-    │   │   │   ├── get_escrow.ts
-    │   │   │   └── list_escrows.ts
-    │   │   ├── presale_vault
-    │   │   │   ├── claim.ts
-    │   │   │   ├── create_presale_vault.ts
-    │   │   │   ├── creator_withdraw.ts
-    │   │   │   ├── deposit.ts
-    │   │   │   ├── get_status.ts
-    │   │   │   ├── handle_unsold.ts
-    │   │   │   ├── withdraw.ts
-    │   │   │   └── withdraw_remaining_quote.ts
-    │   │   ├── settings
-    │   │   │   ├── airdrop_sol.ts
-    │   │   │   └── generate_keypair.ts
-    │   │   └── zap
-    │   │       ├── zap_in_damm_v2.ts
-    │   │       └── zap_out.ts
-    │   ├── helpers
-    │   │   ├── accounts.ts
-    │   │   ├── cli.ts
-    │   │   ├── common.ts
-    │   │   ├── config.ts
-    │   │   ├── index.ts
-    │   │   ├── metadata.ts
-    │   │   ├── token.ts
-    │   │   ├── transaction.ts
-    │   │   ├── utils.ts
-    │   │   └── validation.ts
-    │   ├── lib
-    │   │   ├── alpha_vault
-    │   │   │   ├── merkle_tree
-    │   │   │   │   ├── balance_tree.ts
-    │   │   │   │   ├── index.ts
-    │   │   │   │   └── merkle_tree.ts
-    │   │   │   │   └── metadata.ts
-    │   │   │   ├── index.ts
-    │   │   │   └── utils.ts
-    │   │   ├── damm_v1
-    │   │   │   ├── index.ts
-    │   │   │   └── stake2earn.ts
-    │   │   ├── damm_v2
-    │   │   │   └── index.ts
-    │   │   ├── dbc
-    │   │   │   └── index.ts
-    │   │   └── dlmm
-    │   │       └── index.ts
-    │   ├── tests
-    │   │   ├── artifacts
-    │   │   │   ├── accounts
-    │   │   │   │   └── 3ifhD4Ywaa8aBZAaQSqYgN4Q1kaFArioLU8uumJMaqkE.json
-    │   │   │   ├── alpha_vault.so
-    │   │   │   ├── cp_amm.so
-    │   │   │   ├── dynamic_amm.so
-    │   │   │   ├── dynamic_bonding_curve.so
-    │   │   │   ├── dynamic_fee_sharing.so
-    │   │   │   ├── dynamic_vault.so
-    │   │   │   ├── lb_clmm.so
-    │   │   │   ├── locker.so
-    │   │   │   └── metaplex.so
-    │   │   └── keys
-    │   │       └── localnet
-    │   │           └── admin-bossj3JvwiNK7pvjr149DqdtJxf2gdygbcmEPTkb2F1.json
-    │   └── utils
-    │       ├── constants.ts
-    │       └── types.ts
-```
-
-## 🤝 Contributing
-
-1. Create a feature branch
-2. Make your changes
-3. Run `pnpm format` and `pnpm lint`
-4. Submit a pull request
-
-## 📄 License
-
-ISC
+Built on [Meteora Invent](README.meteora-invent.md).
