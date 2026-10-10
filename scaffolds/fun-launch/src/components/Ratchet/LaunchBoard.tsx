@@ -91,7 +91,7 @@ export function LaunchBoard() {
       </div>
       <Section
         title="Near graduation"
-        hint={`${formatPercent(NEAR_GRADUATION)}+ of the way to migrating into DAMM v2.`}
+        hint={`${Math.round(NEAR_GRADUATION * 100)}%+ of the way to migrating into DAMM v2.`}
         launches={near}
       />
       <Section title="Live on the curve" hint="Trading on the DBC bonding curve." launches={live} />
