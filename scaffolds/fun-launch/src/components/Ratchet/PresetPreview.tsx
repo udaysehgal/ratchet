@@ -5,9 +5,9 @@ import { CurveChart } from './CurveChart';
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-3 border-t border-neutral-850 py-1.5 text-sm">
-      <span className="text-neutral-400">{label}</span>
-      <span className="text-right">{value}</span>
+    <div className="flex justify-between gap-3 border-t border-neutral-850 py-2 text-sm">
+      <span className="shrink-0 text-neutral-400">{label}</span>
+      <span className="text-right font-medium">{value}</span>
     </div>
   );
 }
@@ -32,12 +32,12 @@ export function PresetPreview({ presetId }: { presetId: string }) {
       : `${p.startFeePct.toFixed(1)}% flat`;
 
   return (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+    <div className="flex flex-col gap-5">
       <CurveChart
         points={p.points}
         label="Market cap (SOL) as SOL is raised on the curve"
       />
-      <div className="flex flex-col">
+      <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
         <Row label="Raise to graduate" value={`${formatSol(p.thresholdSol, 2)} SOL`} />
         <Row
           label="Market cap: start → graduation"
@@ -55,7 +55,7 @@ export function PresetPreview({ presetId }: { presetId: string }) {
           href={`https://solscan.io/account/${p.config}${process.env.NEXT_PUBLIC_NETWORK === 'mainnet' ? '' : '?cluster=devnet'}`}
           target="_blank"
           rel="noreferrer"
-          className="mt-2 text-xs text-neutral-500 hover:text-foreground"
+          className="mt-2 text-xs text-neutral-500 hover:text-foreground sm:col-span-2"
         >
           DBC config {p.config.slice(0, 4)}…{p.config.slice(-4)} ↗
         </a>
