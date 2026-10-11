@@ -10,6 +10,7 @@ import { Keypair, Transaction } from '@solana/web3.js';
 import { useUnifiedWalletContext, useWallet } from '@jup-ag/wallet-adapter';
 import { toast } from 'sonner';
 import { clientConnection } from '@/lib/clientConnection';
+import { confirmSignature, withFreshBlockhash } from '@/lib/walletTx';
 import { PRESETS, type PresetId } from '@/presets';
 import { PresetPreview } from '@/components/Ratchet/PresetPreview';
 
@@ -98,22 +99,14 @@ export default function CreatePool() {
         }
 
         const { poolTx } = await uploadResponse.json();
-        const transaction = Transaction.from(Buffer.from(poolTx, 'base64'));
+        const transaction = await withFreshBlockhash(Transaction.from(Buffer.from(poolTx, 'base64')));
 
         // Step 2: wallet signs and submits (Phantom: signAndSendTransaction); the new mint
         // keypair co-signs. Server only confirms.
         const signature = await sendTransaction(transaction, clientConnection, {
           signers: [keyPair],
         });
-        const confirmResponse = await fetch('/api/confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ signature }),
-        });
-        const { confirmed, error: confirmError } = await confirmResponse.json();
-        if (!confirmed) {
-          throw new Error(`Launch transaction failed: ${confirmError ?? 'unknown'}`);
-        }
+        await confirmSignature(signature);
         const success = true;
         if (success) {
           toast.success('Pool created successfully');

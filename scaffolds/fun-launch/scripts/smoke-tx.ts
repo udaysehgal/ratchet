@@ -19,12 +19,15 @@ async function main() {
   tx.partialSign(kp);
   const connection = new Connection(process.env.RPC_URL ?? 'https://api.devnet.solana.com', 'confirmed');
   const signature = await connection.sendRawTransaction(tx.serialize());
-  const sent = await fetch(`${base}/api/confirm`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ signature }),
-  }).then((r) => r.json());
-  if (!sent.confirmed) throw new Error(`confirm: ${sent.error}`);
+  for (let i = 0; i < 10; i++) {
+    const r = await fetch(`${base}/api/confirm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ signature }),
+    }).then((x) => x.json());
+    if (r.status === 'confirmed') break;
+    if (r.status === 'failed') throw new Error(`confirm: ${r.error}`);
+  }
   console.log(`${built.description}: ${signature}`);
 }
 main().catch((e) => {

@@ -4,6 +4,7 @@ import { useWallet } from '@jup-ag/wallet-adapter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { clientConnection } from '@/lib/clientConnection';
+import { confirmSignature, withFreshBlockhash } from '@/lib/walletTx';
 import type { Earning, LaunchDetail, LaunchSummary } from '@/server/meteora';
 
 export type { Earning, LaunchDetail, LaunchSummary, LadderRung } from '@/server/meteora';
@@ -66,16 +67,9 @@ export function useRatchetTx(mint: string | undefined) {
           body: JSON.stringify({ ...request, mint, user: publicKey.toBase58() }),
         });
         // Wallet signs and submits (Phantom: signAndSendTransaction); server only confirms
-        const signature = await sendTransaction(
-          Transaction.from(Buffer.from(tx, 'base64')),
-          clientConnection
-        );
-        const result = await getJson<{ confirmed: boolean; error?: string }>('/api/confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ signature }),
-        });
-        if (!result.confirmed) throw new Error(`Transaction failed: ${result.error ?? 'unknown'}`);
+        const transaction = await withFreshBlockhash(Transaction.from(Buffer.from(tx, 'base64')));
+        const signature = await sendTransaction(transaction, clientConnection);
+        await confirmSignature(signature);
         toast.success(`Done: ${description}`);
         await queryClient.invalidateQueries(['launch', mint]);
         await queryClient.invalidateQueries(['launches']);
