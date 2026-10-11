@@ -2,7 +2,7 @@ import registry from './registry.json';
 
 export type Network = 'devnet' | 'mainnet';
 
-export type PresetId = 'anti-sniper' | 'fair-raise';
+export type PresetId = 'anti-sniper' | 'fair-raise' | 'micro-raise';
 
 export type Preset = {
   id: PresetId;
@@ -12,7 +12,7 @@ export type Preset = {
 };
 
 /** Display info. On-chain parameters live in /presets/<network>/<id>.jsonc (created with Invent studio). */
-export const PRESETS: Preset[] = [
+const ALL_PRESETS: Preset[] = [
   {
     id: 'anti-sniper',
     name: 'Anti-sniper',
@@ -35,10 +35,24 @@ export const PRESETS: Preset[] = [
       'Team allocation vests after graduation',
     ],
   },
+  {
+    id: 'micro-raise',
+    name: 'Micro raise',
+    tagline: 'Anti-sniper fees with a 0.25 SOL graduation, for small communities.',
+    points: [
+      'Graduates at 0.25 SOL into a compounding DAMM v2 pool',
+      'Same 50% → 1% anti-sniper fee decay',
+      '100% of LP permanently locked',
+      'Team allocation unlocks minute by minute after graduation',
+    ],
+  },
 ];
 
 export const NETWORK: Network =
   process.env.NEXT_PUBLIC_NETWORK === 'mainnet' ? 'mainnet' : 'devnet';
+
+/** Presets that have a config deployed on the current network. */
+export const PRESETS: Preset[] = ALL_PRESETS.filter((p) => getPresetConfig(p.id) !== null);
 
 export function getPresetConfig(id: string, network: Network = NETWORK): string | null {
   const entry = (registry as Record<Network, Record<string, { config: string }>>)[network]?.[id];

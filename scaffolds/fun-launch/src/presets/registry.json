@@ -17,6 +17,10 @@
     "fair-raise": {
       "config": "Ery2mGuMQ27iV3wCqCd7Ne45XkRCV6fSf2s1j87WwwBW",
       "file": "presets/mainnet/fair-raise.jsonc"
+    },
+    "micro-raise": {
+      "config": "Ycj81vP9ZX2fyK1CgfKF61vucH9jCgQvhsWLGF5D1iV",
+      "file": "presets/mainnet/micro-raise.jsonc"
     }
   }
 }

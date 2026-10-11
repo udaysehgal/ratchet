@@ -12,6 +12,7 @@ import {
 } from '@solana/web3.js';
 import BN from 'bn.js';
 import {
+  DAMM_V2_MIGRATION_FEE_ADDRESS,
   DynamicBondingCurveClient,
   SwapMode,
   deriveBaseKeyForLocker,
@@ -309,7 +310,9 @@ async function loadLaunch(baseMint: PublicKey): Promise<LaunchDetail | null> {
     }
   }
 
-  const vesting = summary.migrated ? await getVesting(pool.publicKey, baseDecimals) : null;
+  // A full curve may already have its escrow (graduation step 1)
+  const vesting =
+    summary.migrated || summary.progress >= 1 ? await getVesting(pool.publicKey, baseDecimals) : null;
 
   const pair = dlmmPairAddress(baseMint, config.quoteMint);
   const pairExists = (await connection.getAccountInfo(pair)) !== null;
@@ -330,7 +333,13 @@ async function loadLaunch(baseMint: PublicKey): Promise<LaunchDetail | null> {
 
 // ---------- transactions ----------
 
-export type BuiltTx = { tx: string; description: string };
+/**
+ * coSigners: throwaway keypairs (new limit-order / position-NFT accounts) the browser signs
+ * with after refreshing the blockhash, so slow wallet confirmations can't expire the tx.
+ */
+export type BuiltTx = { tx: string; description: string; coSigners?: string[] };
+
+const exportKeys = (keys: Keypair[]) => keys.map((k) => Buffer.from(k.secretKey).toString('base64'));
 
 async function finalize(tx: Transaction, feePayer: PublicKey, signers: Keypair[] = []) {
   const { blockhash } = await connection.getLatestBlockhash();
@@ -383,6 +392,40 @@ export async function buildSwapTx(params: {
   return {
     tx: await finalize(tx, params.user),
     description: `${params.side} on DBC curve`,
+  };
+}
+
+/**
+ * Graduate a full curve (anyone can). Step 1 creates the team vesting escrow (Met Lock) if the
+ * preset has one; step 2 migrates the pool into DAMM v2 with its LP permanently locked.
+ */
+export async function buildGraduateTx(baseMint: PublicKey, user: PublicKey): Promise<BuiltTx> {
+  const pool = await dbc.state.getPoolByBaseMint(baseMint);
+  if (!pool) throw new Error('Pool not found');
+  const state = pool.account.poolState;
+  if (state.isMigrated === 1) throw new Error('Already graduated');
+  const config = await dbc.state.getPoolConfig(state.config);
+  if (state.quoteReserve.lt(config.migrationQuoteThreshold)) {
+    throw new Error('The curve has not reached its graduation threshold yet');
+  }
+
+  if (config.lockedVestingConfig.amountPerPeriod.gt(new BN(0))) {
+    const escrow = deriveEscrow(deriveBaseKeyForLocker(pool.publicKey));
+    if (!(await connection.getAccountInfo(escrow))) {
+      const tx = await dbc.migration.createLocker({ pool: pool.publicKey, payer: user });
+      return { tx: await finalize(tx, user), description: 'create team vesting escrow (step 1 of 2)' };
+    }
+  }
+
+  const dammConfig = DAMM_V2_MIGRATION_FEE_ADDRESS[config.migrationFeeOption];
+  if (!dammConfig) throw new Error('No DAMM v2 config for this migration fee option');
+  const { transaction, firstPositionNftKeypair, secondPositionNftKeypair } =
+    await dbc.migration.migrateToDammV2({ payer: user, pool: pool.publicKey, dammConfig });
+  invalidateCache();
+  return {
+    tx: await finalize(transaction, user),
+    coSigners: exportKeys([firstPositionNftKeypair, secondPositionNftKeypair]),
+    description: 'graduate to DAMM v2',
   };
 }
 
@@ -489,7 +532,8 @@ export async function buildLadderTx(params: {
     params: { isAskSide: true, relativeBin: null, bins },
   });
   return {
-    tx: await finalize(tx, params.user, [limitOrder]),
+    tx: await finalize(tx, params.user),
+    coSigners: exportKeys([limitOrder]),
     description: 'place unlock ladder on DLMM',
     limitOrder: limitOrder.publicKey.toBase58(),
   };

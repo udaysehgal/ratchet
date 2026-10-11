@@ -4,6 +4,7 @@ import {
   buildClaimFeesTx,
   buildClaimVestingTx,
   buildDammSwapTx,
+  buildGraduateTx,
   buildCreateDlmmPairTx,
   buildLadderTx,
   buildSwapTx,
@@ -14,6 +15,7 @@ type TxRequest =
   | { action: 'swap'; mint: string; user: string; side: 'buy' | 'sell'; amount: number; slippageBps?: number }
   | { action: 'claim-vesting'; mint: string; user: string }
   | { action: 'claim-fees'; mint: string; user: string }
+  | { action: 'graduate'; mint: string; user: string }
   | { action: 'create-dlmm-pair'; mint: string; user: string }
   | { action: 'ladder'; mint: string; user: string; rungs: { multiple: number; amount: number }[] };
 
@@ -46,6 +48,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           .status(200)
           .json(launch.migrated ? await buildDammSwapTx(swap) : await buildSwapTx(swap));
       }
+      case 'graduate':
+        return res.status(200).json(await buildGraduateTx(mint, user));
       case 'claim-fees':
         return res.status(200).json(await buildClaimFeesTx(mint, user));
       case 'claim-vesting':

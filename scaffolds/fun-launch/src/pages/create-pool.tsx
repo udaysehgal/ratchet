@@ -22,7 +22,7 @@ const poolSchema = z.object({
   tokenLogo: z.instanceof(File, { message: 'Token logo is required' }).optional(),
   website: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
   twitter: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
-  presetId: z.enum(['anti-sniper', 'fair-raise']),
+  presetId: z.enum(['anti-sniper', 'fair-raise', 'micro-raise']),
 });
 
 const inputClassName =
@@ -167,7 +167,7 @@ export default function CreatePool() {
                 <Step n="01" title="Choose a launch preset" hint="Read live from the preset's on-chain DBC config.">
                   <form.Field name="presetId">
                     {(field) => (
-                      <div role="radiogroup" className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      <div role="radiogroup" className="grid grid-cols-1 gap-3 md:grid-cols-3">
                         {PRESETS.map((preset) => {
                           const selected = field.state.value === preset.id;
                           return (
@@ -361,6 +361,7 @@ export default function CreatePool() {
 const PRESET_ICONS: Record<PresetId, string> = {
   'anti-sniper': 'ph--shield-check-bold',
   'fair-raise': 'ph--scales-bold',
+  'micro-raise': 'ph--lightning-bold',
 };
 
 function Step({

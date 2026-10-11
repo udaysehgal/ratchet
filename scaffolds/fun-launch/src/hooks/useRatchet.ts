@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Transaction } from '@solana/web3.js';
+import { Keypair, Transaction } from '@solana/web3.js';
 import { useWallet } from '@jup-ag/wallet-adapter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -42,6 +42,7 @@ type TxAction =
   | { action: 'swap'; side: 'buy' | 'sell'; amount: number; slippageBps?: number }
   | { action: 'claim-vesting' }
   | { action: 'claim-fees' }
+  | { action: 'graduate' }
   | { action: 'create-dlmm-pair' }
   | { action: 'ladder'; rungs: { multiple: number; amount: number }[] };
 
@@ -60,15 +61,20 @@ export function useRatchetTx(mint: string | undefined) {
       if (!mint) return null;
       setPending(request.action);
       try {
-        const { tx, description } = await getJson<{ tx: string; description: string }>('/api/tx', {
+        const { tx, description, coSigners } = await getJson<{
+          tx: string;
+          description: string;
+          coSigners?: string[];
+        }>('/api/tx', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...request, mint, user: publicKey.toBase58() }),
         });
-        // Wallet signs and submits (Phantom: signAndSendTransaction); server only confirms
+        // Fresh blockhash, throwaway co-signers, wallet signs; submitted through our RPC proxy
         const signature = await signSubmitConfirm(
           Transaction.from(Buffer.from(tx, 'base64')),
-          signTransaction
+          signTransaction,
+          (coSigners ?? []).map((k) => Keypair.fromSecretKey(Buffer.from(k, 'base64')))
         );
         toast.success(`Done: ${description}`);
         await queryClient.invalidateQueries(['launch', mint]);

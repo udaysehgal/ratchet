@@ -20,7 +20,8 @@ const inputClassName =
 
 // Must match LADDER_MIN_MULTIPLE on the server
 const MIN_MULTIPLE = 1.25;
-const DEFAULT_MULTIPLES = [1.25, 1.5, 2, 3];
+// Kept within 1.25x-2x so the rungs share as few DLMM bin arrays (rent) as possible
+const DEFAULT_MULTIPLES = [1.25, 1.5, 2];
 
 function Card({
   title,
@@ -134,6 +135,29 @@ function TradeCard({ launch }: { launch: LaunchDetail }) {
         {pending === 'swap' ? 'Confirm in wallet…' : side === 'buy' ? 'Buy' : 'Sell'}
       </Button>
     </Card>
+  );
+}
+
+function GraduateCard({ launch }: { launch: LaunchDetail }) {
+  const { run, pending } = useRatchetTx(launch.baseMint);
+  const lockerReady = !!launch.vesting;
+  return (
+    <section className="panel panel-glow flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
+      <div>
+        <h2 className="text-lg font-semibold">The curve is full. Graduate it.</h2>
+        <p className="text-sm text-neutral-400">
+          Anyone can trigger graduation: the pool migrates into Meteora DAMM v2 with 100% of LP
+          permanently locked{lockerReady ? '.' : ', after the team vesting escrow is created.'}
+        </p>
+      </div>
+      <Button size="lg" disabled={pending !== null} onClick={() => run({ action: 'graduate' })}>
+        {pending === 'graduate'
+          ? 'Confirm in wallet…'
+          : lockerReady
+            ? 'Graduate to DAMM v2'
+            : 'Step 1: create vesting escrow'}
+      </Button>
+    </section>
   );
 }
 
@@ -390,6 +414,8 @@ export function TokenView({ mint }: { mint: string }) {
           <Stat label="Graduation price" value={formatSol(launch.graduationPrice)} />
         </div>
       </Card>
+
+      {!launch.migrated && launch.progress >= 1 && <GraduateCard launch={launch} />}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex flex-col gap-4">
