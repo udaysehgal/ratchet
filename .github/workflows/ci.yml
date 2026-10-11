@@ -26,3 +26,5 @@ jobs:
         run: pnpm --filter @meteora-invent/scaffold/fun-launch test
       - name: Build
         run: pnpm --filter @meteora-invent/scaffold/fun-launch build
+      - name: MCP server typecheck
+        run: pnpm --filter @ratchet/mcp typecheck

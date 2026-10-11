@@ -91,6 +91,28 @@ The next version makes this binding. Verified against the DBC and DLMM programs:
 | `/create-pool` | Pick a preset (live curve chart + on-chain parameters), upload a logo, launch |
 | `/token/[mint]` | Curve progress, trade (DBC curve, then DAMM v2), vesting status, the public DLMM ladder, creator unlock controls, fees |
 | `/earnings` | Everything the connected wallet can claim as creator or partner, one-click claims |
+| `/check` | Safety check for any Meteora DBC token |
+
+### Launch check (any Meteora DBC token)
+
+`/check` and `GET /api/check/<mint>` read any DBC pool's config and mint (not only Ratchet's)
+and grade it in plain language: is LP permanently locked, how much of the raise is paid out at
+graduation, can more tokens be minted or accounts frozen, does supply grow at migration, how
+big and how vested the team allocation is, and how much of the graduated pool's SOL curve
+buyers can drain by selling right after graduation (the failure we hit on mainnet, see below).
+Every Ratchet token page shows the same check. On real mainnet DBC configs it already flags
+launches that pay out 99% of the raise at graduation.
+
+### For AI agents: MCP server + Agent Skill
+
+[`packages/ratchet-mcp`](packages/ratchet-mcp) exposes Ratchet to Claude, Cursor or any MCP
+client: `list_launches`, `get_launch`, `check_token` (any DBC token), `list_presets`, and
+`build_transaction` (unsigned; the user's wallet signs). [`SKILL.md`](packages/ratchet-mcp/SKILL.md)
+tells the model when to run a check before a buy and how to present transactions.
+
+```bash
+claude mcp add ratchet -- npx tsx packages/ratchet-mcp/src/index.ts
+```
 
 ### Public graduation feed
 
@@ -147,6 +169,12 @@ didn't spend on mainnet). Token RTST1, 2026-10-10:
 | Vesting claims | [1](https://solscan.io/tx/BkJ7NpKCuR5b5YTxF48edcFXZsk5mBrxc7ZEw4dVa3wzVXLkiZWCgtBbqRySSHK9gN7V6aNTrnZuABApmsdZuMh?cluster=devnet) · [2](https://solscan.io/tx/4dHHy4UWZsQ458PHDHZKz8mKJKPZKLbj7mJCLLDCNK5iLjCPwByn94Y228wSSRPDkrxQ6BhYi38nHAvA5wiFLbhq?cluster=devnet) · [3](https://solscan.io/tx/3Dgwm8qa7TL6M3SrFSLdEfdMwhLZ3WqVYSuBvBRMYr3aXsuJ9bU4FSL8Kfp9AHQ7PXpDbG792KPwCWdPaEMNZtQV?cluster=devnet) |
 | **Unlock ladder** (DLMM asks, 1.25× → 6× graduation price) | [1](https://solscan.io/tx/4oZC6tSNPNGoPATUaVqzK3bxxaaQz1QaCZep2pZZY7sUyPwVHsEdt7zzzwis5dNobhdwRUYSYLC1Fq71BKZTbAV3?cluster=devnet) · [2](https://solscan.io/tx/2qAkRGz8sRYFKTrTJeaMov54g4GMsfYYYKg77Db3L2FwiAExqN5vMBXm55gN7NfDJeXD27Vgqx61RZeryAXzzp5B?cluster=devnet) |
 | One-tx fee claim (DBC + launch fee + locked-LP fees) | [tx](https://solscan.io/tx/2nXYN2tcqnkihyjG9wERD8Ny9iYi2n7KzfAjt6iCfJ2BDjc7gDQuXAxMR5UdFzNpY2Qjt1cxydyZ7Z5WerAx77oA?cluster=devnet) |
+
+## Tests and CI
+
+`pnpm --filter @meteora-invent/scaffold/fun-launch test` runs the unit tests (vitest) for the
+launch check, the unlock-ladder rules shared by the API and UI, and the preset registry.
+GitHub Actions runs typecheck, tests, a production build and the MCP typecheck on every push.
 
 ## Running locally
 

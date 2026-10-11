@@ -20,7 +20,13 @@ graduation price.
 - **Trade** on the curve (PartialFill buys) and on DAMM v2 after graduation, from the same box.
 - **Earnings:** one transaction claims DBC creator/partner fees, the launch fee, and locked-LP
   DAMM v2 fees.
+- **Launch check for any Meteora DBC token** (`/check`, `/api/check/<mint>`): LP lock, migration
+  fee, mint/freeze authority, supply growth, team vesting and post-graduation exit drain, read
+  from chain. Flags real mainnet configs that pay out 99% of the raise at graduation.
+- **For agents:** an MCP server (`list_launches`, `get_launch`, `check_token`, `list_presets`,
+  `build_transaction`) plus an Agent Skill.
 - **Graduation feed** (`/api/feed`) for terminals: pools by curve progress, CORS-open.
+- Unit tests (vitest) and CI (typecheck, tests, build) on every push.
 
 ## Meteora depth
 Uses DBC, DAMM v2, DLMM and Met Lock end to end, plus the Invent studio CLI and the
