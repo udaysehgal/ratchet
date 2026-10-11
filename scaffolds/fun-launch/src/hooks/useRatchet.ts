@@ -3,7 +3,7 @@ import { Transaction } from '@solana/web3.js';
 import { useWallet } from '@jup-ag/wallet-adapter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { clientConnection } from '@/lib/clientConnection';
+import { getClientConnection } from '@/lib/clientConnection';
 import { confirmSignature, withFreshBlockhash } from '@/lib/walletTx';
 import type { Earning, LaunchDetail, LaunchSummary } from '@/server/meteora';
 
@@ -68,7 +68,7 @@ export function useRatchetTx(mint: string | undefined) {
         });
         // Wallet signs and submits (Phantom: signAndSendTransaction); server only confirms
         const transaction = await withFreshBlockhash(Transaction.from(Buffer.from(tx, 'base64')));
-        const signature = await sendTransaction(transaction, clientConnection);
+        const signature = await sendTransaction(transaction, getClientConnection());
         await confirmSignature(signature);
         toast.success(`Done: ${description}`);
         await queryClient.invalidateQueries(['launch', mint]);

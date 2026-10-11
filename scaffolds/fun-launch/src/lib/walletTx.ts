@@ -1,6 +1,6 @@
 import type { Transaction } from '@solana/web3.js';
 import type { ConfirmResponse } from '@/pages/api/confirm';
-import { clientConnection } from './clientConnection';
+import { getClientConnection } from './clientConnection';
 
 /** How long to keep checking after the wallet submits; a blockhash is valid for ~60-90s. */
 const CONFIRM_TIMEOUT_MS = 90_000;
@@ -12,7 +12,7 @@ const CONFIRM_TIMEOUT_MS = 90_000;
  */
 export async function withFreshBlockhash(tx: Transaction): Promise<Transaction> {
   if (tx.signatures.some((s) => s.signature !== null)) return tx;
-  const { blockhash, lastValidBlockHeight } = await clientConnection.getLatestBlockhash('confirmed');
+  const { blockhash, lastValidBlockHeight } = await getClientConnection().getLatestBlockhash('confirmed');
   tx.recentBlockhash = blockhash;
   tx.lastValidBlockHeight = lastValidBlockHeight;
   return tx;

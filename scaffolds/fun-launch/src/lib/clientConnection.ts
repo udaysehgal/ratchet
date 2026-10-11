@@ -1,11 +1,17 @@
-import { clusterApiUrl, Connection } from '@solana/web3.js';
+import { Connection } from '@solana/web3.js';
+
+let connection: Connection | null = null;
 
 /**
- * Browser-side connection, used by the wallet adapter only to prepare transactions.
- * Wallets that support signAndSendTransaction (e.g. Phantom) broadcast through their own RPC.
+ * Browser-side connection through our /api/rpc proxy (public RPCs reject browser requests).
+ * Used by the wallet adapter to prepare/submit transactions and to fetch fresh blockhashes.
  */
-export const clientConnection = new Connection(
-  process.env.NEXT_PUBLIC_RPC_URL ??
-    clusterApiUrl(process.env.NEXT_PUBLIC_NETWORK === 'mainnet' ? 'mainnet-beta' : 'devnet'),
-  'confirmed'
-);
+export function getClientConnection(): Connection {
+  if (!connection) {
+    connection = new Connection(`${window.location.origin}/api/rpc`, {
+      commitment: 'confirmed',
+      disableRetryOnRateLimit: false,
+    });
+  }
+  return connection;
+}

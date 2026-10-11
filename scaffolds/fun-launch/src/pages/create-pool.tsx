@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Keypair, Transaction } from '@solana/web3.js';
 import { useUnifiedWalletContext, useWallet } from '@jup-ag/wallet-adapter';
 import { toast } from 'sonner';
-import { clientConnection } from '@/lib/clientConnection';
+import { getClientConnection } from '@/lib/clientConnection';
 import { confirmSignature, withFreshBlockhash } from '@/lib/walletTx';
 import { PRESETS, type PresetId } from '@/presets';
 import { PresetPreview } from '@/components/Ratchet/PresetPreview';
@@ -103,7 +103,7 @@ export default function CreatePool() {
 
         // Step 2: wallet signs and submits (Phantom: signAndSendTransaction); the new mint
         // keypair co-signs. Server only confirms.
-        const signature = await sendTransaction(transaction, clientConnection, {
+        const signature = await sendTransaction(transaction, getClientConnection(), {
           signers: [keyPair],
         });
         await confirmSignature(signature);
