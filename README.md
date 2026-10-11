@@ -26,7 +26,7 @@ wallet. Half of every DAMM v2 fee compounds back into the pool, so liquidity onl
 
 ## Proof on mainnet
 
-| | |
+| Result | On-chain detail |
 |---|---|
 | **Launch → graduation in 5 minutes** | CHRL went from launch to a locked DAMM v2 pool through the live app ([timeline + every tx](docs/EVIDENCE.md#mainnet-chrl-launch-to-graduation-in-5-minutes)) |
 | **9 wallets** | traded CHRL across DBC and DAMM v2; 7 hit the graduated pool within 15 s |
