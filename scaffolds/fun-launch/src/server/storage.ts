@@ -29,8 +29,9 @@ export async function uploadPublic(path: string, body: Buffer, contentType: stri
       access: 'public',
       contentType,
       addRandomSuffix: false,
-      // With no read-write token, the SDK authenticates via the function's Vercel OIDC token
-      ...(BLOB_READ_WRITE_TOKEN ? {} : { storeId: blobStoreId }),
+      // Prefer OIDC with the connected store's id; a leftover read-write token can point at a
+      // deleted store
+      ...(blobStoreId ? { storeId: blobStoreId } : {}),
     });
     return blob.url;
   }
