@@ -66,3 +66,8 @@ studio/data/whitelist_wallet.csv
 keypair*.json
 **/keypair*.json
 mint-keypair*.json
+
+# Ratchet vault program: keys and build output
+programs/ratchet-vault/keys/
+programs/ratchet-vault/target/
+programs/ratchet-vault/.ledger/

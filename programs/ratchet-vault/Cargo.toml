@@ -1,0 +1,28 @@
+[package]
+name = "ratchet-vault"
+version = "0.1.0"
+edition = "2021"
+description = "Holds a DBC launch's creator role so team tokens can only leave as DLMM asks above a rising floor"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+no-entrypoint = []
+
+[dependencies]
+solana-program = "2.2"
+borsh = { version = "1", features = ["derive"] }
+
+[workspace]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))', 'cfg(feature, values("custom-heap", "custom-panic"))'] }
+
+[profile.release]
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+overflow-checks = true
+strip = true
