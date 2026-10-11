@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Keypair, Transaction } from '@solana/web3.js';
 import { useUnifiedWalletContext, useWallet } from '@jup-ag/wallet-adapter';
 import { toast } from 'sonner';
+import { clientConnection } from '@/lib/clientConnection';
 import { PRESETS, type PresetId } from '@/presets';
 import { PresetPreview } from '@/components/Ratchet/PresetPreview';
 
@@ -35,7 +36,7 @@ interface FormValues {
 }
 
 export default function CreatePool() {
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
   const address = useMemo(() => publicKey?.toBase58(), [publicKey]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -60,7 +61,7 @@ export default function CreatePool() {
           return;
         }
 
-        if (!signTransaction) {
+        if (!publicKey) {
           toast.error('Wallet not connected');
           return;
         }
@@ -99,29 +100,21 @@ export default function CreatePool() {
         const { poolTx } = await uploadResponse.json();
         const transaction = Transaction.from(Buffer.from(poolTx, 'base64'));
 
-        // Step 2: Sign with keypair first
-        transaction.sign(keyPair);
-
-        // Step 3: Then sign with user's wallet
-        const signedTransaction = await signTransaction(transaction);
-
-        // Step 4: Send signed transaction
-        const sendResponse = await fetch('/api/send-transaction', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            signedTransaction: signedTransaction.serialize().toString('base64'),
-          }),
+        // Step 2: wallet signs and submits (Phantom: signAndSendTransaction); the new mint
+        // keypair co-signs. Server only confirms.
+        const signature = await sendTransaction(transaction, clientConnection, {
+          signers: [keyPair],
         });
-
-        if (!sendResponse.ok) {
-          const error = await sendResponse.json();
-          throw new Error(error.error);
+        const confirmResponse = await fetch('/api/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ signature }),
+        });
+        const { confirmed, error: confirmError } = await confirmResponse.json();
+        if (!confirmed) {
+          throw new Error(`Launch transaction failed: ${confirmError ?? 'unknown'}`);
         }
-
-        const { success } = await sendResponse.json();
+        const success = true;
         if (success) {
           toast.success('Pool created successfully');
           setCreatedMint(keyPair.publicKey.toBase58());

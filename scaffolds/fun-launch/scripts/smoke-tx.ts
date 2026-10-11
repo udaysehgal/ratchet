@@ -3,7 +3,7 @@
  * Usage: npx tsx scripts/smoke-tx.ts <keypair.json> <mint> '<json action>'
  */
 import fs from 'fs';
-import { Keypair, Transaction } from '@solana/web3.js';
+import { Connection, Keypair, Transaction } from '@solana/web3.js';
 
 async function main() {
   const [keypairPath, mint, actionJson] = process.argv.slice(2);
@@ -17,13 +17,15 @@ async function main() {
   if (built.error) throw new Error(`build: ${built.error}`);
   const tx = Transaction.from(Buffer.from(built.tx, 'base64'));
   tx.partialSign(kp);
-  const sent = await fetch(`${base}/api/send-transaction`, {
+  const connection = new Connection(process.env.RPC_URL ?? 'https://api.devnet.solana.com', 'confirmed');
+  const signature = await connection.sendRawTransaction(tx.serialize());
+  const sent = await fetch(`${base}/api/confirm`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ signedTransaction: tx.serialize().toString('base64') }),
+    body: JSON.stringify({ signature }),
   }).then((r) => r.json());
-  if (sent.error) throw new Error(`send: ${sent.error}`);
-  console.log(`${built.description}: ${sent.signature}`);
+  if (!sent.confirmed) throw new Error(`confirm: ${sent.error}`);
+  console.log(`${built.description}: ${signature}`);
 }
 main().catch((e) => {
   console.error(e.message);

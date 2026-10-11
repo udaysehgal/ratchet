@@ -3,6 +3,7 @@ import { Transaction } from '@solana/web3.js';
 import { useWallet } from '@jup-ag/wallet-adapter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { clientConnection } from '@/lib/clientConnection';
 import type { Earning, LaunchDetail, LaunchSummary } from '@/server/meteora';
 
 export type { Earning, LaunchDetail, LaunchSummary, LadderRung } from '@/server/meteora';
@@ -46,13 +47,13 @@ type TxAction =
 
 /** Build a Meteora tx server-side, sign it with the connected wallet, send it. */
 export function useRatchetTx(mint: string | undefined) {
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
   const queryClient = useQueryClient();
   const [pending, setPending] = useState<string | null>(null);
 
   const run = useCallback(
     async (request: TxAction) => {
-      if (!publicKey || !signTransaction) {
+      if (!publicKey) {
         toast.error('Connect your wallet first');
         return null;
       }
@@ -64,12 +65,17 @@ export function useRatchetTx(mint: string | undefined) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...request, mint, user: publicKey.toBase58() }),
         });
-        const signed = await signTransaction(Transaction.from(Buffer.from(tx, 'base64')));
-        const { signature } = await getJson<{ signature: string }>('/api/send-transaction', {
+        // Wallet signs and submits (Phantom: signAndSendTransaction); server only confirms
+        const signature = await sendTransaction(
+          Transaction.from(Buffer.from(tx, 'base64')),
+          clientConnection
+        );
+        const result = await getJson<{ confirmed: boolean; error?: string }>('/api/confirm', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ signedTransaction: signed.serialize().toString('base64') }),
+          body: JSON.stringify({ signature }),
         });
+        if (!result.confirmed) throw new Error(`Transaction failed: ${result.error ?? 'unknown'}`);
         toast.success(`Done: ${description}`);
         await queryClient.invalidateQueries(['launch', mint]);
         await queryClient.invalidateQueries(['launches']);
@@ -82,7 +88,7 @@ export function useRatchetTx(mint: string | undefined) {
         setPending(null);
       }
     },
-    [mint, publicKey, signTransaction, queryClient]
+    [mint, publicKey, sendTransaction, queryClient]
   );
 
   return { run, pending };
