@@ -10,7 +10,7 @@ export function ProgressBar({ value, className }: { value: number; className?: s
       aria-valuemax={100}
       aria-valuenow={Math.round(pct)}
       className={cn(
-        'relative h-2 w-full overflow-hidden rounded-full bg-neutral-850 ring-1 ring-inset ring-neutral-800',
+        'relative h-2 w-full overflow-hidden rounded-full bg-neutral-850',
         className
       )}
     >
@@ -19,12 +19,12 @@ export function ProgressBar({ value, className }: { value: number; className?: s
           'relative h-full overflow-hidden rounded-full transition-[width] duration-700 ease-out',
           done
             ? 'bg-emerald'
-            : 'bg-gradient-to-r from-primary-400 via-primary to-emerald shadow-[0_0_12px_rgb(var(--primary)/0.6)]'
+            : 'bg-gradient-to-r from-primary-500 to-primary'
         )}
         style={{ width: `${Math.max(pct, pct > 0 ? 2 : 0)}%` }}
       >
         {!done && pct > 0 && (
-          <span className="absolute inset-y-0 left-0 w-1/3 animate-bar-shine bg-gradient-to-r from-transparent via-white/50 to-transparent motion-reduce:hidden" />
+          <span className="absolute inset-y-0 left-0 w-1/3 animate-bar-shine bg-gradient-to-r from-transparent via-white/40 to-transparent motion-reduce:hidden" />
         )}
       </div>
     </div>

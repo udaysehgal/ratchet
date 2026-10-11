@@ -17,17 +17,17 @@ export const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-neutral-850 bg-background/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 w-full border-b border-neutral-900 bg-background/80 backdrop-blur-xl">
       <div className="flex h-14 w-full items-center justify-between gap-2 px-3 md:h-16 md:px-4">
         {/* Logo Section */}
         <Link
           href="/"
           className="flex min-w-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
         >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-950 shadow-[0_0_20px_-4px_rgb(var(--primary)/0.8)]">
-            <span className="iconify h-5 w-5 ph--arrow-fat-lines-up-fill" />
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-primary">
+            <span className="iconify h-6 w-6 ph--arrow-fat-lines-up-fill" />
           </span>
-          <span className="truncate whitespace-nowrap text-base font-bold tracking-tight md:text-xl">
+          <span className="truncate whitespace-nowrap text-base font-semibold uppercase tracking-[0.08em] md:text-lg">
             Ratchet
           </span>
           <span className="hidden rounded-md border border-neutral-750 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-neutral-500 sm:inline">

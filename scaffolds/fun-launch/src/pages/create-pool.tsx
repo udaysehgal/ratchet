@@ -180,7 +180,7 @@ export default function CreatePool() {
                               className={cn(
                                 'group relative flex flex-col gap-3 rounded-xl border p-4 text-left transition-all',
                                 selected
-                                  ? 'border-primary/70 bg-primary/10 shadow-[0_0_32px_-10px_rgb(var(--primary)/0.6)]'
+                                  ? 'border-primary/70 bg-primary/10 '
                                   : 'border-neutral-750 hover:-translate-y-0.5 hover:border-neutral-600'
                               )}
                             >
@@ -189,7 +189,7 @@ export default function CreatePool() {
                                   className={cn(
                                     'flex h-10 w-10 items-center justify-center rounded-xl transition-colors',
                                     selected
-                                      ? 'bg-primary text-primary-950'
+                                      ? 'bg-primary text-white'
                                       : 'bg-neutral-850 text-neutral-400'
                                   )}
                                 >
@@ -198,7 +198,7 @@ export default function CreatePool() {
                                 <span
                                   className={cn(
                                     'flex h-5 w-5 items-center justify-center rounded-full border transition-colors',
-                                    selected ? 'border-primary bg-primary text-primary-950' : 'border-neutral-700'
+                                    selected ? 'border-primary bg-primary text-white' : 'border-neutral-700'
                                   )}
                                 >
                                   {selected && <span className="iconify ph--check-bold h-3 w-3" />}
@@ -487,7 +487,7 @@ function LivePreview({ values }: { values: FormValues }) {
     <div className="panel panel-glow flex flex-col gap-4 p-5">
       <span className="eyebrow">Live preview</span>
       <div className="flex items-center gap-3">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary/30 to-emerald/20 font-mono font-bold text-primary ring-1 ring-primary/30">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary/25 to-neutral-900 font-mono font-bold text-primary ring-1 ring-primary/30">
           {url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={url} alt="" className="h-full w-full object-cover" />
@@ -566,7 +566,7 @@ const PoolCreationSuccess = ({ mint }: { mint: string | null }) => {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 -top-24 mx-auto h-48 w-48 rounded-full bg-primary/30 blur-3xl"
       />
-      <div className="relative mb-6 inline-flex rounded-full bg-primary p-4 text-primary-950 shadow-[0_0_48px_-4px_rgb(var(--primary)/0.8)]">
+      <div className="relative mb-6 inline-flex rounded-full bg-primary p-4 text-white ">
         <span className="iconify ph--rocket-launch-fill h-10 w-10" />
       </div>
       <h2 className="relative mb-3 text-3xl font-bold tracking-tight md:text-4xl">

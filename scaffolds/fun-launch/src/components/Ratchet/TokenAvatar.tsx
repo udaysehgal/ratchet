@@ -26,7 +26,7 @@ export function TokenAvatar({
   return (
     <div
       className={cn(
-        'relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary/30 to-emerald/20 font-mono text-sm font-bold text-primary ring-1 ring-primary/30',
+        'relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary/25 to-neutral-900 font-mono text-sm font-bold text-primary ring-1 ring-primary/30',
         className
       )}
     >
