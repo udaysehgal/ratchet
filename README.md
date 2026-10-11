@@ -6,7 +6,7 @@ Live on Solana mainnet: **https://ratchet-olive.vercel.app**
 
 Every Ratchet token:
 
-1. **Launches on a Meteora DBC bonding curve** from a preset config (anti-sniper or fair raise).
+1. **Launches on a Meteora DBC bonding curve** from a preset config (anti-sniper, fair raise or micro raise).
 2. **Graduates into a Meteora DAMM v2 pool** with 100% of LP permanently locked and half of all
    trading fees compounding back into liquidity.
 3. **Commits its team allocation as Meteora DLMM limit orders** above the graduation price. The
@@ -36,19 +36,19 @@ Every on-chain action in Ratchet goes through a Meteora program. The server laye
 
 ### DBC preset configuration (mainnet)
 
-| | Anti-sniper | Fair raise |
-|---|---|---|
-| Config | [`6tMtkf…YhH9`](https://solscan.io/account/6tMtkfHkvvSVsCSpXbcCqVCAJYEg7SJQkDmvYH2urYh9) | [`Ery2mG…wwBW`](https://solscan.io/account/Ery2mGuMQ27iV3wCqCd7Ne45XkRCV6fSf2s1j87WwwBW) |
-| Curve | `buildCurve`, 20% supply to migration | `buildCurveWithCustomSqrtPrices`, price moves 5% start → graduation |
-| Graduation | 10 SOL | ~10 SOL |
-| Market cap | ~4 → 50 SOL | ~21.5 → 22.6 SOL |
-| Base fee | exponential fee scheduler, 50% → 1% over 2 min | 1% flat |
-| Dynamic fee | on | off |
-| Pool creation fee | 0.02 SOL (90% partner) | 0.02 SOL (90% partner) |
-| Curve fee split | 50% creator / 50% partner | 50% creator / 50% partner |
-| Team allocation | 10% via DBC locked vesting: 1% at 1 h after graduation, 9% daily over 30 days | same |
-| Migration | DAMM v2, customizable fee: 1% pool fee, dynamic fee, **compounding** (50% of fees back into liquidity) | same |
-| LP | 100% permanently locked (50% creator / 50% partner) | same |
+| | Anti-sniper | Fair raise | Micro raise |
+|---|---|---|---|
+| Config | [`6tMtkf…YhH9`](https://solscan.io/account/6tMtkfHkvvSVsCSpXbcCqVCAJYEg7SJQkDmvYH2urYh9) | [`Ery2mG…wwBW`](https://solscan.io/account/Ery2mGuMQ27iV3wCqCd7Ne45XkRCV6fSf2s1j87WwwBW) | [`FQt9kW…goGp`](https://solscan.io/account/FQt9kWsBwHwkhq3TEBXCWqnEqD2GxjxjBVNuJ29igoGp) |
+| Curve | `buildCurve`, 20% supply to migration | `buildCurveWithCustomSqrtPrices`, price moves 5% start → graduation | `buildCurve`, 5% supply to migration |
+| Graduation | 10 SOL | ~10 SOL | 0.1 SOL |
+| Market cap | ~4 → 50 SOL | ~21.5 → 22.6 SOL | — |
+| Base fee | exponential fee scheduler, 50% → 1% over 2 min | 1% flat | same as anti-sniper |
+| Dynamic fee | on | off | on |
+| Pool creation fee | 0.02 SOL (90% partner) | 0.02 SOL (90% partner) | none |
+| Curve fee split | 50% creator / 50% partner | 50% creator / 50% partner | 50% creator / 50% partner |
+| Team allocation | 10% via DBC locked vesting: 1% at 1 h after graduation, 9% daily over 30 days | same | 10%: 1% 60 s after graduation, the rest every minute for 30 min |
+| Migration | DAMM v2, customizable fee: 1% pool fee, dynamic fee, **compounding** (50% of fees back into liquidity) | same | same |
+| LP | 100% permanently locked (50% creator / 50% partner) | same | same |
 
 Preset sources: [`presets/mainnet/`](presets/mainnet), built with the Invent studio CLI.
 
@@ -104,12 +104,49 @@ migrate into DAMM v2.
 
 ---
 
-## Verified on devnet, end to end
+## Proof: verified on mainnet
 
-The full lifecycle was run on devnet before going to mainnet: config → launch →
-anti-sniper fee (a buy 20 s after launch paid ~26%) → graduation → DAMM v2 migration →
-vesting claim → DLMM pair → ask ladder at 1.25× to 6× → DAMM v2 trades → one-transaction
-claim of creator fees, partner fees, launch fee and locked-LP fees.
+Every step below ran through the live app with a real wallet. Times are UTC, 2026-10-11.
+
+**Configs** (Invent studio, partner wallet `4re4BQ…EMLV`): anti-sniper [`6tMtkf…rYh9`](https://solscan.io/account/6tMtkfHkvvSVsCSpXbcCqVCAJYEg7SJQkDmvYH2urYh9) ([tx](https://solscan.io/tx/46mMhaiNwevdsrX4TamLJ5oSiRYYzZ5kvygDiqZSH85DTBschGYjizxkxGxUywKZTNWNiBdTxouZTjgjkh5VcZs2)),
+fair raise [`Ery2mG…wwBW`](https://solscan.io/account/Ery2mGuMQ27iV3wCqCd7Ne45XkRCV6fSf2s1j87WwwBW) ([tx](https://solscan.io/tx/4FeJYGd9KyjWGDy1hjPs6AQvzfcXnGQg8LPtRyQo4ohDduN6VpXgGUrdzj6KYpzSGfPTp64JjUd6mi6j39rs9HN8)),
+micro raise [`FQt9kW…goGp`](https://solscan.io/account/FQt9kWsBwHwkhq3TEBXCWqnEqD2GxjxjBVNuJ29igoGp) ([tx](https://solscan.io/tx/5GRNsZkJkdQjtDCWU8zqpH4SmmrHMfiPSFAprpPHuxwtxAGaxzR43S4iyM7xfaTbRFz1NhiGYPqJUZ8Uz3ADf8HZ)).
+
+**CHRL: launch to graduation in 5 minutes** (micro raise; mint [`CrUN9N…ifx5`](https://solscan.io/account/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5))
+
+| Time | Step | Program | Tx |
+|---|---|---|---|
+| 19:23:00 | Launch from the app | DBC `InitializeVirtualPoolWithSplToken` → pool [`2S2hTX…wzCg`](https://solscan.io/account/2S2hTXpXMi1MToqjCGgWehGq5sNuscsh3EtoDkARwzCg) | [tx](https://solscan.io/tx/5QtsRSgsNbieQQg2H6sYaZmJxCP3Xk2o9Mm3CXJety78Yz62uqyiyNbD79s6hMViKftqH2b4WKimKHvA6FoUwrB5) |
+| 19:23:15 | Sniper bot buys 15 s after launch, **pays ~37% in fees** (anti-sniper scheduler) | DBC `Swap2` | [tx](https://solscan.io/tx/47YZnUa2ERKiU9NRx2dNVbqGdhQmCAUxLHWrKKkZGv4bkFgRyNgyUSPuksV9zvpqUEBSxDc7xW7uoxeKsAef9aZf) |
+| 19:26:44 | Creator buy fills the curve (PartialFill, no overshoot) | DBC `Swap2` | [tx](https://solscan.io/tx/4uCDvw4hoALUG7TaqJs132fYe2K89BGgYBk2yMD2fqnkU6nTVRfMBAeiGWehWHNycSvLYcN8bzQcXPe2yiHxF25b) |
+| 19:27:30 | Graduate, step 1: team vesting escrow | DBC `CreateLocker` → Met Lock `CreateVestingEscrowV2` | [tx](https://solscan.io/tx/29a6j3UXSAQzgzd8m7HAG3Ngt6jBjsMYWDdeD1BWHnrfnp7BgApgfs3kbApw8LknJ4MNNpeY7duzXsia24QZSdih) |
+| 19:28:11 | Graduate, step 2: migrate, LP permanently locked | DBC `MigrationDammV2` → DAMM v2 pool [`BTjz62…WEbf`](https://solscan.io/account/BTjz62LaGnREgPDCugdK1JpPYsAvPLTQM6JnrgioWEbf) | [tx](https://solscan.io/tx/u4xUbeU8oRsEHutFfQ5V51wSQDfBEPxdaPpuCgJU5bGCmxKQmYEnNVoxwLKJzZFsVwpkca6JUgv5fWqCu7ExpbF) |
+| 19:28:18 | Sniper sells into DAMM v2 7 s after graduation; 7 more wallets trade the pool within 15 s | DAMM v2 `Swap` | [tx](https://solscan.io/tx/kvekUvcL8WnZkfdcu9PyN4VrkTxPeYoQyFJ7oKzq7tkdZGewiG7UNnNCSDva2ZpFVKDdfG5eCeMXCE24tjRgutS) |
+| 19:31:20 | Creator claims vested team tokens (19M) | Met Lock `ClaimV2` | [tx](https://solscan.io/tx/3wzFtSMR8qBxUgk3fi51fjT71HJrYH9FWXrTPV1mZAUDyXCVXi9CNMRCuK8Aj4V4erDJEvLefPwf7WTV6NXxfjUg) |
+| 19:31:45 | One-tx claim: DBC creator + partner fees and locked-LP DAMM v2 fees | DBC + DAMM v2 | [tx](https://solscan.io/tx/4Z83PVzarc5ocT5jYgmAdZ6Xi1do7LKQd92G5A4dYfFPULbZK4ZRsvousp9BmfFb8Z1v1VztXcQHVzQrYK6ksWFp) |
+
+**What mainnet taught us.** The anti-sniper fee did its job at entry (the bot paid ~37%), but
+on a small raise the bot still profited by selling into the fresh DAMM v2 pool seconds after
+graduation. Fees tax snipers; they don't stop them. That is the same failure mode Ratchet
+targets for team unlocks, and the argument for the vault program below: supply that should
+not hit a thin pool needs to be held by a program, not by goodwill.
+
+## Verified on devnet: the DLMM unlock ladder
+
+The ladder was run end to end on devnet (it needs ~0.1 SOL of DLMM bin-array rent, which we
+didn't spend on mainnet). Token RTST1, 2026-10-10:
+
+| Step | Tx |
+|---|---|
+| Configs (anti-sniper, fair raise) | [1](https://solscan.io/tx/3SftJHsb4L2efGLTkHeGwgyLCbCX3b9N3dyFb8m4ADVqX5W9ZJunfHxmFjJbzPCtrFox2PWTGrfXi7BQG6kidFFS?cluster=devnet) · [2](https://solscan.io/tx/4BF8rop784xLy6zKSU5j1rweXgrad4ycpnvt6L649gcFMC6aQpnAqKysBq9vhvWvq3J7WT68iwpvpc4YmK7yjNk7?cluster=devnet) |
+| Launch | [tx](https://solscan.io/tx/2iMbeeXsWE3NnxWjXXsvGiqcyvnV2gcXgfVwxtz1vMqc22NDntpp6TSiVrktPTFvESkfpSxhoFiF1TXPuiML9oFn?cluster=devnet) |
+| Buys to graduation (first one 20 s after launch paid ~26%) | [1](https://solscan.io/tx/3X19tMPoGEu1SDiZJbyhSQdW8sHu6hBPhjaUie4SJXNKDuebiQuWFykFoKFni1JDSUWxoHJp7FVZg6LPnZGNVi3y?cluster=devnet) · [2](https://solscan.io/tx/3nZ2SVbn67X7ujwxU8MDXJpMY293SbQ4Wn8tmWvx7qpxWnFimCtXh9KvXS4wpqysCpBxiugJmGkA3rgzBmFC4vS6?cluster=devnet) · [3](https://solscan.io/tx/25pcGNzkqPQ83zRWT5qPLGCPbKQUUXuoKL3Ve7rTgUfgncPe19wjGvUu8Ys1he9v5sf9Qu4kLFTZpxJTu3KhpXKX?cluster=devnet) |
+| Vesting escrow | [tx](https://solscan.io/tx/4S817copM6rsHt8dbvfP6CKNnzxrjtzTxuK9iN5HNPY2t7La2ZEp1LfP2tHi1A2G1NMueLXb32AKWN41t8F7syum?cluster=devnet) |
+| Migrate to DAMM v2 | [tx](https://solscan.io/tx/4SaHh2WXm4LThXrm6y39YW5TwrUetjct6wc34gZidDuefPbkUqfq84dhLsCXHD3NwPVk18uFoyPnQciiDfoq74VP?cluster=devnet) |
+| DLMM pair (limit-order type) | [tx](https://solscan.io/tx/3JFbqkDyy6DSdZ2CTSYPAQveDGPJevddh2BCfFVkfxKYAhGPJhjQKqebqxn31h2ouMmNECyxdtWDDaBsRV4boPSJ?cluster=devnet) |
+| Vesting claims | [1](https://solscan.io/tx/BkJ7NpKCuR5b5YTxF48edcFXZsk5mBrxc7ZEw4dVa3wzVXLkiZWCgtBbqRySSHK9gN7V6aNTrnZuABApmsdZuMh?cluster=devnet) · [2](https://solscan.io/tx/4dHHy4UWZsQ458PHDHZKz8mKJKPZKLbj7mJCLLDCNK5iLjCPwByn94Y228wSSRPDkrxQ6BhYi38nHAvA5wiFLbhq?cluster=devnet) · [3](https://solscan.io/tx/3Dgwm8qa7TL6M3SrFSLdEfdMwhLZ3WqVYSuBvBRMYr3aXsuJ9bU4FSL8Kfp9AHQ7PXpDbG792KPwCWdPaEMNZtQV?cluster=devnet) |
+| **Unlock ladder** (DLMM asks, 1.25× → 6× graduation price) | [1](https://solscan.io/tx/4oZC6tSNPNGoPATUaVqzK3bxxaaQz1QaCZep2pZZY7sUyPwVHsEdt7zzzwis5dNobhdwRUYSYLC1Fq71BKZTbAV3?cluster=devnet) · [2](https://solscan.io/tx/2qAkRGz8sRYFKTrTJeaMov54g4GMsfYYYKg77Db3L2FwiAExqN5vMBXm55gN7NfDJeXD27Vgqx61RZeryAXzzp5B?cluster=devnet) |
+| One-tx fee claim (DBC + launch fee + locked-LP fees) | [tx](https://solscan.io/tx/2nXYN2tcqnkihyjG9wERD8Ny9iYi2n7KzfAjt6iCfJ2BDjc7gDQuXAxMR5UdFzNpY2Qjt1cxydyZ7Z5WerAx77oA?cluster=devnet) |
 
 ## Running locally
 
