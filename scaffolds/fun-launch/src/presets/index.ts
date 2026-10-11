@@ -38,9 +38,9 @@ const ALL_PRESETS: Preset[] = [
   {
     id: 'micro-raise',
     name: 'Micro raise',
-    tagline: 'Anti-sniper fees with a 0.25 SOL graduation, for small communities.',
+    tagline: 'Anti-sniper fees with a 0.1 SOL graduation, for small communities.',
     points: [
-      'Graduates at 0.25 SOL into a compounding DAMM v2 pool',
+      'Graduates at 0.1 SOL into a compounding DAMM v2 pool',
       'Same 50% → 1% anti-sniper fee decay',
       '100% of LP permanently locked',
       'Team allocation unlocks minute by minute after graduation',

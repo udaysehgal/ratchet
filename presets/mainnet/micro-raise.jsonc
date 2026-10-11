@@ -44,8 +44,8 @@
     "leftoverReceiver": "5mjWGA1zJbeLnjBhpwAodCP5AXkdhvpebjnmCxcSsyBi",
     "feeClaimer": "5mjWGA1zJbeLnjBhpwAodCP5AXkdhvpebjnmCxcSsyBi",
     "buildCurveMode": 0,
-    "percentageSupplyOnMigration": 20,
-    "migrationQuoteThreshold": 0.25,
+    "percentageSupplyOnMigration": 5,
+    "migrationQuoteThreshold": 0.1,
     "fee": {
       "baseFeeParams": {
         "baseFeeMode": 1,
