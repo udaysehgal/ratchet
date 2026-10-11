@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 380" width="760" height="380" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" role="img" aria-labelledby="t d">
+<title id="t">How far price moves on each Ratchet preset</title>
+<desc id="d">Price relative to the opening price as the curve fills to graduation. Micro raise: 289x at graduation. Anti-sniper: 12x at graduation. Fair &amp; equity raise: 1.05x at graduation.</desc>
+<rect width="760" height="380" rx="8" fill="#ffffff"/>
+<text x="64" y="26" font-size="15" font-weight="600" fill="#1f2328">How far price moves before graduation</text>
+<text x="64" y="44" font-size="12" fill="#59636e">Price vs. opening price (log scale) as the curve fills. Read live from each preset's DBC config.</text>
+<line x1="64" x2="600" y1="324" y2="324" stroke="#d1d9e0" stroke-width="1"/>
+<text x="54" y="328" font-size="11" text-anchor="end" fill="#59636e">1×</text>
+<line x1="64" x2="600" y1="234.66666666666669" y2="234.66666666666669" stroke="#d1d9e0" stroke-width="1"/>
+<text x="54" y="238.66666666666669" font-size="11" text-anchor="end" fill="#59636e">10×</text>
+<line x1="64" x2="600" y1="145.33333333333334" y2="145.33333333333334" stroke="#d1d9e0" stroke-width="1"/>
+<text x="54" y="149.33333333333334" font-size="11" text-anchor="end" fill="#59636e">100×</text>
+<line x1="64" x2="600" y1="56" y2="56" stroke="#d1d9e0" stroke-width="1"/>
+<text x="54" y="60" font-size="11" text-anchor="end" fill="#59636e">1000×</text>
+<text x="64" y="344" font-size="11" text-anchor="middle" fill="#59636e">0%</text>
+<text x="198" y="344" font-size="11" text-anchor="middle" fill="#59636e">25%</text>
+<text x="332" y="344" font-size="11" text-anchor="middle" fill="#59636e">50%</text>
+<text x="466" y="344" font-size="11" text-anchor="middle" fill="#59636e">75%</text>
+<text x="600" y="344" font-size="11" text-anchor="middle" fill="#59636e">100%</text>
+<text x="332" y="368" font-size="12" text-anchor="middle" fill="#59636e">Share of the graduation raise filled</text>
+<path d="M64.0,324.0L75.2,301.7L86.3,284.4L97.5,270.2L108.7,258.3L119.8,247.9L131.0,238.8L142.2,230.6L153.3,223.2L164.5,216.4L175.7,210.2L186.8,204.5L198.0,199.1L209.2,194.1L220.3,189.4L231.5,185.0L242.7,180.8L253.8,176.8L265.0,173.0L276.2,169.4L287.3,166.0L298.5,162.6L309.7,159.5L320.8,156.4L332.0,153.5L343.2,150.7L354.3,148.0L365.5,145.3L376.7,142.8L387.8,140.3L399.0,137.9L410.2,135.6L421.3,133.4L432.5,131.2L443.7,129.1L454.8,127.0L466.0,125.0L477.2,123.0L488.3,121.1L499.5,119.2L510.7,117.4L521.8,115.6L533.0,113.9L544.2,112.2L555.3,110.5L566.5,108.9L577.7,107.3L588.8,105.7L600.0,104.2" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="600" cy="104.15980624020065" r="4.5" fill="#2a78d6" stroke="#ffffff" stroke-width="2"/>
+<text x="612" y="102.15980624020065" font-size="12" font-weight="600" fill="#1f2328">Micro raise</text>
+<text x="612" y="117.15980624020065" font-size="11" fill="#59636e">289× at graduation</text>
+<path d="M64.0,324.0L75.2,320.1L86.3,316.3L97.5,312.7L108.7,309.3L119.8,306.0L131.0,302.9L142.2,299.9L153.3,297.0L164.5,294.2L175.7,291.5L186.8,288.9L198.0,286.3L209.2,283.9L220.3,281.5L231.5,279.2L242.7,277.0L253.8,274.8L265.0,272.7L276.2,270.6L287.3,268.6L298.5,266.7L309.7,264.8L320.8,262.9L332.0,261.1L343.2,259.3L354.3,257.6L365.5,255.9L376.7,254.2L387.8,252.6L399.0,251.0L410.2,249.4L421.3,247.9L432.5,246.4L443.7,244.9L454.8,243.5L466.0,242.1L477.2,240.7L488.3,239.3L499.5,238.0L510.7,236.6L521.8,235.3L533.0,234.1L544.2,232.8L555.3,231.6L566.5,230.3L577.7,229.1L588.8,228.0L600.0,226.8" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="600" cy="226.79317936092184" r="4.5" fill="#eb6834" stroke="#ffffff" stroke-width="2"/>
+<text x="612" y="224.79317936092184" font-size="12" font-weight="600" fill="#1f2328">Anti-sniper</text>
+<text x="612" y="239.79317936092184" font-size="11" fill="#59636e">12× at graduation</text>
+<path d="M64.0,324.0L75.2,324.0L86.3,323.9L97.5,323.9L108.7,323.8L119.8,323.8L131.0,323.8L142.2,323.7L153.3,323.7L164.5,323.6L175.7,323.6L186.8,323.6L198.0,323.5L209.2,323.5L220.3,323.4L231.5,323.4L242.7,323.4L253.8,323.3L265.0,323.3L276.2,323.2L287.3,323.2L298.5,323.2L309.7,323.1L320.8,323.1L332.0,323.0L343.2,323.0L354.3,323.0L365.5,322.9L376.7,322.9L387.8,322.9L399.0,322.8L410.2,322.8L421.3,322.7L432.5,322.7L443.7,322.7L454.8,322.6L466.0,322.6L477.2,322.5L488.3,322.5L499.5,322.5L510.7,322.4L521.8,322.4L533.0,322.3L544.2,322.3L555.3,322.3L566.5,322.2L577.7,322.2L588.8,322.1L600.0,322.1" fill="none" stroke="#1baf7a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="600" cy="322.10708928317825" r="4.5" fill="#1baf7a" stroke="#ffffff" stroke-width="2"/>
+<text x="612" y="320.10708928317825" font-size="12" font-weight="600" fill="#1f2328">Fair &amp; equity raise</text>
+<text x="612" y="335.10708928317825" font-size="11" fill="#59636e">1.05× at graduation</text>
+</svg>

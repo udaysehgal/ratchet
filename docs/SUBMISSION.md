@@ -31,7 +31,7 @@ graduation price.
 
 ## Meteora depth
 Uses DBC, DAMM v2, DLMM and Met Lock end to end, plus the Invent studio CLI and the
-fun-launch scaffold. Every call is listed in the README's integration table.
+fun-launch scaffold. Every call is listed in [ARCHITECTURE.md](ARCHITECTURE.md#meteora-integration).
 
 ## Originality
 Launchpads compete on curves; nobody handles what happens at unlock. Ratchet uses DLMM's
@@ -48,7 +48,7 @@ Every launchpad on DBC can adopt the pattern: a preset plus a post-graduation un
 It's a better default for any asset class with a team or treasury allocation (memes, ICM, RWAs).
 
 ## Traction
-All on mainnet, through the live app (full tx table in the README, "Proof: verified on mainnet"):
+All on mainnet, through the live app (every transaction in [EVIDENCE.md](EVIDENCE.md)):
 - **4 DBC preset configs** created with Invent studio (anti-sniper, fair raise, micro raise, and a
   TSLAx-quoted equity raise using Meteora's xStock token badge).
 - **2 launches**, **1 graduation**: CHRL went from launch to a locked DAMM v2 pool in 5 minutes.
@@ -59,7 +59,7 @@ All on mainnet, through the live app (full tx table in the README, "Proof: verif
   (see Originality).
 - Met Lock vesting claim and a one-transaction fee claim (DBC creator + partner + locked-LP
   DAMM v2 fees) on mainnet.
-- The DLMM unlock ladder ran end to end on devnet (tx table in the README).
+- The DLMM unlock ladder ran end to end on devnet ([txs](EVIDENCE.md#devnet-full-lifecycle-including-the-dlmm-unlock-ladder)).
 
 ## Built in 3 days
 Day 1: presets + full devnet lifecycle. Day 2: app (board, token page, ladder, DAMM v2 trading,
