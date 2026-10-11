@@ -3,8 +3,7 @@ import { Transaction } from '@solana/web3.js';
 import { useWallet } from '@jup-ag/wallet-adapter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { getClientConnection } from '@/lib/clientConnection';
-import { confirmSignature, withFreshBlockhash } from '@/lib/walletTx';
+import { signSubmitConfirm } from '@/lib/walletTx';
 import type { Earning, LaunchDetail, LaunchSummary } from '@/server/meteora';
 
 export type { Earning, LaunchDetail, LaunchSummary, LadderRung } from '@/server/meteora';
@@ -48,13 +47,13 @@ type TxAction =
 
 /** Build a Meteora tx server-side, sign it with the connected wallet, send it. */
 export function useRatchetTx(mint: string | undefined) {
-  const { publicKey, sendTransaction } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
   const queryClient = useQueryClient();
   const [pending, setPending] = useState<string | null>(null);
 
   const run = useCallback(
     async (request: TxAction) => {
-      if (!publicKey) {
+      if (!publicKey || !signTransaction) {
         toast.error('Connect your wallet first');
         return null;
       }
@@ -67,9 +66,10 @@ export function useRatchetTx(mint: string | undefined) {
           body: JSON.stringify({ ...request, mint, user: publicKey.toBase58() }),
         });
         // Wallet signs and submits (Phantom: signAndSendTransaction); server only confirms
-        const transaction = await withFreshBlockhash(Transaction.from(Buffer.from(tx, 'base64')));
-        const signature = await sendTransaction(transaction, getClientConnection());
-        await confirmSignature(signature);
+        const signature = await signSubmitConfirm(
+          Transaction.from(Buffer.from(tx, 'base64')),
+          signTransaction
+        );
         toast.success(`Done: ${description}`);
         await queryClient.invalidateQueries(['launch', mint]);
         await queryClient.invalidateQueries(['launches']);
@@ -82,7 +82,7 @@ export function useRatchetTx(mint: string | undefined) {
         setPending(null);
       }
     },
-    [mint, publicKey, sendTransaction, queryClient]
+    [mint, publicKey, signTransaction, queryClient]
   );
 
   return { run, pending };

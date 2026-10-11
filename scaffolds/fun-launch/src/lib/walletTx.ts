@@ -1,4 +1,4 @@
-import type { Transaction } from '@solana/web3.js';
+import type { Keypair, Transaction } from '@solana/web3.js';
 import type { ConfirmResponse } from '@/pages/api/confirm';
 import { getClientConnection } from './clientConnection';
 
@@ -35,4 +35,37 @@ export async function confirmSignature(signature: string): Promise<void> {
   throw new Error(
     'Transaction expired before it landed. Please try again and approve in your wallet within about a minute.'
   );
+}
+
+type SignTransaction = (tx: Transaction) => Promise<Transaction>;
+
+/** Pull the wallet's inner error out of adapter wrappers like "Unexpected error". */
+export function walletErrorMessage(error: unknown): string {
+  const e = error as { message?: string; error?: { message?: string }; cause?: { message?: string } };
+  return e?.error?.message || e?.cause?.message || e?.message || 'Transaction failed';
+}
+
+/**
+ * Fresh blockhash → optional co-signers → wallet signs → submit via our RPC proxy → confirm.
+ * Uses signTransaction rather than signAndSendTransaction: Phantom's sign-and-send path failed
+ * opaquely ("Unexpected error") on this domain, while signing works.
+ */
+export async function signSubmitConfirm(
+  tx: Transaction,
+  signTransaction: SignTransaction,
+  coSigners: Keypair[] = []
+): Promise<string> {
+  const fresh = await withFreshBlockhash(tx);
+  if (coSigners.length) fresh.partialSign(...coSigners);
+  let signed: Transaction;
+  try {
+    signed = await signTransaction(fresh);
+  } catch (error) {
+    throw new Error(walletErrorMessage(error));
+  }
+  const signature = await getClientConnection().sendRawTransaction(signed.serialize(), {
+    preflightCommitment: 'confirmed',
+  });
+  await confirmSignature(signature);
+  return signature;
 }

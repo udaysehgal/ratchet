@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Keypair, Transaction } from '@solana/web3.js';
 import { useUnifiedWalletContext, useWallet } from '@jup-ag/wallet-adapter';
 import { toast } from 'sonner';
-import { getClientConnection } from '@/lib/clientConnection';
-import { confirmSignature, withFreshBlockhash } from '@/lib/walletTx';
+import { signSubmitConfirm } from '@/lib/walletTx';
 import { PRESETS, type PresetId } from '@/presets';
 import { PresetPreview } from '@/components/Ratchet/PresetPreview';
 
@@ -37,7 +36,7 @@ interface FormValues {
 }
 
 export default function CreatePool() {
-  const { publicKey, sendTransaction } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
   const address = useMemo(() => publicKey?.toBase58(), [publicKey]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -62,7 +61,7 @@ export default function CreatePool() {
           return;
         }
 
-        if (!publicKey) {
+        if (!publicKey || !signTransaction) {
           toast.error('Wallet not connected');
           return;
         }
@@ -99,14 +98,10 @@ export default function CreatePool() {
         }
 
         const { poolTx } = await uploadResponse.json();
-        const transaction = await withFreshBlockhash(Transaction.from(Buffer.from(poolTx, 'base64')));
+        const transaction = Transaction.from(Buffer.from(poolTx, 'base64'));
 
-        // Step 2: wallet signs and submits (Phantom: signAndSendTransaction); the new mint
-        // keypair co-signs. Server only confirms.
-        const signature = await sendTransaction(transaction, getClientConnection(), {
-          signers: [keyPair],
-        });
-        await confirmSignature(signature);
+        // Step 2: fresh blockhash, mint keypair co-signs, wallet signs, submit via our proxy
+        await signSubmitConfirm(transaction, signTransaction, [keyPair]);
         const success = true;
         if (success) {
           toast.success('Pool created successfully');
