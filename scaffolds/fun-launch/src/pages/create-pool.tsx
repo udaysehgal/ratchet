@@ -22,7 +22,7 @@ const poolSchema = z.object({
   tokenLogo: z.instanceof(File, { message: 'Token logo is required' }).optional(),
   website: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
   twitter: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
-  presetId: z.enum(['anti-sniper', 'fair-raise', 'micro-raise']),
+  presetId: z.enum(['anti-sniper', 'fair-raise', 'micro-raise', 'equity-raise']),
 });
 
 const inputClassName =
@@ -167,7 +167,7 @@ export default function CreatePool() {
                 <Step n="01" title="Choose a launch preset" hint="Read live from the preset's on-chain DBC config.">
                   <form.Field name="presetId">
                     {(field) => (
-                      <div role="radiogroup" className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                      <div role="radiogroup" className="grid grid-cols-1 gap-3 md:grid-cols-2">
                         {PRESETS.map((preset) => {
                           const selected = field.state.value === preset.id;
                           return (
@@ -362,6 +362,7 @@ const PRESET_ICONS: Record<PresetId, string> = {
   'anti-sniper': 'ph--shield-check-bold',
   'fair-raise': 'ph--scales-bold',
   'micro-raise': 'ph--lightning-bold',
+  'equity-raise': 'ph--chart-bar-bold',
 };
 
 function Step({
@@ -507,7 +508,7 @@ function LivePreview({ values }: { values: FormValues }) {
       </div>
       <ProgressBar value={0.02} />
       <div className="flex items-center justify-between text-xs">
-        <span className="num text-neutral-400">0 SOL raised</span>
+        <span className="num text-neutral-400">0 {preset?.quoteSymbol ?? 'SOL'} raised</span>
         {preset && (
           <span className="rounded-full border border-neutral-750 px-2 py-0.5 text-neutral-400">
             {preset.name}

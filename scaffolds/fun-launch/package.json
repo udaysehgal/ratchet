@@ -25,7 +25,7 @@
     "@jup-ag/wallet-adapter": "^0.2.6",
     "@meteora-ag/cp-amm-sdk": "^1.4.5",
     "@meteora-ag/dlmm": "^1.9.14",
-    "@meteora-ag/dynamic-bonding-curve-sdk": "^1.5.11",
+    "@meteora-ag/dynamic-bonding-curve-sdk": "^1.5.13",
     "@meteora-ag/met-lock-sdk": "^1.0.1",
     "@solana/spl-token": "^0.4.15",
     "@solana/wallet-adapter-wallets": "^0.19.38",

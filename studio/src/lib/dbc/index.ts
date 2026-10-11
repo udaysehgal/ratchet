@@ -26,6 +26,7 @@ import {
   DAMM_V1_MIGRATION_FEE_ADDRESS,
   DAMM_V2_MIGRATION_FEE_ADDRESS,
   deriveBaseKeyForLocker,
+  deriveTokenBadgeAddress,
   deriveDammV1MigrationMetadataAddress,
   deriveDbcPoolAuthority,
   deriveEscrow,
@@ -101,12 +102,18 @@ export async function createDbcConfig(
   const configKeypair = Keypair.generate();
   console.log(`> Generated config keypair: ${configKeypair.publicKey.toString()}`);
 
+  // Quote mints with extensions (e.g. xStocks, Token-2022) need Meteora's DBC token badge
+  const badge = deriveTokenBadgeAddress(quoteMint);
+  const tokenBadge = (await connection.getAccountInfo(badge)) ? badge : undefined;
+  if (tokenBadge) console.log(`> Using DBC token badge ${tokenBadge.toString()} for quote mint`);
+
   const createConfigParams = {
     config: configKeypair.publicKey,
     quoteMint,
     feeClaimer: new PublicKey(feeClaimer),
     leftoverReceiver: new PublicKey(leftoverReceiver),
     payer: wallet.publicKey,
+    tokenBadge,
     ...curveConfig,
   };
 

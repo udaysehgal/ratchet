@@ -3,6 +3,7 @@ import { PublicKey } from '@solana/web3.js';
 import BN from 'bn.js';
 import { assessLaunch, overallStatus, type Check, type CheckStatus } from '@/lib/launchCheck';
 import { getPresetByConfig } from '@/presets';
+import { QUOTE_TOKENS } from '@/lib/quotes';
 import { connection, dbc, getLaunch, getTokenMetas } from './meteora';
 
 export type LaunchCheck = {
@@ -91,6 +92,8 @@ export async function checkLaunch(mint: PublicKey): Promise<LaunchCheck | null> 
     compoundingFeeBps: config.migratedCompoundingFeeBps,
     ratchetLadderRungs: ratchet ? ratchet.ladder.length : null,
     migrated: state.isMigrated === 1,
+    quoteSymbol:
+      QUOTE_TOKENS.find((q) => q.mint === config.quoteMint.toBase58())?.symbol ?? 'quote token',
   });
 
   return {

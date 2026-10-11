@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Connection, PublicKey } from '@solana/web3.js';
-import { DynamicBondingCurveClient } from '@meteora-ag/dynamic-bonding-curve-sdk';
+import { DynamicBondingCurveClient, deriveTokenBadgeAddress } from '@meteora-ag/dynamic-bonding-curve-sdk';
 import { getPresetConfig } from '@/presets';
 import { uploadPublic } from '@/server/storage';
 
@@ -147,7 +147,13 @@ async function createPoolTransaction({
   const connection = new Connection(RPC_URL, 'confirmed');
   const client = new DynamicBondingCurveClient(connection, 'confirmed');
 
+  // xStock quotes (Token-2022) need Meteora's DBC token badge attached to pool creation
+  const config = await client.state.getPoolConfig(new PublicKey(poolConfig));
+  const badge = deriveTokenBadgeAddress(config.quoteMint);
+  const tokenBadge = (await connection.getAccountInfo(badge)) ? badge : undefined;
+
   const poolTx = await client.creator.createPool({
+    tokenBadge,
     config: new PublicKey(poolConfig),
     baseMint: new PublicKey(mint),
     name: tokenName,

@@ -20,6 +20,7 @@ const ratchetAntiSniper: LaunchFacts = {
   compoundingFeeBps: 5000,
   ratchetLadderRungs: 0,
   migrated: false,
+  quoteSymbol: 'SOL',
 };
 
 const byId = (facts: LaunchFacts, id: string) => assessLaunch(facts).find((c) => c.id === id);

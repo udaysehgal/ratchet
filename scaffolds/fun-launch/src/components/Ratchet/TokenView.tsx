@@ -110,7 +110,7 @@ function TradeCard({ launch }: { launch: LaunchDetail }) {
       </div>
       <label className="flex flex-col gap-1.5 text-sm">
         <span className="text-neutral-400">
-          {side === 'buy' ? 'Amount (SOL)' : `Amount (${launch.symbol})`}
+          {side === 'buy' ? `Amount (${launch.quoteSymbol})` : `Amount (${launch.symbol})`}
         </span>
         <input
           className={cn(inputClassName, 'num p-3 text-xl')}
@@ -175,7 +175,7 @@ function LadderTable({ launch }: { launch: LaunchDetail }) {
         <thead className="text-left text-xs text-neutral-500">
           <tr>
             <th className="py-1.5 pr-3 font-normal">Rung</th>
-            <th className="py-1.5 pr-3 font-normal">Price (SOL)</th>
+            <th className="py-1.5 pr-3 font-normal">Price ({launch.quoteSymbol})</th>
             <th className="py-1.5 pr-3 font-normal">Unfilled</th>
             <th className="py-1.5 font-normal">Sold for</th>
           </tr>
@@ -186,7 +186,7 @@ function LadderTable({ launch }: { launch: LaunchDetail }) {
               <td className="py-1.5 pr-3 font-semibold text-primary">{rung.multiple.toFixed(2)}×</td>
               <td className="py-1.5 pr-3">{formatSol(rung.price)}</td>
               <td className="py-1.5 pr-3">{formatTokens(rung.unfilled)}</td>
-              <td className="py-1.5">{formatSol(rung.filledSol)} SOL</td>
+              <td className="py-1.5">{formatSol(rung.filledSol)} {launch.quoteSymbol}</td>
             </tr>
           ))}
         </tbody>
@@ -387,7 +387,7 @@ export function TokenView({ mint }: { mint: string }) {
             <span className="text-neutral-400">{launch.name}</span>
           </div>
           <div className="flex flex-col items-start sm:items-end">
-            <span className="eyebrow">Price (SOL)</span>
+            <span className="eyebrow">Price ({launch.quoteSymbol})</span>
             <span className="num text-2xl font-bold md:text-3xl">
               {formatSol(launch.currentPrice)}
             </span>
@@ -417,10 +417,10 @@ export function TokenView({ mint }: { mint: string }) {
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Stat
             label="Raised"
-            value={`${formatSol(launch.quoteReserve, 3)} / ${formatSol(launch.threshold, 3)} SOL`}
+            value={`${formatSol(launch.quoteReserve, 3)} / ${formatSol(launch.threshold, 3)} ${launch.quoteSymbol}`}
           />
           <Stat label="Progress" value={formatPercent(launch.progress)} />
-          <Stat label="Price (SOL)" value={formatSol(launch.currentPrice)} />
+          <Stat label={`Price (${launch.quoteSymbol})`} value={formatSol(launch.currentPrice)} />
           <Stat label="Graduation price" value={formatSol(launch.graduationPrice)} />
         </div>
       </Card>

@@ -11,8 +11,9 @@ graduation price.
 ## What it does
 - **Launch** from DBC preset configs on mainnet: *Anti-sniper* (exponential fee decay 50% → 1%
   in 2 min, dynamic fee), *Fair raise* (near-flat curve, +5% start → graduation) and *Micro
-  raise* (anti-sniper fees, 0.1 SOL graduation). 50/50 curve-fee split, 10% team allocation
-  vesting through DBC's locker.
+  raise* (anti-sniper fees, 0.1 SOL graduation) and *Equity raise*, a near-flat curve **priced
+  and raised in tokenized Tesla stock (TSLAx)** that graduates into a TSLAx DAMM v2 pool. 50/50
+  curve-fee split, 10% team allocation vesting through DBC's locker.
 - **Graduate** into DAMM v2 with 100% of LP permanently locked and compounding fees. Anyone can
   trigger graduation from the token page once the curve is full.
 - **Unlock ladder:** vested team tokens are committed as DLMM ask-side limit orders at
@@ -48,7 +49,8 @@ It's a better default for any asset class with a team or treasury allocation (me
 
 ## Traction
 All on mainnet, through the live app (full tx table in the README, "Proof: verified on mainnet"):
-- **3 DBC preset configs** created with Invent studio (anti-sniper, fair raise, micro raise).
+- **4 DBC preset configs** created with Invent studio (anti-sniper, fair raise, micro raise, and a
+  TSLAx-quoted equity raise using Meteora's xStock token badge).
 - **2 launches**, **1 graduation**: CHRL went from launch to a locked DAMM v2 pool in 5 minutes.
 - **9 distinct wallets** traded CHRL across DBC and DAMM v2; 7 of them bought the DAMM v2 pool
   within 15 seconds of graduation.

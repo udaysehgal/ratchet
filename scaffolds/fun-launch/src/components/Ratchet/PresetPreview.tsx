@@ -35,13 +35,14 @@ export function PresetPreview({ presetId }: { presetId: string }) {
     <div className="flex flex-col gap-5">
       <CurveChart
         points={p.points}
-        label="Market cap (SOL) as SOL is raised on the curve"
+        label={`Market cap (${p.quoteSymbol}) as ${p.quoteSymbol} is raised on the curve`}
+        unit={p.quoteSymbol}
       />
       <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
-        <Row label="Raise to graduate" value={`${formatSol(p.thresholdSol, 2)} SOL`} />
+        <Row label="Raise to graduate" value={`${formatSol(p.thresholdSol, 2)} ${p.quoteSymbol}`} />
         <Row
           label="Market cap: start → graduation"
-          value={`${formatSol(p.startMcapSol, 1)} → ${formatSol(p.graduationMcapSol, 1)} SOL`}
+          value={`${formatSol(p.startMcapSol, 1)} → ${formatSol(p.graduationMcapSol, 1)} ${p.quoteSymbol}`}
         />
         <Row label="Trading fee" value={`${fee}${p.dynamicFee ? ' + volatility fee' : ''}`} />
         <Row label="Your share of curve fees" value={`${p.creatorFeeSharePct}%`} />

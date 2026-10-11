@@ -6,7 +6,7 @@ Live on Solana mainnet: **https://ratchet-olive.vercel.app**
 
 Every Ratchet token:
 
-1. **Launches on a Meteora DBC bonding curve** from a preset config (anti-sniper, fair raise or micro raise).
+1. **Launches on a Meteora DBC bonding curve** from a preset config (anti-sniper, fair raise, micro raise, or an equity raise priced in tokenized Tesla stock, TSLAx).
 2. **Graduates into a Meteora DAMM v2 pool** with 100% of LP permanently locked and half of all
    trading fees compounding back into liquidity.
 3. **Commits its team allocation as Meteora DLMM limit orders** above the graduation price. The
@@ -49,6 +49,13 @@ Every on-chain action in Ratchet goes through a Meteora program. The server laye
 | Team allocation | 10% via DBC locked vesting: 1% at 1 h after graduation, 9% daily over 30 days | same | 10%: 1% 60 s after graduation, the rest every minute for 30 min |
 | Migration | DAMM v2, customizable fee: 1% pool fee, dynamic fee, **compounding** (50% of fees back into liquidity) | same | same |
 | LP | 100% permanently locked (50% creator / 50% partner) | same | same |
+
+**Equity raise (TSLAx)** [`BBzvZ8…wCC1`](https://solscan.io/account/BBzvZ84fDNHeE7y4ZiYhBgWRN3dZr6gjdFm9TMJ8wCC1): the fair-raise curve,
+quoted and raised in Backed's Tesla xStock instead of SOL. Graduates at ~5 TSLAx into a TSLAx DAMM v2
+pool (100% LP locked, compounding fees). TSLAx is a Token-2022 mint (permanent delegate, pausable,
+scaled UI amount, transfer-hook extension with no program set); Meteora has issued it token badges
+on DBC and DAMM v2, and Ratchet attaches the DBC badge to config and pool creation (SDK 1.5.13).
+Every amount in the app, feed, check and MCP server is shown in the launch's own quote token.
 
 Preset sources: [`presets/mainnet/`](presets/mainnet), built with the Invent studio CLI.
 
@@ -120,7 +127,7 @@ claude mcp add ratchet -- npx tsx packages/ratchet-mcp/src/index.ts
 GET https://ratchet-olive.vercel.app/api/feed?minProgress=0.8&status=live
 ```
 
-CORS-open JSON of every Ratchet launch: mint, DBC pool and config, SOL raised, graduation
+CORS-open JSON of every Ratchet launch: mint, DBC pool and config, quote token and amount raised, graduation
 threshold, progress, graduated flag. Built for terminals and bots that want pools about to
 migrate into DAMM v2.
 
@@ -132,7 +139,8 @@ Every step below ran through the live app with a real wallet. Times are UTC, 202
 
 **Configs** (Invent studio, partner wallet `4re4BQ…EMLV`): anti-sniper [`6tMtkf…rYh9`](https://solscan.io/account/6tMtkfHkvvSVsCSpXbcCqVCAJYEg7SJQkDmvYH2urYh9) ([tx](https://solscan.io/tx/46mMhaiNwevdsrX4TamLJ5oSiRYYzZ5kvygDiqZSH85DTBschGYjizxkxGxUywKZTNWNiBdTxouZTjgjkh5VcZs2)),
 fair raise [`Ery2mG…wwBW`](https://solscan.io/account/Ery2mGuMQ27iV3wCqCd7Ne45XkRCV6fSf2s1j87WwwBW) ([tx](https://solscan.io/tx/4FeJYGd9KyjWGDy1hjPs6AQvzfcXnGQg8LPtRyQo4ohDduN6VpXgGUrdzj6KYpzSGfPTp64JjUd6mi6j39rs9HN8)),
-micro raise [`FQt9kW…goGp`](https://solscan.io/account/FQt9kWsBwHwkhq3TEBXCWqnEqD2GxjxjBVNuJ29igoGp) ([tx](https://solscan.io/tx/5GRNsZkJkdQjtDCWU8zqpH4SmmrHMfiPSFAprpPHuxwtxAGaxzR43S4iyM7xfaTbRFz1NhiGYPqJUZ8Uz3ADf8HZ)).
+micro raise [`FQt9kW…goGp`](https://solscan.io/account/FQt9kWsBwHwkhq3TEBXCWqnEqD2GxjxjBVNuJ29igoGp) ([tx](https://solscan.io/tx/5GRNsZkJkdQjtDCWU8zqpH4SmmrHMfiPSFAprpPHuxwtxAGaxzR43S4iyM7xfaTbRFz1NhiGYPqJUZ8Uz3ADf8HZ)),
+equity raise in TSLAx [`BBzvZ8…wCC1`](https://solscan.io/account/BBzvZ84fDNHeE7y4ZiYhBgWRN3dZr6gjdFm9TMJ8wCC1) ([tx](https://solscan.io/tx/H7G695qJrDwSjqcuJLTu5PJS4Cu986gFL86qzqWt8CC5aMZZ4vxR9Xs84gCcs7F6eNSVMwtckQQ8qXCVviUr14c)).
 
 **CHRL: launch to graduation in 5 minutes** (micro raise; mint [`CrUN9N…ifx5`](https://solscan.io/account/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5))
 

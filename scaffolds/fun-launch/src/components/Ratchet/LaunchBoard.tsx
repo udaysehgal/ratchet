@@ -56,7 +56,7 @@ function LaunchCard({ launch }: { launch: LaunchSummary }) {
       <ProgressBar value={launch.progress} className="h-1.5" />
       <div className="flex items-center justify-between gap-2 text-xs">
         <span className="num text-neutral-500">
-          {formatSol(launch.quoteReserve, 2)} / {formatSol(launch.threshold, 2)} SOL
+          {formatSol(launch.quoteReserve, 2)} / {formatSol(launch.threshold, 2)} {launch.quoteSymbol}
         </span>
         <span className={launch.migrated ? 'text-emerald' : 'text-neutral-500'}>
           {launch.migrated ? 'Graduated to DAMM v2' : presetName(launch.presetId)}
@@ -90,7 +90,8 @@ function Section({ title, hint, launches }: { title: string; hint: string; launc
 }
 
 function LiveCard({ launches }: { launches: LaunchSummary[] | undefined }) {
-  const raised = launches?.reduce((sum, l) => sum + l.quoteReserve, 0);
+  // SOL-quoted launches only; xStock-quoted raises are shown per launch
+  const raised = launches?.reduce((sum, l) => sum + (l.quoteSymbol === 'SOL' ? l.quoteReserve : 0), 0);
   const recent = (launches ?? []).slice(0, 4);
   return (
     <div className="flex flex-col gap-3">
@@ -112,7 +113,7 @@ function LiveCard({ launches }: { launches: LaunchSummary[] | undefined }) {
           <TokenAvatar uri={l.uri} symbol={l.symbol} className="h-9 w-9 rounded-full" />
           <div className="min-w-0 flex-1">
             <div className="num truncate text-sm">
-              {formatSol(l.quoteReserve, 3)} SOL · {l.symbol}
+              {formatSol(l.quoteReserve, 3)} {l.quoteSymbol} · {l.symbol}
             </div>
             <div className="eyebrow">{l.migrated ? 'Graduated' : 'On curve'}</div>
           </div>

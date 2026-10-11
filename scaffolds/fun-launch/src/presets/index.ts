@@ -2,13 +2,15 @@ import registry from './registry.json';
 
 export type Network = 'devnet' | 'mainnet';
 
-export type PresetId = 'anti-sniper' | 'fair-raise' | 'micro-raise';
+export type PresetId = 'anti-sniper' | 'fair-raise' | 'micro-raise' | 'equity-raise';
 
 export type Preset = {
   id: PresetId;
   name: string;
   tagline: string;
   points: string[];
+  /** Token the curve raises in: SOL, or an xStock */
+  quoteSymbol: string;
 };
 
 /** Display info. On-chain parameters live in /presets/<network>/<id>.jsonc (created with Invent studio). */
@@ -23,6 +25,7 @@ const ALL_PRESETS: Preset[] = [
       '100% of LP permanently locked',
       'Team allocation vests after graduation',
     ],
+    quoteSymbol: 'SOL',
   },
   {
     id: 'fair-raise',
@@ -34,6 +37,7 @@ const ALL_PRESETS: Preset[] = [
       '100% of LP permanently locked',
       'Team allocation vests after graduation',
     ],
+    quoteSymbol: 'SOL',
   },
   {
     id: 'micro-raise',
@@ -45,6 +49,19 @@ const ALL_PRESETS: Preset[] = [
       '100% of LP permanently locked',
       'Team allocation unlocks minute by minute after graduation',
     ],
+    quoteSymbol: 'SOL',
+  },
+  {
+    id: 'equity-raise',
+    name: 'Equity raise (TSLAx)',
+    tagline: 'Raise in tokenized Tesla stock on a near-flat curve: price discovery without a pump.',
+    points: [
+      'Priced and raised in TSLAx (xStocks), not SOL',
+      'Last buyer pays ~5% more than the first',
+      'Graduates to a compounding TSLAx DAMM v2 pool, LP locked',
+      'Team allocation vests after graduation',
+    ],
+    quoteSymbol: 'TSLAx',
   },
 ];
 

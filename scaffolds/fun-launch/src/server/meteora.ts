@@ -41,6 +41,7 @@ import DLMM, {
 } from '@meteora-ag/dlmm';
 import { LockClient } from '@meteora-ag/met-lock-sdk';
 import { validateLadder } from '@/lib/ladder';
+import { quoteToken } from '@/lib/quotes';
 import { NETWORK, getAllPresetConfigs, getPresetByConfig, type PresetId } from '@/presets';
 
 const RPC_URL = process.env.RPC_URL as string;
@@ -48,7 +49,8 @@ if (!RPC_URL) {
   throw new Error('Missing RPC_URL');
 }
 
-const QUOTE_DECIMALS = 9; // all Ratchet presets are SOL-quoted
+/** Decimals of a config's quote token (SOL, or an xStock like TSLAx). */
+const quoteDecimals = (config: PoolConfig) => quoteToken(config.quoteMint.toBase58()).decimals;
 const DLMM_CLUSTER = NETWORK === 'mainnet' ? 'mainnet-beta' : 'devnet';
 const DLMM_PROGRAM_ID = new PublicKey(LBCLMM_PROGRAM_IDS[DLMM_CLUSTER]);
 
@@ -125,8 +127,10 @@ export type LaunchSummary = {
   name: string;
   symbol: string;
   uri: string;
-  quoteReserve: number; // SOL
-  threshold: number; // SOL
+  quoteMint: string;
+  quoteSymbol: string; // SOL or an xStock such as TSLAx
+  quoteReserve: number; // in the quote token
+  threshold: number; // in the quote token
   progress: number; // 0..1
   migrated: boolean;
 };
@@ -139,8 +143,9 @@ function summarize(
   config: PoolConfig,
   meta: TokenMeta | undefined
 ): LaunchSummary {
-  const quoteReserve = Number(state.quoteReserve.toString()) / 10 ** QUOTE_DECIMALS;
-  const threshold = Number(config.migrationQuoteThreshold.toString()) / 10 ** QUOTE_DECIMALS;
+  const quote = quoteToken(config.quoteMint.toBase58());
+  const quoteReserve = Number(state.quoteReserve.toString()) / 10 ** quote.decimals;
+  const threshold = Number(config.migrationQuoteThreshold.toString()) / 10 ** quote.decimals;
   return {
     pool: pool.toBase58(),
     baseMint: state.baseMint.toBase58(),
@@ -150,6 +155,8 @@ function summarize(
     name: meta?.name ?? 'Unknown',
     symbol: meta?.symbol ?? '???',
     uri: meta?.uri ?? '',
+    quoteMint: quote.mint,
+    quoteSymbol: quote.symbol,
     quoteReserve,
     threshold,
     progress: threshold > 0 ? Math.min(quoteReserve / threshold, 1) : 0,
@@ -289,12 +296,13 @@ async function loadLaunch(baseMint: PublicKey): Promise<LaunchDetail | null> {
   const metas = await getTokenMetas([baseMint]);
   const summary = summarize(pool.publicKey, state, config, metas.get(baseMint.toBase58()));
   const baseDecimals = config.tokenDecimal;
+  const quoteDec = quoteDecimals(config);
 
   const graduationPrice = Number(
-    getPriceFromSqrtPrice(config.migrationSqrtPrice, baseDecimals, QUOTE_DECIMALS)
+    getPriceFromSqrtPrice(config.migrationSqrtPrice, baseDecimals, quoteDec)
   );
   let currentPrice = Number(
-    getPriceFromSqrtPrice(state.sqrtPrice, baseDecimals, QUOTE_DECIMALS)
+    getPriceFromSqrtPrice(state.sqrtPrice, baseDecimals, quoteDec)
   );
 
   let dammV2Pool: string | null = null;
@@ -304,7 +312,7 @@ async function loadLaunch(baseMint: PublicKey): Promise<LaunchDetail | null> {
     if (match) {
       dammV2Pool = match.publicKey.toBase58();
       currentPrice = Number(
-        getDammV2Price(match.account.sqrtPrice, baseDecimals, QUOTE_DECIMALS)
+        getDammV2Price(match.account.sqrtPrice, baseDecimals, quoteDec)
       );
     }
   }
@@ -363,7 +371,7 @@ export async function buildSwapTx(params: {
   }
   const config = await dbc.state.getPoolConfig(pool.account.poolState.config);
   const swapBaseForQuote = params.side === 'sell';
-  const decimals = swapBaseForQuote ? config.tokenDecimal : QUOTE_DECIMALS;
+  const decimals = swapBaseForQuote ? config.tokenDecimal : quoteDecimals(config);
   const amountIn = new BN(Math.floor(params.amount * 10 ** decimals).toString());
   const swapMode = swapBaseForQuote ? SwapMode.ExactIn : SwapMode.PartialFill;
 
@@ -460,7 +468,7 @@ export async function buildCreateDlmmPairTx(baseMint: PublicKey, user: PublicKey
 
   const pricePerLamport = DLMM.getPricePerLamport(
     config.tokenDecimal,
-    QUOTE_DECIMALS,
+    quoteDecimals(config),
     launch.currentPrice
   );
   const activeBinId = DLMM.getBinIdFromPrice(pricePerLamport, DLMM_BIN_STEP, false);
@@ -540,12 +548,12 @@ async function getDammPoolForMint(baseMint: PublicKey, quoteMint: PublicKey) {
   return match;
 }
 
-/** Swap on the token's graduated DAMM v2 pool (token A = launched token, token B = SOL). */
+/** Swap on the token's graduated DAMM v2 pool (token A = launched token, token B = quote). */
 export async function buildDammSwapTx(params: {
   baseMint: PublicKey;
   user: PublicKey;
   side: 'buy' | 'sell';
-  amount: number; // SOL for buy, tokens for sell
+  amount: number; // quote token for buy, tokens for sell
   slippageBps: number;
 }): Promise<BuiltTx> {
   const pool = await dbc.state.getPoolByBaseMint(params.baseMint);
@@ -558,7 +566,7 @@ export async function buildDammSwapTx(params: {
   const selling = params.side === 'sell';
   const inputMint = selling ? state.tokenAMint : state.tokenBMint;
   const outputMint = selling ? state.tokenBMint : state.tokenAMint;
-  const inDecimals = selling ? config.tokenDecimal : QUOTE_DECIMALS;
+  const inDecimals = selling ? config.tokenDecimal : quoteDecimals(config);
   const amountIn = new BN(Math.floor(params.amount * 10 ** inDecimals).toString());
 
   const quote = cpAmm.getQuote2({
@@ -567,7 +575,7 @@ export async function buildDammSwapTx(params: {
     currentPoint: await getDammCurrentPoint(connection, state.activationType),
     poolState: state,
     tokenADecimal: config.tokenDecimal,
-    tokenBDecimal: QUOTE_DECIMALS,
+    tokenBDecimal: quoteDecimals(config),
     hasReferral: false,
     swapMode: DammSwapMode.ExactIn,
     amountIn,
@@ -603,10 +611,11 @@ export type Earning = {
   symbol: string;
   pool: string;
   roles: ('creator' | 'partner')[];
-  dbcQuote: number; // SOL of unclaimed DBC trading fees for this wallet's roles
+  quoteSymbol: string;
+  dbcQuote: number; // quote token: unclaimed DBC trading fees for this wallet's roles
   dbcBase: number; // tokens
   creationFee: number; // SOL, partner share of the launch fee, if unclaimed
-  dammQuote: number; // SOL of unclaimed DAMM v2 LP fees on this wallet's positions
+  dammQuote: number; // quote token: unclaimed DAMM v2 LP fees on this wallet's positions
   dammBase: number; // tokens
 };
 
@@ -653,7 +662,8 @@ async function loadEarnings(user: PublicKey): Promise<Earning[]> {
     const isPartner = p.config.feeClaimer.equals(user);
     const baseDecimals = p.config.tokenDecimal;
     const toBase = (v: BN) => Number(v.toString()) / 10 ** baseDecimals;
-    const toQuote = (v: BN) => Number(v.toString()) / 10 ** QUOTE_DECIMALS;
+    const quote = quoteToken(p.config.quoteMint.toBase58());
+    const toQuote = (v: BN) => Number(v.toString()) / 10 ** quote.decimals;
 
     let dbcQuote = 0;
     let dbcBase = 0;
@@ -692,6 +702,7 @@ async function loadEarnings(user: PublicKey): Promise<Earning[]> {
       symbol: metas.get(state.baseMint.toBase58())?.symbol ?? '???',
       pool: p.publicKey.toBase58(),
       roles: [...(isCreator ? ['creator' as const] : []), ...(isPartner ? ['partner' as const] : [])],
+      quoteSymbol: quote.symbol,
       dbcQuote,
       dbcBase,
       creationFee,
@@ -793,6 +804,7 @@ const TOTAL_SUPPLY = 1_000_000_000; // every Ratchet preset mints 1B tokens
 export type PresetPreview = {
   id: PresetId;
   config: string;
+  quoteSymbol: string; // amounts named *Sol are in this token
   thresholdSol: number;
   startMcapSol: number;
   graduationMcapSol: number;
@@ -822,7 +834,9 @@ async function loadPresetPreviews(): Promise<PresetPreview[]> {
       const configAddress = getPresetConfig(preset.id)!;
       const config = await dbc.state.getPoolConfig(configAddress);
       const decimals = config.tokenDecimal;
-      const priceAt = (sqrt: BN) => Number(getPriceFromSqrtPrice(sqrt, decimals, QUOTE_DECIMALS));
+      const quote = quoteToken(config.quoteMint.toBase58());
+      const quoteDec = quote.decimals;
+      const priceAt = (sqrt: BN) => Number(getPriceFromSqrtPrice(sqrt, decimals, quoteDec));
 
       // SOL raised to reach sqrt price `s`: sum quote over each curve segment below `s`
       const raisedAt = (s: BN) => {
@@ -836,7 +850,7 @@ async function loadPresetPreviews(): Promise<PresetPreview[]> {
           }
           lower = point.sqrtPrice;
         }
-        return Number(total.toString()) / 10 ** QUOTE_DECIMALS;
+        return Number(total.toString()) / 10 ** quoteDec;
       };
 
       const start = config.sqrtStartPrice;
@@ -864,7 +878,8 @@ async function loadPresetPreviews(): Promise<PresetPreview[]> {
       return {
         id: preset.id,
         config: configAddress,
-        thresholdSol: Number(config.migrationQuoteThreshold.toString()) / 10 ** QUOTE_DECIMALS,
+        quoteSymbol: quote.symbol,
+        thresholdSol: Number(config.migrationQuoteThreshold.toString()) / 10 ** quoteDec,
         startMcapSol: priceAt(start) * TOTAL_SUPPLY,
         graduationMcapSol: priceAt(end) * TOTAL_SUPPLY,
         startFeePct: cliff * 100,

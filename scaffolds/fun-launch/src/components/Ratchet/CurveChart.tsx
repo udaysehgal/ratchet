@@ -12,8 +12,16 @@ function niceMax(value: number) {
   return [1, 2, 2.5, 5, 10].map((m) => m * pow).find((v) => v >= value) ?? value;
 }
 
-/** Market cap (SOL) vs SOL raised along a preset's bonding curve, with a hover readout. */
-export function CurveChart({ points, label }: { points: Point[]; label: string }) {
+/** Market cap vs amount raised along a preset's bonding curve (in its quote token), with a hover readout. */
+export function CurveChart({
+  points,
+  label,
+  unit = 'SOL',
+}: {
+  points: Point[];
+  label: string;
+  unit?: string;
+}) {
   const [hover, setHover] = useState<number | null>(null);
 
   const geometry = useMemo(() => {
@@ -56,7 +64,7 @@ export function CurveChart({ points, label }: { points: Point[]; label: string }
           ))}
           {xTicks.map((t) => (
             <text key={`x${t}`} x={x(t)} y={H - 10} textAnchor="middle" fontSize="11" fill="rgb(var(--neutral-500))">
-              {formatSol(t, 1)} SOL
+              {formatSol(t, 1)} {unit}
             </text>
           ))}
           <path d={path} fill="none" stroke="rgb(var(--chart-line))" strokeWidth={2} strokeLinejoin="round" />
@@ -83,8 +91,8 @@ export function CurveChart({ points, label }: { points: Point[]; label: string }
         </svg>
         {active && (
           <div className="pointer-events-none absolute right-2 top-2 rounded-md border border-neutral-750 bg-background px-2 py-1 text-xs">
-            <div>Raised: <strong>{formatSol(active.raisedSol, 2)} SOL</strong></div>
-            <div>Market cap: <strong>{formatSol(active.mcapSol, 2)} SOL</strong></div>
+            <div>Raised: <strong>{formatSol(active.raisedSol, 2)} {unit}</strong></div>
+            <div>Market cap: <strong>{formatSol(active.mcapSol, 2)} {unit}</strong></div>
           </div>
         )}
       </div>
@@ -93,8 +101,8 @@ export function CurveChart({ points, label }: { points: Point[]; label: string }
         <table className="mt-2 w-full">
           <thead>
             <tr className="text-left">
-              <th className="font-normal">SOL raised</th>
-              <th className="font-normal">Market cap (SOL)</th>
+              <th className="font-normal">{unit} raised</th>
+              <th className="font-normal">Market cap ({unit})</th>
             </tr>
           </thead>
           <tbody>

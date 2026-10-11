@@ -2,14 +2,16 @@ import Head from 'next/head';
 import { useWallet } from '@jup-ag/wallet-adapter';
 import Page from '@/components/ui/Page/Page';
 import { useEarnings } from '@/hooks/useRatchet';
-import { EarningRow, earningTotalSol } from '@/components/Ratchet/EarningRow';
-import { formatSol } from '@/lib/format/ratchet';
+import { EarningRow, earningTotals, formatTotals } from '@/components/Ratchet/EarningRow';
 
 export default function EarningsPage() {
   const { publicKey } = useWallet();
   const address = publicKey?.toBase58();
   const { data, isLoading, error } = useEarnings(address);
-  const total = (data ?? []).reduce((sum, e) => sum + earningTotalSol(e), 0);
+  const total = (data ?? []).reduce<Record<string, number>>((sum, e) => {
+    for (const [symbol, v] of Object.entries(earningTotals(e))) sum[symbol] = (sum[symbol] ?? 0) + v;
+    return sum;
+  }, {});
 
   return (
     <Page>
@@ -39,7 +41,7 @@ export default function EarningsPage() {
         ) : (
           <>
             <p className="text-lg">
-              Claimable now: <strong>{formatSol(total, 6)} SOL</strong>
+              Claimable now: <strong>{formatTotals(total)}</strong>
             </p>
             {data!.map((e) => (
               <EarningRow key={e.pool} earning={e} />

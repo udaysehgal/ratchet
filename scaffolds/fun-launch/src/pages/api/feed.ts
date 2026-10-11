@@ -35,9 +35,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         dbcPool: l.pool,
         dbcConfig: l.config,
         creator: l.creator,
-        quoteMint: 'So11111111111111111111111111111111111111112',
-        raisedSol: l.quoteReserve,
-        graduationThresholdSol: l.threshold,
+        quoteMint: l.quoteMint,
+        quoteSymbol: l.quoteSymbol,
+        raised: l.quoteReserve, // in the quote token
+        graduationThreshold: l.threshold,
         progress: l.progress,
         graduated: l.migrated,
       })),

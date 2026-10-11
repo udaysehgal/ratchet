@@ -60,6 +60,8 @@ export type LaunchFacts = {
   /** Set for Ratchet launches: number of DLMM ladder rungs committed (0 if none yet). */
   ratchetLadderRungs: number | null;
   migrated: boolean;
+  /** Symbol of the token the curve raises in (SOL, TSLAx, ...) */
+  quoteSymbol: string;
 };
 
 /**
@@ -120,13 +122,13 @@ export function assessLaunch(f: LaunchFacts): Check[] {
           id: 'migration-fee',
           title: `${pct(f.migrationFeePct)} of the raise is taken at graduation`,
           status: f.migrationFeePct >= 25 ? 'fail' : 'warn',
-          detail: `At graduation ${pct(f.migrationFeePct)} of the SOL raised is paid out (${pct(f.creatorMigrationFeePct)} of that to the creator, the rest to the partner) instead of backing the pool.`,
+          detail: `At graduation ${pct(f.migrationFeePct)} of the ${f.quoteSymbol} raised is paid out (${pct(f.creatorMigrationFeePct)} of that to the creator, the rest to the partner) instead of backing the pool.`,
         }
       : {
           id: 'migration-fee',
           title: 'The whole raise backs the pool',
           status: 'pass',
-          detail: 'No migration fee: all SOL raised on the curve goes into the graduated pool.',
+          detail: `No migration fee: everything raised on the curve goes into the graduated pool.`,
         }
   );
 
@@ -200,7 +202,7 @@ export function assessLaunch(f: LaunchFacts): Check[] {
 
   // Post-graduation exit risk (thin pool)
   const drain = exitDrain(f.curveSupply, f.graduationPoolSupply);
-  const drainText = `If curve buyers sell right after graduation, they can pull up to ${pct(drain * 100)} of the pool's SOL.`;
+  const drainText = `If curve buyers sell right after graduation, they can pull up to ${pct(drain * 100)} of the pool's ${f.quoteSymbol}.`;
   checks.push(
     drain > MAX_EXIT_DRAIN
       ? { id: 'pool-depth', title: 'Thin pool at graduation', status: 'warn', detail: `${drainText} Early buyers can exit at later buyers' expense.` }

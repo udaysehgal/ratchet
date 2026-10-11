@@ -30,7 +30,7 @@ server.registerTool(
   {
     title: 'List Ratchet launches',
     description:
-      'Every token launched on Ratchet (Meteora DBC), with SOL raised, graduation threshold, progress and whether it has graduated to DAMM v2. Filter to find launches about to graduate.',
+      'Every token launched on Ratchet (Meteora DBC), with the amount raised (in its quote token: SOL or an xStock like TSLAx), graduation threshold, progress and whether it has graduated to DAMM v2. Filter to find launches about to graduate.',
     inputSchema: {
       status: z.enum(['live', 'graduated']).optional().describe('live = still on the curve'),
       minProgress: z.number().min(0).max(1).optional().describe('e.g. 0.8 for 80%+ of the way to graduation'),
