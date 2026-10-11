@@ -86,7 +86,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (error) {
     console.error('Upload error:', error);
-    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Upload failed: ${message}` });
   }
 }
 
@@ -113,12 +114,8 @@ async function uploadImage(tokenLogo: string, mint: string): Promise<string | fa
   }
   const fileName = `images/${mint}.${contentType.split('/')[1]}`;
 
-  try {
-    return await uploadPublic(fileName, fileBuffer, contentType);
-  } catch (error) {
-    console.error('Error uploading image:', error);
-    return false;
-  }
+  // Storage errors propagate so the handler reports the real cause
+  return uploadPublic(fileName, fileBuffer, contentType);
 }
 
 async function uploadMetadata(params: MetadataUploadParams): Promise<string | false> {
@@ -129,12 +126,7 @@ async function uploadMetadata(params: MetadataUploadParams): Promise<string | fa
   };
   const fileName = `metadata/${params.mint}.json`;
 
-  try {
-    return await uploadPublic(fileName, Buffer.from(JSON.stringify(metadata, null, 2)), 'application/json');
-  } catch (error) {
-    console.error('Error uploading metadata:', error);
-    return false;
-  }
+  return uploadPublic(fileName, Buffer.from(JSON.stringify(metadata, null, 2)), 'application/json');
 }
 
 async function createPoolTransaction({
