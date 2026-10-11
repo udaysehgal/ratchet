@@ -37,6 +37,12 @@ export const Header = () => {
 
         {/* Navigation and Actions */}
         <div className="flex items-center gap-1.5 md:gap-3">
+          <Link
+            href="/check"
+            className="hidden rounded-lg px-3 py-2 text-sm text-neutral-300 hover:text-foreground sm:block"
+          >
+            Check a token
+          </Link>
           {address && (
             <Link
               href="/earnings"

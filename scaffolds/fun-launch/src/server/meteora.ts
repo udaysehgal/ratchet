@@ -40,6 +40,7 @@ import DLMM, {
   getPriceOfBinByBinId,
 } from '@meteora-ag/dlmm';
 import { LockClient } from '@meteora-ag/met-lock-sdk';
+import { validateLadder } from '@/lib/ladder';
 import { NETWORK, getAllPresetConfigs, getPresetByConfig, type PresetId } from '@/presets';
 
 const RPC_URL = process.env.RPC_URL as string;
@@ -51,14 +52,12 @@ const QUOTE_DECIMALS = 9; // all Ratchet presets are SOL-quoted
 const DLMM_CLUSTER = NETWORK === 'mainnet' ? 'mainnet-beta' : 'devnet';
 const DLMM_PROGRAM_ID = new PublicKey(LBCLMM_PROGRAM_IDS[DLMM_CLUSTER]);
 
-/** Unlock ladder rules. Enforced by this API (soft commitment); a vault program would enforce on-chain. */
-export const LADDER_MIN_MULTIPLE = 1.25; // lowest rung: 1.25x the graduation price
-export const LADDER_MAX_RUNGS = 8;
+export { LADDER_MIN_MULTIPLE, LADDER_MAX_RUNGS } from '@/lib/ladder';
 const DLMM_BIN_STEP = 100; // 1% per bin
 const DLMM_FEE_BPS = 100;
 
 export const connection = new Connection(RPC_URL, 'confirmed');
-const dbc = new DynamicBondingCurveClient(connection, 'confirmed');
+export const dbc = new DynamicBondingCurveClient(connection, 'confirmed');
 const cpAmm = new CpAmm(connection);
 const lock = new LockClient(connection, 'confirmed');
 
@@ -494,15 +493,8 @@ export async function buildLadderTx(params: {
   rungs: { multiple: number; amount: number }[];
 }): Promise<BuiltTx & { limitOrder: string }> {
   const { config } = await requireCreatorLaunch(params.baseMint, params.user);
-  if (params.rungs.length === 0 || params.rungs.length > LADDER_MAX_RUNGS) {
-    throw new Error(`Ladder needs 1-${LADDER_MAX_RUNGS} rungs`);
-  }
-  for (const rung of params.rungs) {
-    if (!(rung.multiple >= LADDER_MIN_MULTIPLE)) {
-      throw new Error(`Every rung must be at least ${LADDER_MIN_MULTIPLE}x the graduation price`);
-    }
-    if (!(rung.amount > 0)) throw new Error('Rung amounts must be positive');
-  }
+  const invalid = validateLadder(params.rungs);
+  if (invalid) throw new Error(invalid);
   const launch = await getLaunch(params.baseMint);
   if (!launch?.dlmmPair) throw new Error('Create the DLMM pair first');
 

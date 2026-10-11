@@ -12,14 +12,14 @@ import {
   formatTokens,
 } from '@/lib/format/ratchet';
 import { ProgressBar } from './ProgressBar';
+import { LADDER_MIN_MULTIPLE as MIN_MULTIPLE, splitEvenly } from '@/lib/ladder';
 import { TokenAvatar } from './TokenAvatar';
+import { CheckList, OVERALL_LABEL, StatusIcon, useLaunchCheck } from './CheckList';
 import { cn } from '@/lib/utils';
 
 const inputClassName =
   'w-full rounded-lg border border-neutral-750 bg-background p-2.5 text-sm text-foreground placeholder:text-neutral-500 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/40';
 
-// Must match LADDER_MIN_MULTIPLE on the server
-const MIN_MULTIPLE = 1.25;
 // Kept within 1.25x-2x so the rungs share as few DLMM bin arrays (rent) as possible
 const DEFAULT_MULTIPLES = [1.25, 1.5, 2];
 
@@ -200,12 +200,7 @@ function CreatorUnlockControls({ launch }: { launch: LaunchDetail }) {
   const [multiples, setMultiples] = useState(DEFAULT_MULTIPLES.map(String));
   const [total, setTotal] = useState('');
 
-  const rungs = useMemo(() => {
-    const parsed = multiples.map(Number).filter((m) => m > 0);
-    const totalAmount = Number(total);
-    if (!(totalAmount > 0) || parsed.length === 0) return [];
-    return parsed.map((multiple) => ({ multiple, amount: totalAmount / parsed.length }));
-  }, [multiples, total]);
+  const rungs = useMemo(() => splitEvenly(multiples.map(Number), Number(total)), [multiples, total]);
   const invalid = rungs.some((r) => r.multiple < MIN_MULTIPLE);
 
   return (
@@ -315,6 +310,21 @@ function UnlocksCard({ launch }: { launch: LaunchDetail }) {
   );
 }
 
+function SafetyCard({ mint }: { mint: string }) {
+  const { data } = useLaunchCheck(mint);
+  if (!data) return null;
+  return (
+    <Card title="Launch check" icon="ph--shield-check-bold">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <StatusIcon status={data.overall} />
+        {OVERALL_LABEL[data.overall]}
+        <span className="font-normal text-neutral-500">· read from the DBC config and mint</span>
+      </div>
+      <CheckList checks={data.checks} />
+    </Card>
+  );
+}
+
 function FeesCard({ launch }: { launch: LaunchDetail }) {
   const { publicKey } = useWallet();
   const { data } = useEarnings(publicKey?.toBase58());
@@ -420,6 +430,7 @@ export function TokenView({ mint }: { mint: string }) {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex flex-col gap-4">
           <UnlocksCard launch={launch} />
+          <SafetyCard mint={launch.baseMint} />
           <FeesCard launch={launch} />
         </div>
         <TradeCard launch={launch} />

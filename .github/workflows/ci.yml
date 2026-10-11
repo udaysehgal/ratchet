@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    env:
+      # Public endpoint is enough for the build; reads only happen at request time
+      RPC_URL: https://api.mainnet-beta.solana.com
+      NEXT_PUBLIC_NETWORK: mainnet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm --filter @meteora-invent/scaffold/fun-launch typecheck
+      - name: Unit tests
+        run: pnpm --filter @meteora-invent/scaffold/fun-launch test
+      - name: Build
+        run: pnpm --filter @meteora-invent/scaffold/fun-launch build
