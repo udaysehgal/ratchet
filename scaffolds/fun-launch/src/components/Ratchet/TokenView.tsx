@@ -12,6 +12,8 @@ import {
   formatTokens,
 } from '@/lib/format/ratchet';
 import { ProgressBar } from './ProgressBar';
+import { TokenAvatar } from './TokenAvatar';
+import { cn } from '@/lib/utils';
 
 const inputClassName =
   'w-full rounded-lg border border-neutral-750 bg-background p-2.5 text-sm text-foreground placeholder:text-neutral-500 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/40';
@@ -20,10 +22,23 @@ const inputClassName =
 const MIN_MULTIPLE = 1.25;
 const DEFAULT_MULTIPLES = [1.25, 1.5, 2, 3];
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({
+  title,
+  icon,
+  className,
+  children,
+}: {
+  title: string;
+  icon?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-neutral-850 bg-neutral-925 p-5">
-      <h2 className="text-lg font-bold">{title}</h2>
+    <section className={cn('panel flex flex-col gap-4 p-5', className)}>
+      <h2 className="flex items-center gap-2 text-lg font-bold">
+        {icon && <span className={cn('iconify h-5 w-5 text-primary', icon)} />}
+        {title}
+      </h2>
       {children}
     </section>
   );
@@ -31,9 +46,9 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex flex-col">
-      <span className="text-xs text-neutral-500">{label}</span>
-      <span className="font-medium">{value}</span>
+    <div className="flex flex-col gap-1">
+      <span className="eyebrow">{label}</span>
+      <span className="num text-base font-semibold">{value}</span>
     </div>
   );
 }
@@ -45,9 +60,10 @@ function ChainLink({ label, address }: { label: string; address: string | null }
       href={explorerUrl(address)}
       target="_blank"
       rel="noreferrer"
-      className="rounded-full border border-neutral-750 px-3 py-1 text-xs text-neutral-300 hover:border-neutral-600"
+      className="inline-flex items-center gap-1 rounded-full border border-neutral-750 bg-neutral-925/60 px-3 py-1 font-mono text-xs text-neutral-300 transition-colors hover:border-primary/60 hover:text-primary"
     >
-      {label} ↗
+      {label}
+      <span className="iconify ph--arrow-up-right-bold h-3 w-3" />
     </a>
   );
 }
@@ -59,7 +75,11 @@ function TradeCard({ launch }: { launch: LaunchDetail }) {
 
   const value = Number(amount);
   return (
-    <Card title={launch.migrated ? 'Trade on DAMM v2' : 'Trade on the curve'}>
+    <Card
+      title={launch.migrated ? 'Trade on DAMM v2' : 'Trade on the curve'}
+      icon="ph--swap-bold"
+      className="panel-glow lg:sticky lg:top-20 lg:self-start"
+    >
       {launch.migrated && (
         <p className="text-sm text-neutral-400">
           Graduated: trades route to the Meteora DAMM v2 pool, where 100% of LP is permanently
@@ -74,9 +94,14 @@ function TradeCard({ launch }: { launch: LaunchDetail }) {
             role="tab"
             aria-selected={side === s}
             onClick={() => setSide(s)}
-            className={`rounded-lg border py-2 text-sm font-medium capitalize ${
-              side === s ? 'border-primary/70 bg-primary/10' : 'border-neutral-750'
-            }`}
+            className={cn(
+              'rounded-lg border py-2 text-sm font-semibold capitalize transition-colors',
+              side === s
+                ? s === 'buy'
+                  ? 'border-emerald/60 bg-emerald/15 text-emerald'
+                  : 'border-rose/60 bg-rose/15 text-rose'
+                : 'border-neutral-750 text-neutral-400 hover:text-foreground'
+            )}
           >
             {s}
           </button>
@@ -87,7 +112,7 @@ function TradeCard({ launch }: { launch: LaunchDetail }) {
           {side === 'buy' ? 'Amount (SOL)' : `Amount (${launch.symbol})`}
         </span>
         <input
-          className={inputClassName}
+          className={cn(inputClassName, 'num p-3 text-xl')}
           inputMode="decimal"
           placeholder="0.0"
           value={amount}
@@ -100,6 +125,7 @@ function TradeCard({ launch }: { launch: LaunchDetail }) {
         </p>
       )}
       <Button
+        size="lg"
         disabled={!(value > 0) || pending !== null}
         onClick={async () => {
           if (await run({ action: 'swap', side, amount: value })) setAmount('');
@@ -130,10 +156,10 @@ function LadderTable({ launch }: { launch: LaunchDetail }) {
             <th className="py-1.5 font-normal">Sold for</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="num">
           {launch.ladder.map((rung) => (
             <tr key={rung.binId} className="border-t border-neutral-850">
-              <td className="py-1.5 pr-3">{rung.multiple.toFixed(2)}× grad</td>
+              <td className="py-1.5 pr-3 font-semibold text-primary">{rung.multiple.toFixed(2)}×</td>
               <td className="py-1.5 pr-3">{formatSol(rung.price)}</td>
               <td className="py-1.5 pr-3">{formatTokens(rung.unfilled)}</td>
               <td className="py-1.5">{formatSol(rung.filledSol)} SOL</td>
@@ -234,7 +260,7 @@ function UnlocksCard({ launch }: { launch: LaunchDetail }) {
   const vesting = launch.vesting;
 
   return (
-    <Card title="Team unlocks">
+    <Card title="Team unlocks" icon="ph--stairs-bold">
       {!launch.migrated ? (
         <p className="text-sm text-neutral-400">
           The team allocation stays locked in a Meteora vesting escrow until this token
@@ -271,7 +297,7 @@ function FeesCard({ launch }: { launch: LaunchDetail }) {
   const earning = data?.find((e) => e.baseMint === launch.baseMint);
   if (!earning) return null;
   return (
-    <Card title="Fees">
+    <Card title="Fees" icon="ph--coins-bold">
       <EarningRow earning={earning} showToken={false} />
     </Card>
   );
@@ -280,7 +306,14 @@ function FeesCard({ launch }: { launch: LaunchDetail }) {
 export function TokenView({ mint }: { mint: string }) {
   const { data: launch, isLoading, error } = useLaunch(mint);
 
-  if (isLoading) return <p className="p-8 text-center text-neutral-500">Loading from chain…</p>;
+  if (isLoading) {
+    return (
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 pt-6">
+        <div className="panel h-24 animate-pulse" />
+        <div className="panel h-40 animate-pulse" />
+      </div>
+    );
+  }
   if (error || !launch) {
     return (
       <p className="p-8 text-center text-rose">
@@ -292,15 +325,39 @@ export function TokenView({ mint }: { mint: string }) {
   const preset = PRESETS.find((p) => p.id === launch.presetId);
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-baseline gap-3">
-          <h1 className="text-3xl font-bold tracking-tight">{launch.symbol}</h1>
-          <span className="text-neutral-400">{launch.name}</span>
-          {preset && (
-            <span className="rounded-full border border-neutral-750 px-2 py-0.5 text-xs text-neutral-400">
-              {preset.name}
+      <div className="flex flex-col gap-4 pt-2 md:pt-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <TokenAvatar
+            uri={launch.uri}
+            symbol={launch.symbol}
+            className="h-16 w-16 rounded-2xl text-lg md:h-20 md:w-20"
+          />
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-3xl font-bold tracking-tight md:text-5xl">{launch.symbol}</h1>
+              {launch.migrated ? (
+                <span className="rounded-full bg-emerald/15 px-2.5 py-0.5 text-xs font-semibold text-emerald">
+                  Graduated
+                </span>
+              ) : (
+                <span className="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                  On curve
+                </span>
+              )}
+              {preset && (
+                <span className="rounded-full border border-neutral-750 px-2.5 py-0.5 text-xs text-neutral-400">
+                  {preset.name}
+                </span>
+              )}
+            </div>
+            <span className="text-neutral-400">{launch.name}</span>
+          </div>
+          <div className="flex flex-col items-start sm:items-end">
+            <span className="eyebrow">Price (SOL)</span>
+            <span className="num text-2xl font-bold md:text-3xl">
+              {formatSol(launch.currentPrice)}
             </span>
-          )}
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <ChainLink label="Mint" address={launch.baseMint} />
@@ -310,8 +367,19 @@ export function TokenView({ mint }: { mint: string }) {
         </div>
       </div>
 
-      <Card title={launch.migrated ? 'Graduated' : 'Bonding curve'}>
-        <ProgressBar value={launch.progress} className="h-3" />
+      <Card
+        title={launch.migrated ? 'Graduated' : 'Bonding curve'}
+        icon={launch.migrated ? 'ph--graduation-cap-bold' : 'ph--chart-line-up-bold'}
+      >
+        <div className="flex items-end justify-between gap-3">
+          <span className="num text-4xl font-bold md:text-5xl">
+            {formatPercent(launch.progress)}
+          </span>
+          <span className="pb-1 text-sm text-neutral-500">
+            {launch.migrated ? 'migrated to DAMM v2' : 'to graduation'}
+          </span>
+        </div>
+        <ProgressBar value={launch.progress} className="h-4" />
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Stat
             label="Raised"

@@ -162,7 +162,7 @@ export default function CreatePool() {
               className="space-y-8"
             >
               {/* Preset Section */}
-              <div className="rounded-xl border border-neutral-850 bg-neutral-925 p-5 sm:p-8">
+              <div className="panel p-5 sm:p-8">
                 <h2 className="text-xl md:text-2xl font-bold mb-4">Launch preset</h2>
                 <form.Field name="presetId">
                   {(field) => (
@@ -205,7 +205,7 @@ export default function CreatePool() {
               </div>
 
               {/* Token Details Section */}
-              <div className="rounded-xl border border-neutral-850 bg-neutral-925 p-5 sm:p-8">
+              <div className="panel p-5 sm:p-8">
                 <h2 className="text-xl md:text-2xl font-bold mb-4">Token Details</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -299,7 +299,7 @@ export default function CreatePool() {
               </div>
 
               {/* Social Links Section */}
-              <div className="rounded-xl border border-neutral-850 bg-neutral-925 p-5 sm:p-8">
+              <div className="panel p-5 sm:p-8">
                 <h2 className="text-xl md:text-2xl font-bold mb-6">Social Links (Optional)</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -411,7 +411,7 @@ const SubmitButton = ({ isSubmitting }: { isSubmitting: boolean }) => {
 const PoolCreationSuccess = ({ mint }: { mint: string | null }) => {
   return (
     <>
-      <div className="rounded-xl border border-neutral-850 bg-neutral-925 p-6 sm:p-8 text-center">
+      <div className="panel p-6 sm:p-8 text-center">
         <div className="bg-emerald/15 p-4 rounded-full inline-flex mb-6">
           <span className="iconify ph--check-bold w-12 h-12 text-emerald" />
         </div>

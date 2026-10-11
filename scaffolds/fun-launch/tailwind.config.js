@@ -18,6 +18,11 @@ export default {
         xs: '390px',
       },
 
+      fontFamily: {
+        sans: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+      },
+
       fontSize: {
         '2xs': ['0.625rem', { lineHeight: '0.75rem' }],
         xxs: ['0.5rem', { lineHeight: '0.625rem' }],
@@ -36,6 +41,17 @@ export default {
           from: { opacity: '1' },
           to: { opacity: '0' },
         },
+        'bar-shine': {
+          from: { transform: 'translateX(-100%)' },
+          to: { transform: 'translateX(250%)' },
+        },
+        'glow-pulse': {
+          '0%, 100%': { opacity: '0.55' },
+          '50%': { opacity: '1' },
+        },
+        'flow-dash': {
+          to: { backgroundPosition: '24px 0' },
+        },
         shine: {
           from: { backgroundPosition: '200% center' },
           to: { backgroundPosition: '-200% center' },
@@ -44,6 +60,9 @@ export default {
       animation: {
         'fade-in': 'fade-in 0.15s ease-out forwards',
         'fade-out': 'fade-out 0.15s ease-in forwards',
+        'bar-shine': 'bar-shine 2.4s ease-in-out infinite',
+        'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+        'flow-dash': 'flow-dash 0.8s linear infinite',
         'shine-reverse': 'shine 3s linear infinite reverse',
       },
 

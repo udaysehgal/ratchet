@@ -110,14 +110,58 @@ body {
   background: rgb(var(--background));
   color: rgb(var(--foreground));
   font-family:
+    'Space Grotesk',
     ui-sans-serif,
     system-ui,
     -apple-system,
     'Segoe UI',
     Roboto,
-    'Helvetica Neue',
-    Arial,
     sans-serif;
+  /* Ambient glow + engineering grid */
+  background-image:
+    radial-gradient(60rem 28rem at 15% -8rem, rgb(var(--primary) / var(--glow-a)), transparent 70%),
+    radial-gradient(40rem 24rem at 95% 0, rgb(var(--emerald) / var(--glow-b)), transparent 70%),
+    linear-gradient(rgb(var(--neutral-500) / var(--grid-a)) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--neutral-500) / var(--grid-a)) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    100% 100%,
+    48px 48px,
+    48px 48px;
+  background-attachment: fixed;
+}
+
+:root {
+  --glow-a: 0.1;
+  --glow-b: 0.06;
+  --grid-a: 0.1;
+}
+.dark {
+  --glow-a: 0.2;
+  --glow-b: 0.1;
+  --grid-a: 0.07;
+}
+
+@layer components {
+  /* Raised surface with a lit top edge */
+  .panel {
+    @apply relative rounded-2xl border border-neutral-800 bg-neutral-925/80 shadow-[0_1px_0_0_rgb(var(--neutral-50)/0.04)_inset,0_20px_40px_-24px_rgb(0_0_0/0.5)] backdrop-blur-sm;
+  }
+  .panel-glow {
+    @apply border-primary/40 shadow-[0_0_0_1px_rgb(var(--primary)/0.15),0_0_40px_-8px_rgb(var(--primary)/0.35)];
+  }
+  .text-glow {
+    background-image: linear-gradient(100deg, rgb(var(--primary)) 10%, rgb(var(--emerald)) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .eyebrow {
+    @apply font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-500;
+  }
+  .num {
+    @apply font-mono tabular-nums;
+  }
 }
 
 ::selection {
