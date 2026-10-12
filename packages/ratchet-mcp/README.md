@@ -1,6 +1,6 @@
 # Ratchet MCP server
 
-Lets AI agents use [Ratchet](https://ratchet-olive.vercel.app) and check any Meteora DBC token.
+Lets AI agents use [Ratchet](https://www.useratchet.xyz) and check any Meteora DBC token.
 Holds no keys: it calls Ratchet's public API and returns unsigned transactions.
 
 | Tool | What it does |

@@ -1,6 +1,6 @@
 # Ratchet: demo video script (~3 min)
 
-Record at https://ratchet-olive.vercel.app on mainnet. Keep the browser at 1440px wide.
+Record at https://www.useratchet.xyz on mainnet. Keep the browser at 1440px wide.
 
 ## 0:00 – 0:20 · The problem
 **Screen:** home page (launch board).

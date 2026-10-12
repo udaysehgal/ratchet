@@ -32,7 +32,7 @@ function badge(label: string, value: string, color: string) {
 
 /**
  * Embeddable launch-check badge for any Meteora DBC token:
- *   ![launch check](https://ratchet-olive.vercel.app/api/badge/<mint>)
+ *   ![launch check](https://www.useratchet.xyz/api/badge/<mint>)
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');

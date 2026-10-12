@@ -139,7 +139,7 @@ async function main() {
     baseMint: baseMint.publicKey,
     name: 'Vaulted Test',
     symbol: 'VLT',
-    uri: 'https://ratchet-olive.vercel.app/vault-test.json',
+    uri: 'https://www.useratchet.xyz/vault-test.json',
     payer: team.publicKey,
     poolCreator: team.publicKey,
   });

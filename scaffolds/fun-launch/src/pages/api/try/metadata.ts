@@ -9,7 +9,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   res.status(200).json({
     name,
     symbol,
-    description: 'A devnet test launch from ratchet-olive.vercel.app/try: team unlocks held by a ratchet-vault.',
+    description: 'A devnet test launch from www.useratchet.xyz/try: team unlocks held by a ratchet-vault.',
     image: `${origin}/try-token.svg`,
   });
 }

@@ -8,7 +8,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 
-const BASE_URL = (process.env.RATCHET_URL ?? 'https://ratchet-olive.vercel.app').replace(/\/$/, '');
+const BASE_URL = (process.env.RATCHET_URL ?? 'https://www.useratchet.xyz').replace(/\/$/, '');
 
 async function api(path: string, init?: RequestInit): Promise<unknown> {
   const res = await fetch(`${BASE_URL}${path}`, init);

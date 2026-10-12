@@ -4,7 +4,7 @@
 locked, compounding DAMM v2 → team allocation committed as DLMM limit orders above the
 graduation price.
 
-**Live (mainnet):** https://ratchet-olive.vercel.app
+**Live (mainnet):** https://www.useratchet.xyz
 **Code:** https://github.com/udaysehgal/ratchet
 **Vault program (devnet):** https://solscan.io/account/BrwQHeRJWXDbXgUVi1TKdoDbnfB5kcRTcieYmSH2NzWB?cluster=devnet
 **Demo video:** <link>

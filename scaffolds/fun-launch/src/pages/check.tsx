@@ -100,7 +100,7 @@ export default function CheckPage() {
           <p>
             Embed the result anywhere (README, launchpad, terminal):{' '}
             <code className="num break-all text-neutral-300">
-              ![launch check](https://ratchet-olive.vercel.app/api/badge/{data?.mint ?? '<mint>'})
+              ![launch check](https://www.useratchet.xyz/api/badge/{data?.mint ?? '<mint>'})
             </code>
           </p>
           {data && (

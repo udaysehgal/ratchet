@@ -21,7 +21,7 @@ async function sign(built: TryTx) {
 }
 
 (async () => {
-  const launch = await buildLaunch(user.publicKey, 'Try Smoke', 'SMOKE', 'https://ratchet-olive.vercel.app/api/try/metadata?n=Try%20Smoke&s=SMOKE');
+  const launch = await buildLaunch(user.publicKey, 'Try Smoke', 'SMOKE', 'https://www.useratchet.xyz/api/try/metadata?n=Try%20Smoke&s=SMOKE');
   await sign(launch);
   const pool = new PublicKey(launch.pool!);
   await sign(await buildBuy(user.publicKey, pool));

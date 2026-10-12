@@ -1,7 +1,7 @@
 # Ratchet
 
 [![CI](https://github.com/udaysehgal/ratchet/actions/workflows/ci.yml/badge.svg)](https://github.com/udaysehgal/ratchet/actions/workflows/ci.yml)
-[![App: Solana mainnet](https://img.shields.io/badge/app-Solana%20mainnet-14F195)](https://ratchet-olive.vercel.app)
+[![App: Solana mainnet](https://img.shields.io/badge/app-Solana%20mainnet-14F195)](https://www.useratchet.xyz)
 [![Vault program: devnet](https://img.shields.io/badge/vault%20program-devnet-9945FF)](https://solscan.io/account/BrwQHeRJWXDbXgUVi1TKdoDbnfB5kcRTcieYmSH2NzWB?cluster=devnet)
 [![Meteora: DBC · DAMM v2 · DLMM · Lock](https://img.shields.io/badge/Meteora-DBC%20%C2%B7%20DAMM%20v2%20%C2%B7%20DLMM%20%C2%B7%20Lock-FF6B1A)](docs/ARCHITECTURE.md#meteora-integration)
 [![Vault: unaudited](https://img.shields.io/badge/vault%20program-unaudited-F59E0B)](docs/VAULT.md#threats-and-answers)
@@ -9,7 +9,7 @@
 
 **A Meteora launchpad where team unlocks only sell into strength.**
 
-**[Live on Solana mainnet →](https://ratchet-olive.vercel.app)** · **[Try the vault yourself (devnet) →](https://ratchet-olive.vercel.app/try)** · [Unlock study](docs/UNLOCK-STUDY.md) · [Vault](docs/VAULT.md) · [Evidence](docs/EVIDENCE.md) · [Architecture](docs/ARCHITECTURE.md) · [Submission](docs/SUBMISSION.md)
+**[Live on Solana mainnet →](https://www.useratchet.xyz)** · **[Try the vault yourself (devnet) →](https://www.useratchet.xyz/try)** · [Unlock study](docs/UNLOCK-STUDY.md) · [Vault](docs/VAULT.md) · [Evidence](docs/EVIDENCE.md) · [Architecture](docs/ARCHITECTURE.md) · [Submission](docs/SUBMISSION.md)
 
 ![Ratchet home page](docs/img/home.png)
 
@@ -25,16 +25,16 @@ No wallet needed. Every number below is read live from chain by the deployed app
 
 ```bash
 # Our mainnet launches: CHRL graduated into a locked DAMM v2 pool
-curl -s https://ratchet-olive.vercel.app/api/feed | jq '.launches[] | {symbol, raised, graduated}'
+curl -s https://www.useratchet.xyz/api/feed | jq '.launches[] | {symbol, raised, graduated}'
 
 # The problem: every DBC team allocation on mainnet, and how many teams sold their unlocks
-curl -s https://ratchet-olive.vercel.app/api/unlocks | jq .stats
+curl -s https://www.useratchet.xyz/api/unlocks | jq .stats
 
 # The fix: the ratchet-vault on devnet, its floor, holdings and the asks it allowed
-curl -s https://ratchet-olive.vercel.app/api/vault/9g7Gu6NfiKyUN62UvULD9qx1A4hHh4kA2f4xZTUdMQwp | jq '{floorMultiple, tokensInVault, asks: [.asks[].multiple]}'
+curl -s https://www.useratchet.xyz/api/vault/9g7Gu6NfiKyUN62UvULD9qx1A4hHh4kA2f4xZTUdMQwp | jq '{floorMultiple, tokensInVault, asks: [.asks[].multiple]}'
 
 # The launch check on any DBC token (here: ours)
-curl -s https://ratchet-olive.vercel.app/api/check/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5 | jq '[.checks[] | {status, title}]'
+curl -s https://www.useratchet.xyz/api/check/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5 | jq '[.checks[] | {status, title}]'
 ```
 
 Every transaction behind these numbers is linked in [EVIDENCE.md](docs/EVIDENCE.md).
@@ -79,7 +79,7 @@ wallet. Half of every DAMM v2 fee compounds back into the pool, so liquidity onl
 | Criterion | Where to look |
 |---|---|
 | **Depth of Meteora integration** | Four Meteora programs from one app: DBC presets and launches, DAMM v2 trading and locked-LP fees, DLMM limit-order ladder, Meteora Lock vesting, plus Invent studio for configs. Our own program calls DBC, Meteora Lock and DLMM directly. Equity-raise presets in four xStocks (TSLAx, NVDAx, AAPLx, GOOGLx) using Meteora's token badges. [Call table](docs/ARCHITECTURE.md#meteora-integration) |
-| **Technical execution** | A native Solana program with conservative Q64.64 price checks, a daily sell cap and a canonical-pair rule; 25/25 end-to-end on public devnet and on Meteora's mainnet binaries locally, deployed by a test-then-deploy workflow. **[Try it yourself](https://ratchet-olive.vercel.app/try)**: launch a vaulted token on devnet and watch the program refuse a below-floor sale. 30 unit tests and CI on every push. [Vault spec](docs/VAULT.md) · [tests](.github/workflows/ci.yml) |
+| **Technical execution** | A native Solana program with conservative Q64.64 price checks, a daily sell cap and a canonical-pair rule; 25/25 end-to-end on public devnet and on Meteora's mainnet binaries locally, deployed by a test-then-deploy workflow. **[Try it yourself](https://www.useratchet.xyz/try)**: launch a vaulted token on devnet and watch the program refuse a below-floor sale. 30 unit tests and CI on every push. [Vault spec](docs/VAULT.md) · [tests](.github/workflows/ci.yml) |
 | **Originality** | DLMM limit orders as an *unlock commitment*, enforced by a vault that holds the DBC creator role, plus an **unlock radar** tracking every DBC team allocation on mainnet. Nobody else addresses what happens at unlock. [Vault](#the-vault-enforcing-the-ladder-on-chain) |
 | **Impact** | The problem is everywhere: 93% of DBC teams that claim unlocks move them out ([study](docs/UNLOCK-STUDY.md)). Any DBC launchpad can adopt the preset + vault pattern. The launch check grades *any* DBC token; feed, check and MCP server are public. [What's in the box](#whats-in-the-box) |
 | **Traction** | Live on mainnet: a graduation through the app, 9 trading wallets, a sniper that paid ~37% in fees, 4 configs. [Evidence](docs/EVIDENCE.md) |
@@ -116,7 +116,7 @@ is generated from live config data by [`scripts/make-figures.mjs`](scripts/make-
 - **Unlock ladder**: vested team tokens become DLMM limit asks at 1.25× the graduation price or higher.
 - **Earnings**: one transaction claims creator, partner and locked-LP fees.
 - **For AI agents**: an [MCP server and Agent Skill](packages/ratchet-mcp) to list launches, check any DBC token and build unsigned transactions.
-- **Public APIs**: graduation feed, launch check and presets as CORS-open JSON ([endpoints](docs/ARCHITECTURE.md#apis-and-the-mcp-server)), plus an embeddable launch-check badge for any DBC token: ![CHRL launch check](https://ratchet-olive.vercel.app/api/badge/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5)
+- **Public APIs**: graduation feed, launch check and presets as CORS-open JSON ([endpoints](docs/ARCHITECTURE.md#apis-and-the-mcp-server)), plus an embeddable launch-check badge for any DBC token: ![CHRL launch check](https://www.useratchet.xyz/api/badge/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5)
 - **30 unit tests and CI** (app typecheck, tests and build; vault program tests) on every push.
 
 ## The vault: enforcing the ladder on-chain
@@ -126,7 +126,7 @@ On mainnet today the ladder is enforced by Ratchet's API and visible on-chain. T
 creator role in the launch transaction, so team vesting and creator fees land in a PDA, and
 team tokens can only leave as DLMM asks at ≥ 1.25× the graduation price. The floor only rises.
 
-**Deployed on devnet and passing 25/25 end-to-end checks** ([try it yourself](https://ratchet-olive.vercel.app/try)): asks above the floor accepted,
+**Deployed on devnet and passing 25/25 end-to-end checks** ([try it yourself](https://www.useratchet.xyz/try)): asks above the floor accepted,
 below-floor asks and floor cuts refused, a buyer lifting the ask with proceeds reaching the team
 only through the vault. [Spec](docs/VAULT.md) · [transactions](docs/EVIDENCE.md#devnet-the-vault-enforcing-the-ladder-on-chain)
 

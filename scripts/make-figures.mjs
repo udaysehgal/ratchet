@@ -2,7 +2,7 @@
 // Usage: node scripts/make-figures.mjs [baseUrl]
 import { writeFileSync } from 'node:fs';
 
-const BASE = process.argv[2] ?? 'https://ratchet-olive.vercel.app';
+const BASE = process.argv[2] ?? 'https://www.useratchet.xyz';
 const { presets } = await (await fetch(`${BASE}/api/presets`)).json();
 const byId = Object.fromEntries(presets.map((p) => [p.id, p]));
 

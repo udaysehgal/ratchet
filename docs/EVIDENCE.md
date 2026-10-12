@@ -31,7 +31,7 @@ Micro-raise preset, launched and graduated through the live app on 2026-10-11 (U
 Mint [`CrUN9N…ifx5`](https://solscan.io/account/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5) ·
 DBC pool [`2S2hTX…wzCg`](https://solscan.io/account/2S2hTXpXMi1MToqjCGgWehGq5sNuscsh3EtoDkARwzCg) ·
 DAMM v2 pool [`BTjz62…WEbf`](https://solscan.io/account/BTjz62LaGnREgPDCugdK1JpPYsAvPLTQM6JnrgioWEbf) ·
-[token page](https://ratchet-olive.vercel.app/token/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5)
+[token page](https://www.useratchet.xyz/token/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5)
 
 ```mermaid
 timeline
@@ -80,7 +80,7 @@ now running on devnet.
 test-then-deploy workflow: **25/25 checks** on public devnet, vault
 [`9g7Gu6…MQwp`](https://solscan.io/account/9g7Gu6NfiKyUN62UvULD9qx1A4hHh4kA2f4xZTUdMQwp?cluster=devnet)
 ([raw results](evidence/vault-devnet-run-v2.json)). Anyone can repeat it from a browser at
-[/try](https://ratchet-olive.vercel.app/try). The first build's run, with every transaction:
+[/try](https://www.useratchet.xyz/try). The first build's run, with every transaction:
 
 The [ratchet-vault program](../programs/ratchet-vault) ([`BrwQHe…NzWB`](https://solscan.io/account/BrwQHeRJWXDbXgUVi1TKdoDbnfB5kcRTcieYmSH2NzWB?cluster=devnet), [deploy](https://solscan.io/tx/4RL3kbKwtf1irGG2SnCkpjeJm5jDhdTeQiyfu34Enfh3BA2w7Ugd9ejNmywykWdcHg1wjFGJzymvHNH1DvBiK6o6?cluster=devnet)) ran the full lifecycle on public devnet against Meteora's deployed programs, **20/20 checks**
 ([`scripts/vault-lifecycle.ts`](../scaffolds/fun-launch/scripts/vault-lifecycle.ts), [raw results](evidence/vault-devnet-run.json)).
@@ -127,15 +127,15 @@ No wallet needed; everything below reads mainnet through the live app.
 
 ```bash
 # Every Ratchet launch, read from chain
-curl -s https://ratchet-olive.vercel.app/api/feed | jq '.launches[] | {symbol, quoteSymbol, raised, graduated}'
+curl -s https://www.useratchet.xyz/api/feed | jq '.launches[] | {symbol, quoteSymbol, raised, graduated}'
 
 # CHRL: graduated, its DAMM v2 pool, vesting claimed
-curl -s https://ratchet-olive.vercel.app/api/launch/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5 \
+curl -s https://www.useratchet.xyz/api/launch/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5 \
   | jq '.launch | {migrated, dammV2Pool, vesting}'
 
 # Launch check for any Meteora DBC token
-curl -s https://ratchet-olive.vercel.app/api/check/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5 | jq '.checks[] | {status, title}'
+curl -s https://www.useratchet.xyz/api/check/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5 | jq '.checks[] | {status, title}'
 
 # Live parameters of each preset, straight from its DBC config
-curl -s https://ratchet-olive.vercel.app/api/presets | jq '.presets[] | {id, quoteSymbol, thresholdSol}'
+curl -s https://www.useratchet.xyz/api/presets | jq '.presets[] | {id, quoteSymbol, thresholdSol}'
 ```
