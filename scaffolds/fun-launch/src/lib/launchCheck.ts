@@ -65,6 +65,8 @@ export type LaunchFacts = {
   /** What the team has done with its unlocked allocation so far (Meteora Lock escrow + wallet). */
   teamUnlock?: {
     vaulted: boolean; // pool creator is a Ratchet vault: unlocks can only sell above a floor
+    /** Vault sunset (unix seconds): after it the team can release tokens without the floor. */
+    sunsetTs?: number | null;
     verdict: 'sold' | 'held' | 'mixed' | 'unclaimed' | 'locked';
     movedShare: number | null;
     claimedShare: number; // claimed / total allocation
@@ -92,7 +94,33 @@ function formatSeconds(s: number) {
   return `${s} s`;
 }
 
-export function assessLaunch(f: LaunchFacts): Check[] {
+/** Warn when a vault's sunset is closer than this: the floor stops protecting holders then. */
+export const SUNSET_WARN_SECONDS = 180 * 86400;
+
+const isoDate = (ts: number) => new Date(ts * 1000).toISOString().slice(0, 10);
+
+function vaultCheck(sunsetTs: number | null | undefined, now: number, next: string): Check {
+  const floor = 'A Ratchet vault holds the team allocation: it can only be sold as DLMM asks at 1.25x the graduation price or higher';
+  if (!sunsetTs) {
+    return { id: 'team-unlocks', title: 'Team unlocks are vaulted', status: 'pass', detail: `${floor}, with no sunset.` + next };
+  }
+  if (sunsetTs <= now) {
+    return {
+      id: 'team-unlocks',
+      title: 'Vault sunset has passed',
+      status: 'fail',
+      detail: `The vault's sunset was ${isoDate(sunsetTs)}: the team can now release its tokens without the price floor.`,
+    };
+  }
+  return {
+    id: 'team-unlocks',
+    title: `Team unlocks are vaulted until ${isoDate(sunsetTs)}`,
+    status: sunsetTs - now < SUNSET_WARN_SECONDS ? 'warn' : 'pass',
+    detail: `${floor} until ${isoDate(sunsetTs)}. After that the team can release its tokens without the floor.` + next,
+  };
+}
+
+export function assessLaunch(f: LaunchFacts, now: number = Math.floor(Date.now() / 1000)): Check[] {
   const checks: Check[] = [];
 
   // Liquidity: can anyone pull it after graduation?
@@ -215,7 +243,7 @@ export function assessLaunch(f: LaunchFacts): Check[] {
     const claimed = `${pct(tu.claimedShare * 100)} of the allocation claimed so far`;
     checks.push(
       tu.vaulted
-        ? { id: 'team-unlocks', title: 'Team unlocks are vaulted', status: 'pass', detail: 'A Ratchet vault holds the team allocation: it can only be sold as DLMM asks at 1.25x the graduation price or higher.' + next }
+        ? vaultCheck(tu.sunsetTs, now, next)
         : tu.verdict === 'sold'
           ? { id: 'team-unlocks', title: 'Team sold its unlocks', status: 'fail', detail: `The team moved ${pct((tu.movedShare ?? 0) * 100)} of the tokens it claimed out of its wallet (${claimed}).` + next }
           : tu.verdict === 'mixed'

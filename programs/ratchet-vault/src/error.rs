@@ -17,6 +17,7 @@ pub enum VaultError {
     SunsetNotReached,
     MathOverflow,
     NoBins,
+    SunsetTooSoon,
 }
 
 impl From<VaultError> for ProgramError {

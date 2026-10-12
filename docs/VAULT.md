@@ -78,7 +78,7 @@ the floor can't be gamed by moving the pool price.
 | `raise_floor(floor_bps)` | beneficiary | Only increases. Existing orders below a new floor can be cancelled, never re-placed. |
 | `collect_fees()` | anyone | CPIs DBC `claim_creator_trading_fee`; **quote** goes to the beneficiary, **base** fees stay in the vault (they're supply too). |
 | `set_beneficiary(new)` | beneficiary | Key rotation. |
-| `release_after_sunset()` | beneficiary | Only if `sunset_ts` is set and has passed. Set at adoption, visible to holders. |
+| `release_after_sunset()` | beneficiary | Only if `sunset_ts` is set and has passed. Set at adoption, visible to holders. `adopt_launch` rejects a sunset less than 180 days away (`SunsetTooSoon`), and the launch check shows the date and warns inside 180 days. |
 
 ## Invariants
 
@@ -110,7 +110,8 @@ conservative: a bin that passes is never below the floor.
 | Team places an ask at a low price | `place_ask` rejects any bin below the floor. |
 | Team lowers the floor | `raise_floor` only increases. |
 | Fake DLMM pair or pool | Owner-program checks and mint links on every account. |
-| Team buys its own asks | They pay ≥ 1.25× graduation price with their own money; no harm to holders. |
+| Team buys its own asks | **Not prevented.** The quote they pay returns to the beneficiary on `cancel_ask`, so a team with capital for one batch can cycle its allocation out for the cost of DLMM fees, then sell below the floor elsewhere. The floor guarantees the price on the ask, not who fills it. Open: restrict asks to the canonical pair, hold or stream proceeds, or cap volume per period. |
+| Pre-funding the vault address | Anyone can send lamports to the predictable vault PDA. `adopt_launch` tops up, allocates and assigns instead of `create_account`, so this can't block adoption. |
 | Team sells tokens it bought on the curve | Out of scope: the vault governs the team allocation, not market buys. The launch check shows holder concentration risks separately. |
 | Program upgrade | Devnet build keeps an upgrade authority. A mainnet release would be made immutable after audit (or held by a timelocked multisig), and the launch check would show which. |
 | Meteora interface changes | CPIs are built from Meteora's published IDLs; integration tests run the full lifecycle on devnet against the deployed programs. |

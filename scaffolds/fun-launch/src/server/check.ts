@@ -6,7 +6,7 @@ import { getPresetByConfig } from '@/presets';
 import { QUOTE_TOKENS } from '@/lib/quotes';
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { deriveBaseKeyForLocker, deriveEscrow } from '@meteora-ag/dynamic-bonding-curve-sdk';
-import { VAULT_PROGRAM_ID } from '@/lib/vault';
+import { VAULT_PROGRAM_ID, decodeVault } from '@/lib/vault';
 import { connection, dbc, getLaunch, getTokenMetas } from './meteora';
 
 /** The team's Meteora Lock escrow and wallet: what it has claimed and moved out (docs/UNLOCK-STUDY.md). */
@@ -37,8 +37,12 @@ async function readTeamUnlock(pool: PublicKey, creator: PublicKey, now: number) 
     : moved * BigInt(10) >= claimed * BigInt(9) ? 'sold'
     : moved * BigInt(10) <= claimed ? 'held'
     : 'mixed';
+  const vaulted = !!creatorInfo?.owner.equals(VAULT_PROGRAM_ID);
+  // A vault with a sunset lets the team release tokens without the floor after that time
+  const sunsetTs = vaulted ? Number(decodeVault(creatorInfo!.data as Buffer).sunsetTs) : 0;
   return {
-    vaulted: !!creatorInfo?.owner.equals(VAULT_PROGRAM_ID),
+    vaulted,
+    sunsetTs: sunsetTs > 0 ? sunsetTs : null,
     verdict: verdict as 'sold' | 'held' | 'mixed' | 'unclaimed' | 'locked',
     movedShare: claimed > BigInt(0) ? Number(moved) / Number(claimed) : null,
     claimedShare: total > BigInt(0) ? Number(claimed) / Number(total) : 0,

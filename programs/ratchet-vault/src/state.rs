@@ -9,6 +9,9 @@ pub const VAULT_DISCRIMINATOR: [u8; 8] = *b"RTVAULT1";
 /// Lowest allowed floor: 1.25x the graduation price.
 pub const MIN_FLOOR_BPS: u16 = 12_500;
 pub const VAULT_SPACE: usize = 8 + 32 * 4 + 16 + 2 + 8 + 8 + 1;
+/// Shortest allowed sunset, counted from adoption. A sunset sooner than this would let the
+/// team release its allocation without the floor almost immediately.
+pub const MIN_SUNSET_DELAY: i64 = 180 * 24 * 60 * 60;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, PartialEq)]
 pub struct Vault {

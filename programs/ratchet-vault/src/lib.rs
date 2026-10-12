@@ -22,7 +22,7 @@ use solana_program::{
 #[allow(deprecated)]
 use solana_program::system_instruction;
 use error::VaultError;
-use state::{find_order, find_vault, Vault, MIN_FLOOR_BPS, ORDER_SEED, VAULT_DISCRIMINATOR, VAULT_SPACE};
+use state::{find_order, find_vault, Vault, MIN_FLOOR_BPS, MIN_SUNSET_DELAY, ORDER_SEED, VAULT_DISCRIMINATOR, VAULT_SPACE};
 
 const SYSTEM_PROGRAM: Pubkey = solana_program::pubkey!("11111111111111111111111111111111");
 
@@ -124,6 +124,50 @@ fn forward_quote<'a>(
     )
 }
 
+/// 0 (never) or at least MIN_SUNSET_DELAY after `now`: a past or near sunset would let the team
+/// skip the floor while the launch still shows as vaulted.
+fn validate_sunset(sunset_ts: i64, now: i64) -> Result<(), VaultError> {
+    if sunset_ts == 0 {
+        return Ok(());
+    }
+    match now.checked_add(MIN_SUNSET_DELAY) {
+        Some(earliest) if sunset_ts >= earliest => Ok(()),
+        _ => Err(VaultError::SunsetTooSoon),
+    }
+}
+
+/// Create a PDA owned by this program. Works even if someone pre-funded the address: plain
+/// `create_account` fails on any lamports, so a 1-lamport transfer would block adoption forever.
+fn create_pda<'a>(
+    payer: &AccountInfo<'a>,
+    pda: &AccountInfo<'a>,
+    system: &AccountInfo<'a>,
+    space: usize,
+    owner: &Pubkey,
+    seeds: &[&[u8]],
+) -> ProgramResult {
+    let rent = Rent::get()?.minimum_balance(space);
+    let current = pda.lamports();
+    if current == 0 {
+        return invoke_signed(
+            &system_instruction::create_account(payer.key, pda.key, rent, space as u64, owner),
+            &[payer.clone(), pda.clone(), system.clone()],
+            &[seeds],
+        );
+    }
+    if pda.owner != &SYSTEM_PROGRAM || !pda.data_is_empty() {
+        return Err(VaultError::InvalidVault.into());
+    }
+    if current < rent {
+        invoke(
+            &system_instruction::transfer(payer.key, pda.key, rent - current),
+            &[payer.clone(), pda.clone(), system.clone()],
+        )?;
+    }
+    invoke_signed(&system_instruction::allocate(pda.key, space as u64), &[pda.clone(), system.clone()], &[seeds])?;
+    invoke_signed(&system_instruction::assign(pda.key, owner), &[pda.clone(), system.clone()], &[seeds])
+}
+
 fn adopt_launch(program_id: &Pubkey, accounts: &[AccountInfo], beneficiary: Pubkey, sunset_ts: i64) -> ProgramResult {
     let it = &mut accounts.iter();
     let creator = next_account_info(it)?;
@@ -135,6 +179,7 @@ fn adopt_launch(program_id: &Pubkey, accounts: &[AccountInfo], beneficiary: Pubk
     let dbc_program = next_account_info(it)?;
     require_program(system, &SYSTEM_PROGRAM)?;
     require_program(dbc_program, &meteora::DBC_PROGRAM)?;
+    validate_sunset(sunset_ts, Clock::get()?.unix_timestamp)?;
 
     let pool = meteora::read_dbc_pool(pool_info)?;
     if !creator.is_signer || pool.creator != *creator.key {
@@ -156,12 +201,7 @@ fn adopt_launch(program_id: &Pubkey, accounts: &[AccountInfo], beneficiary: Pubk
     }
     let bump_seed = [bump];
     let seeds = Vault::seeds(pool_info.key, &bump_seed);
-    let lamports = Rent::get()?.minimum_balance(VAULT_SPACE);
-    invoke_signed(
-        &system_instruction::create_account(creator.key, vault_info.key, lamports, VAULT_SPACE as u64, program_id),
-        &[creator.clone(), vault_info.clone(), system.clone()],
-        &[&seeds],
-    )?;
+    create_pda(creator, vault_info, system, VAULT_SPACE, program_id, &seeds)?;
     Vault {
         discriminator: VAULT_DISCRIMINATOR,
         dbc_pool: *pool_info.key,
@@ -464,6 +504,32 @@ mod tests {
     fn instruction_encoding_is_stable() {
         let ix = VaultInstruction::RaiseFloor { floor_bps: 15_000 };
         assert_eq!(borsh::to_vec(&ix).unwrap(), vec![4, 0x98, 0x3a]);
+    }
+
+    #[test]
+    fn sunset_zero_means_never_and_is_allowed() {
+        assert!(validate_sunset(0, 1_700_000_000).is_ok());
+    }
+
+    #[test]
+    fn sunset_in_the_past_is_rejected() {
+        let now = 1_700_000_000;
+        for ts in [1, -1, i64::MIN, now - 1, now] {
+            assert!(validate_sunset(ts, now) == Err(VaultError::SunsetTooSoon), "sunset {ts} accepted");
+        }
+    }
+
+    #[test]
+    fn sunset_boundary_is_exactly_the_minimum_delay() {
+        let now = 1_700_000_000;
+        assert!(validate_sunset(now + MIN_SUNSET_DELAY - 1, now) == Err(VaultError::SunsetTooSoon));
+        assert!(validate_sunset(now + MIN_SUNSET_DELAY, now).is_ok());
+        assert!(validate_sunset(i64::MAX, now).is_ok());
+    }
+
+    #[test]
+    fn sunset_check_does_not_overflow() {
+        assert!(validate_sunset(i64::MAX, i64::MAX) == Err(VaultError::SunsetTooSoon));
     }
 
     #[test]

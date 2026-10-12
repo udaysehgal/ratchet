@@ -3,6 +3,7 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import { DynamicBondingCurveClient, deriveTokenBadgeAddress } from '@meteora-ag/dynamic-bonding-curve-sdk';
 import { getPresetConfig } from '@/presets';
 import { uploadPublic } from '@/server/storage';
+import { isAddress } from '@/lib/address';
 
 const RPC_URL = process.env.RPC_URL as string;
 
@@ -45,6 +46,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Validate required fields
     if (!tokenLogo || !tokenName || !tokenSymbol || !mint || !userWallet) {
       return res.status(400).json({ error: 'Missing required fields' });
+    }
+    // `mint` becomes a storage path: only a real address, never an arbitrary string
+    if (!isAddress(mint) || !isAddress(userWallet)) {
+      return res.status(400).json({ error: 'Invalid mint or wallet address' });
     }
 
     const poolConfig = getPresetConfig(presetId);

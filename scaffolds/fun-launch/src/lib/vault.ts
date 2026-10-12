@@ -22,6 +22,7 @@ export const VAULT_ERRORS: Record<number, string> = {
   6011: 'SunsetNotReached',
   6012: 'MathOverflow',
   6013: 'NoBins',
+  6014: 'SunsetTooSoon',
 };
 
 export function findVault(dbcPool: PublicKey): PublicKey {
