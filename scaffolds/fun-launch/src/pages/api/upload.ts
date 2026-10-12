@@ -4,12 +4,16 @@ import { DynamicBondingCurveClient, deriveTokenBadgeAddress } from '@meteora-ag/
 import { getPresetConfig } from '@/presets';
 import { uploadPublic } from '@/server/storage';
 import { isAddress } from '@/lib/address';
+import { createRateLimiter, enforceRateLimit } from '@/server/rateLimit';
 
 const RPC_URL = process.env.RPC_URL as string;
 
 if (!RPC_URL) {
   throw new Error('Missing RPC_URL');
 }
+
+// Each upload writes up to 2 MB to public storage: a launch needs one, retries a few more
+const allow = createRateLimiter(10, 60 * 60_000);
 
 // Types
 type UploadRequest = {
@@ -38,6 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+  if (!enforceRateLimit(allow, req, res)) return;
 
   try {
     const { tokenLogo, tokenName, tokenSymbol, mint, userWallet, presetId } =

@@ -6,7 +6,7 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync } from '@solana/spl-token';
 import DLMM, { deriveCustomizablePermissionlessLbPair, getPriceOfBinByBinId } from '@meteora-ag/dlmm';
 import { deriveBaseKeyForLocker, deriveEscrow } from '@meteora-ag/dynamic-bonding-curve-sdk';
-import { DLMM_PROGRAM, VAULT_PROGRAM_ID, decodeVault } from '@/lib/vault';
+import { DAILY_ASK_BPS, DLMM_PROGRAM, VAULT_PROGRAM_ID, decodeVault } from '@/lib/vault';
 
 const DEVNET_RPC = process.env.DEVNET_RPC_URL ?? 'https://api.devnet.solana.com';
 const devnet = new Connection(DEVNET_RPC, 'confirmed');
@@ -23,6 +23,10 @@ export type VaultView = {
   name: string;
   beneficiary: string;
   floorMultiple: number;
+  /** Share of the vault's tokens that can be offered as asks per 24h, in percent. */
+  dailyCapPct: number;
+  /** After this (unix seconds) the team can release tokens without the floor; null = never. */
+  sunsetTs: number | null;
   graduationPrice: number; // quote per token, UI units
   tokensInVault: number;
   tokensInAsks: number;
@@ -132,6 +136,8 @@ export async function getVaultView(address: string): Promise<VaultView> {
     name: meta.name,
     beneficiary: v.beneficiary.toBase58(),
     floorMultiple: v.floorBps / 10_000,
+    dailyCapPct: DAILY_ASK_BPS / 100,
+    sunsetTs: v.sunsetTs > BigInt(0) ? Number(v.sunsetTs) : null,
     graduationPrice,
     tokensInVault: baseBal ? Number(baseBal.value.uiAmount) : 0,
     tokensInAsks: asks.reduce((s, a) => s + a.unfilled, 0),

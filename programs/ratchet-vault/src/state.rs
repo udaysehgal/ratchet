@@ -8,7 +8,12 @@ pub const ORDER_SEED: &[u8] = b"order";
 pub const VAULT_DISCRIMINATOR: [u8; 8] = *b"RTVAULT1";
 /// Lowest allowed floor: 1.25x the graduation price.
 pub const MIN_FLOOR_BPS: u16 = 12_500;
-pub const VAULT_SPACE: usize = 8 + 32 * 4 + 16 + 2 + 8 + 8 + 1;
+pub const VAULT_SPACE: usize = 8 + 32 * 4 + 16 + 2 + 8 + 8 + 1 + 8 + 8 + 8;
+/// Asks placed per window are capped at this share of the vault's base balance at the window's
+/// start. The floor can't stop a team buying its own asks (the quote comes back to it), so this
+/// bounds how fast tokens can leave by any route.
+pub const DAILY_ASK_BPS: u128 = 1_000;
+pub const ASK_WINDOW_SECONDS: i64 = 24 * 60 * 60;
 /// Shortest allowed sunset, counted from adoption. A sunset sooner than this would let the
 /// team release its allocation without the floor almost immediately.
 pub const MIN_SUNSET_DELAY: i64 = 180 * 24 * 60 * 60;
@@ -31,6 +36,12 @@ pub struct Vault {
     /// Nonce for the next order PDA.
     pub orders_placed: u64,
     pub bump: u8,
+    /// Start of the current daily-cap window (0 = none yet).
+    pub window_start_ts: i64,
+    /// Base tokens that may be placed as asks in the current window.
+    pub window_budget: u64,
+    /// Base tokens already placed as asks in the current window (cancels don't refund).
+    pub window_used: u64,
 }
 
 impl Vault {
@@ -50,6 +61,21 @@ impl Vault {
         let mut data = account.try_borrow_mut_data()?;
         let bytes = borsh::to_vec(self).map_err(|_| ProgramError::InvalidAccountData)?;
         data[..bytes.len()].copy_from_slice(&bytes);
+        Ok(())
+    }
+
+    /// Charge `amount` against the daily ask cap, opening a new window when the last one ended.
+    pub fn spend_ask_budget(&mut self, balance: u64, amount: u64, now: i64) -> Result<(), VaultError> {
+        if self.window_start_ts == 0 || now >= self.window_start_ts.saturating_add(ASK_WINDOW_SECONDS) {
+            self.window_start_ts = now;
+            self.window_budget = (balance as u128 * DAILY_ASK_BPS / 10_000) as u64;
+            self.window_used = 0;
+        }
+        let used = self.window_used.checked_add(amount).ok_or(VaultError::MathOverflow)?;
+        if used > self.window_budget {
+            return Err(VaultError::DailyCapExceeded);
+        }
+        self.window_used = used;
         Ok(())
     }
 

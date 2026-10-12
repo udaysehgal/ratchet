@@ -205,8 +205,8 @@ async function main() {
     );
   };
 
-  // 6. The ratchet: asks at or above the floor only
-  const half = vaultHeld / BigInt(4);
+  // 6. The ratchet: asks at or above the floor only, at most 10% of the vault per day
+  const half = vaultHeld / BigInt(20);
   const bins = [
     { id: atOrAbove(1.25), amount: half },
     { id: atOrAbove(2), amount: half },
@@ -217,6 +217,7 @@ async function main() {
   await expectRefusal('place_ask at 1.2x is refused', 'BelowFloor', () => ask(1, [{ id: binFor(1.2), amount: BigInt(1000) }]));
   await expectRefusal('place_ask one bin below 1.25x is refused', 'BelowFloor', () => ask(1, [{ id: atOrAbove(1.25) - 1, amount: BigInt(1000) }]));
   await expectRefusal('place_ask by a non-beneficiary is refused', 'NotBeneficiary', () => ask(1, [{ id: atOrAbove(2), amount: BigInt(1000) }], buyer));
+  await expectRefusal('place_ask over the daily cap is refused', 'DailyCapExceeded', () => ask(1, [{ id: atOrAbove(2), amount: BigInt(1000) }]));
 
   // 7. Floor only rises
   await send([raiseFloorIx({ beneficiary: team.publicKey, vault, floorBps: 15_000 })], [team]);

@@ -15,6 +15,9 @@ use crate::error::VaultError;
 pub const DBC_PROGRAM: Pubkey = pubkey!("dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN");
 pub const DLMM_PROGRAM: Pubkey = pubkey!("LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo");
 pub const LOCKER_PROGRAM: Pubkey = pubkey!("LocpQgucEQHbqNABEYvBvwoxCPsSbG91A1QaQhQQqjn");
+pub const DAMM_V2_PROGRAM: Pubkey = pubkey!("cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG");
+/// DLMM's seed key for customizable permissionless pairs (the SDK's ILM_BASE).
+const DLMM_ILM_BASE: Pubkey = pubkey!("MFGQxwAmB91SwuYX36okv2Qmdc9aMuHTwWGUrp4AtB1");
 pub const TOKEN_PROGRAM: Pubkey = pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 pub const TOKEN_2022_PROGRAM: Pubkey = pubkey!("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
 
@@ -125,6 +128,22 @@ pub fn token_account(account: &AccountInfo, mint: &Pubkey, owner: &Pubkey) -> Re
     Ok(u64::from_le_bytes(data[TOKEN_AMOUNT..TOKEN_AMOUNT + 8].try_into().unwrap()))
 }
 
+/// The one customizable permissionless DLMM pair for these mints: the pair the Ratchet app uses.
+/// Asks are limited to it so they rest on the public book, where real buyers compete for them.
+pub fn canonical_lb_pair(mint_a: &Pubkey, mint_b: &Pubkey) -> Pubkey {
+    let (min, max) = if mint_a.to_bytes() <= mint_b.to_bytes() { (mint_a, mint_b) } else { (mint_b, mint_a) };
+    Pubkey::find_program_address(&[DLMM_ILM_BASE.as_ref(), min.as_ref(), max.as_ref()], &DLMM_PROGRAM).0
+}
+
+/// The token program passed in must be the one that owns the mint, so the vault never signs a
+/// transfer CPI into anything else.
+pub fn require_token_program(mint: &AccountInfo, token_program: &AccountInfo) -> Result<(), VaultError> {
+    if token_program.key != mint.owner || (mint.owner != &TOKEN_PROGRAM && mint.owner != &TOKEN_2022_PROGRAM) {
+        return Err(VaultError::BadTokenAccount);
+    }
+    Ok(())
+}
+
 pub fn mint_decimals(mint: &AccountInfo) -> Result<u8, VaultError> {
     if mint.owner != &TOKEN_PROGRAM && mint.owner != &TOKEN_2022_PROGRAM {
         return Err(VaultError::MintMismatch);
@@ -177,6 +196,43 @@ pub fn claim_creator_trading_fee(accounts: [&AccountInfo; 13]) -> Instruction {
     let mut signers = [false; 13];
     signers[8] = true;
     Instruction { program_id: DBC_PROGRAM, accounts: metas(&accounts, &signers), data }
+}
+
+/// DBC creator_withdraw_surplus: [pool_authority, config, virtual_pool w, token_quote_account w,
+/// quote_vault w, quote_mint, creator s, token_quote_program, event_authority, program]
+pub fn creator_withdraw_surplus(accounts: [&AccountInfo; 10]) -> Instruction {
+    let mut signers = [false; 10];
+    signers[6] = true;
+    Instruction {
+        program_id: DBC_PROGRAM,
+        accounts: metas(&accounts, &signers),
+        data: vec![165, 3, 137, 7, 28, 134, 76, 80],
+    }
+}
+
+/// DBC withdraw_migration_fee(flag = 1, the creator's share): same accounts as
+/// creator_withdraw_surplus, with the creator as `sender`.
+pub fn creator_withdraw_migration_fee(accounts: [&AccountInfo; 10]) -> Instruction {
+    let mut signers = [false; 10];
+    signers[6] = true;
+    Instruction {
+        program_id: DBC_PROGRAM,
+        accounts: metas(&accounts, &signers),
+        data: vec![237, 142, 45, 23, 129, 6, 222, 162, 1],
+    }
+}
+
+/// DAMM v2 claim_position_fee: [pool_authority, pool, position w, token_a_account w,
+/// token_b_account w, token_a_vault w, token_b_vault w, token_a_mint, token_b_mint,
+/// position_nft_account, signer s, token_a_program, token_b_program, event_authority, program]
+pub fn claim_position_fee(accounts: [&AccountInfo; 15]) -> Instruction {
+    let mut signers = [false; 15];
+    signers[10] = true;
+    Instruction {
+        program_id: DAMM_V2_PROGRAM,
+        accounts: metas(&accounts, &signers),
+        data: vec![180, 38, 154, 17, 133, 33, 162, 211],
+    }
 }
 
 /// Meteora Lock claim_v2: [escrow w, token_mint, escrow_token w, recipient s w, recipient_token w,

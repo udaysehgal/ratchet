@@ -23,7 +23,13 @@ export const VAULT_ERRORS: Record<number, string> = {
   6012: 'MathOverflow',
   6013: 'NoBins',
   6014: 'SunsetTooSoon',
+  6015: 'DailyCapExceeded',
+  6016: 'NotCanonicalPair',
 };
+
+/** Asks placed per 24h are capped at this share of the vault's base balance (program: DAILY_ASK_BPS). */
+export const DAILY_ASK_BPS = 1_000;
+export const VAULT_SPACE = 195;
 
 export function findVault(dbcPool: PublicKey): PublicKey {
   return PublicKey.findProgramAddressSync([Buffer.from('vault'), dbcPool.toBuffer()], VAULT_PROGRAM_ID)[0];
@@ -45,6 +51,9 @@ export type VaultState = {
   sunsetTs: bigint;
   ordersPlaced: bigint;
   bump: number;
+  windowStartTs: bigint;
+  windowBudget: bigint;
+  windowUsed: bigint;
 };
 
 export function decodeVault(data: Buffer): VaultState {
@@ -60,6 +69,10 @@ export function decodeVault(data: Buffer): VaultState {
     sunsetTs: data.readBigInt64LE(154),
     ordersPlaced: data.readBigUInt64LE(162),
     bump: data.readUInt8(170),
+    // Vaults created before the daily cap are 171 bytes and have no window yet
+    windowStartTs: data.length >= VAULT_SPACE ? data.readBigInt64LE(171) : BigInt(0),
+    windowBudget: data.length >= VAULT_SPACE ? data.readBigUInt64LE(179) : BigInt(0),
+    windowUsed: data.length >= VAULT_SPACE ? data.readBigUInt64LE(187) : BigInt(0),
   };
 }
 
@@ -102,6 +115,7 @@ const ix = (keys: AccountMeta[], data: Buffer) =>
 export const DBC_PROGRAM = new PublicKey('dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN');
 export const DLMM_PROGRAM = new PublicKey('LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo');
 export const LOCKER_PROGRAM = new PublicKey('LocpQgucEQHbqNABEYvBvwoxCPsSbG91A1QaQhQQqjn');
+export const DAMM_V2_PROGRAM = new PublicKey('cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG');
 export const MEMO_PROGRAM = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
 const SYSTEM = new PublicKey('11111111111111111111111111111111');
 const eventAuthority = (program: PublicKey) =>
@@ -286,6 +300,82 @@ export function collectFeesIx(p: {
 export function setBeneficiaryIx(p: { beneficiary: PublicKey; vault: PublicKey; newBeneficiary: PublicKey }) {
   return ix([r(p.beneficiary, true), w(p.vault)], Buffer.concat([u8(6), p.newBeneficiary.toBuffer()]));
 }
+
+/** Claim LP fees on the creator's DAMM v2 position held by the vault. Anyone can send it. */
+export function claimPositionFeeIx(p: {
+  vault: PublicKey;
+  poolAuthority: PublicKey;
+  pool: PublicKey;
+  position: PublicKey;
+  vaultBaseToken: PublicKey;
+  vaultQuoteToken: PublicKey;
+  tokenAVault: PublicKey;
+  tokenBVault: PublicKey;
+  baseMint: PublicKey;
+  quoteMint: PublicKey;
+  positionNftAccount: PublicKey;
+  baseTokenProgram: PublicKey;
+  quoteTokenProgram: PublicKey;
+  beneficiaryQuoteToken: PublicKey;
+}) {
+  return ix(
+    [
+      r(p.vault),
+      r(p.poolAuthority),
+      r(p.pool),
+      w(p.position),
+      w(p.vaultBaseToken),
+      w(p.vaultQuoteToken),
+      w(p.tokenAVault),
+      w(p.tokenBVault),
+      r(p.baseMint),
+      r(p.quoteMint),
+      r(p.positionNftAccount),
+      r(p.baseTokenProgram),
+      r(p.quoteTokenProgram),
+      r(eventAuthority(DAMM_V2_PROGRAM)),
+      r(DAMM_V2_PROGRAM),
+      w(p.beneficiaryQuoteToken),
+    ],
+    u8(8)
+  );
+}
+
+type CreatorQuoteAccounts = {
+  vault: PublicKey;
+  poolAuthority: PublicKey;
+  config: PublicKey;
+  pool: PublicKey;
+  vaultQuoteToken: PublicKey;
+  quoteVault: PublicKey;
+  quoteMint: PublicKey;
+  quoteTokenProgram: PublicKey;
+  beneficiaryQuoteToken: PublicKey;
+};
+
+const creatorQuoteIx = (p: CreatorQuoteAccounts, variant: number) =>
+  ix(
+    [
+      r(p.vault),
+      r(p.poolAuthority),
+      r(p.config),
+      w(p.pool),
+      w(p.vaultQuoteToken),
+      w(p.quoteVault),
+      r(p.quoteMint),
+      r(p.quoteTokenProgram),
+      r(eventAuthority(DBC_PROGRAM)),
+      r(DBC_PROGRAM),
+      w(p.beneficiaryQuoteToken),
+    ],
+    u8(variant)
+  );
+
+/** Withdraw the creator's DBC curve surplus to the beneficiary. Anyone can send it. */
+export const withdrawSurplusIx = (p: CreatorQuoteAccounts) => creatorQuoteIx(p, 9);
+
+/** Withdraw the creator's share of the DBC migration fee to the beneficiary. Anyone can send it. */
+export const withdrawMigrationFeeIx = (p: CreatorQuoteAccounts) => creatorQuoteIx(p, 10);
 
 /** Pull the vault's custom error code out of a failed transaction's logs or error. */
 export function vaultErrorName(error: unknown): string | null {

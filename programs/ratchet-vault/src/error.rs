@@ -18,6 +18,8 @@ pub enum VaultError {
     MathOverflow,
     NoBins,
     SunsetTooSoon,
+    DailyCapExceeded,
+    NotCanonicalPair,
 }
 
 impl From<VaultError> for ProgramError {

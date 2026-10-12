@@ -76,8 +76,20 @@ export default function VaultPage() {
         ) : (
           <>
             <section className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-neutral-850 bg-neutral-850 md:grid-cols-4">
-              <Stat label="Floor" value={`${v.floorMultiple.toFixed(2)}×`} sub="of the graduation price, only rises" />
-              <Stat label="Held by the vault" value={formatTokens(v.tokensInVault)} sub={`${v.symbol}, unspendable`} />
+              <Stat
+                label="Floor"
+                value={`${v.floorMultiple.toFixed(2)}×`}
+                sub={`of the graduation price, only rises; at most ${v.dailyCapPct}% offered per day`}
+              />
+              <Stat
+                label="Held by the vault"
+                value={formatTokens(v.tokensInVault)}
+                sub={
+                  v.sunsetTs
+                    ? `${v.symbol}, releasable without the floor from ${new Date(v.sunsetTs * 1000).toISOString().slice(0, 10)}`
+                    : `${v.symbol}, unspendable`
+                }
+              />
               <Stat label="In sell orders" value={formatTokens(v.tokensInAsks)} sub="resting on Meteora DLMM" />
               <Stat
                 label="Team vesting claimed"
