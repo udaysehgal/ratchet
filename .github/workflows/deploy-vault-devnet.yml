@@ -126,21 +126,26 @@ jobs:
           [ -n "$AUTHORITY" ] || { echo "::error::Add the DEVNET_VAULT_UPGRADE_AUTHORITY secret"; exit 1; }
           umask 077
           printf '%s' "$AUTHORITY" > "$RUNNER_TEMP/authority.json"
+          # The CLI needs a default signer even for reads like `program show`
+          solana config set --keypair "$RUNNER_TEMP/authority.json" --url "$RPC"
 
       - name: Check authority and balance
         run: |
           KEY="$RUNNER_TEMP/authority.json"
           SIGNER=$(solana-keygen pubkey "$KEY")
-          ONCHAIN=$(solana program show "$PROGRAM_ID" --url "$RPC" --output json | jq -r .authority)
+          ONCHAIN=$(solana program show "$PROGRAM_ID" --url "$RPC" --output json | jq -r '.authority // empty')
           echo "upgrade authority on chain: $ONCHAIN · secret's key: $SIGNER"
-          [ "$SIGNER" = "$ONCHAIN" ] || { echo "::error::The secret isn't the program's upgrade authority"; exit 1; }
+          [ -n "$ONCHAIN" ] || { echo "::error::Couldn't read the program's upgrade authority from $RPC"; exit 1; }
+          [ "$ONCHAIN" != "none" ] || { echo "::error::The program is immutable: it can't be upgraded"; exit 1; }
+          [ "$SIGNER" = "$ONCHAIN" ] || { echo "::error::The secret's key $SIGNER isn't the upgrade authority $ONCHAIN"; exit 1; }
           solana balance "$SIGNER" --url "$RPC"
 
       - name: Extend program data if the new build is larger
         run: |
           NEW=$(stat -c%s ratchet_vault.so)
-          HAVE=$(solana program show "$PROGRAM_ID" --url "$RPC" --output json | jq -r .dataLen)
+          HAVE=$(solana program show "$PROGRAM_ID" --url "$RPC" --output json | jq -r '.dataLen // empty')
           echo "new build $NEW bytes · allocated $HAVE bytes"
+          [ -n "$HAVE" ] || { echo "::error::Couldn't read the program's data length"; exit 1; }
           if [ "$NEW" -gt "$HAVE" ]; then
             solana program extend "$PROGRAM_ID" $((NEW - HAVE)) --url "$RPC" --keypair "$RUNNER_TEMP/authority.json"
           fi
