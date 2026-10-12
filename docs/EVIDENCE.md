@@ -6,6 +6,7 @@ for the one step we didn't pay for on mainnet (the DLMM unlock ladder).
 - [Mainnet: configs](#mainnet-preset-configs)
 - [Mainnet: CHRL, launch to graduation in 5 minutes](#mainnet-chrl-launch-to-graduation-in-5-minutes)
 - [What mainnet taught us](#what-mainnet-taught-us)
+- [Devnet: the vault enforcing the ladder on-chain](#devnet-the-vault-enforcing-the-ladder-on-chain)
 - [Devnet: the full lifecycle including the DLMM ladder](#devnet-full-lifecycle-including-the-dlmm-unlock-ladder)
 - [Verify it yourself](#verify-it-yourself)
 
@@ -66,9 +67,33 @@ so curve buyers can drain up to 94% of the pool's SOL by exiting at once (consta
 S / (B + S)). The [launch check](../README.md#whats-in-the-box) now flags this for any DBC token,
 and the figure in the README shows why: micro raise moves price 289× before graduation, fair raise 5%.
 
-Fees tax unwanted supply; they don't stop it. That's the argument for Ratchet's vault program
-(see [ARCHITECTURE.md](ARCHITECTURE.md#trust-model-and-the-vault)): supply that shouldn't hit a
-thin pool needs to be held by a program, not by goodwill.
+Fees tax unwanted supply; they don't stop it. Supply that shouldn't hit a thin pool needs to be
+held by a program, not by goodwill: that's Ratchet's [vault program](#devnet-the-vault-enforcing-the-ladder-on-chain),
+now running on devnet.
+
+## Devnet: the vault enforcing the ladder on-chain
+
+The [ratchet-vault program](../programs/ratchet-vault) ([`BrwQHe…NzWB`](https://solscan.io/account/BrwQHeRJWXDbXgUVi1TKdoDbnfB5kcRTcieYmSH2NzWB?cluster=devnet), [deploy](https://solscan.io/tx/4RL3kbKwtf1irGG2SnCkpjeJm5jDhdTeQiyfu34Enfh3BA2w7Ugd9ejNmywykWdcHg1wjFGJzymvHNH1DvBiK6o6?cluster=devnet)) ran the full lifecycle on public devnet against Meteora's deployed programs, **20/20 checks**
+([`scripts/vault-lifecycle.ts`](../scaffolds/fun-launch/scripts/vault-lifecycle.ts), [raw results](evidence/vault-devnet-run.json)).
+Pool [`8MrMPv…9C8A`](https://solscan.io/account/8MrMPvfH9wPGaPZomLEGFwSMyA8Xew5D2aJfHH8u9C8A?cluster=devnet) · vault [`2LmfUM…E6wF`](https://solscan.io/account/2LmfUMgwN3Kt1dmu7MR4KrkJTQBTeMFVhdT4M9jJE6wF?cluster=devnet) · DLMM pair [`8Rkpbt…SUqb`](https://solscan.io/account/8RkpbtVZGWQKAGoYRHBTDWPhdMsYnsvmAJ975LDhSUqb?cluster=devnet)
+
+| Step | What the chain shows | Tx |
+|---|---|---|
+| Launch + `adopt_launch` in one tx | DBC `InitializeVirtualPoolWithSplToken` then `TransferPoolCreator` to the vault PDA | [tx](https://solscan.io/tx/5LptAc58dS5zLsH6j6nRssr8Ab65GGiEQVt2QD7YKT5vA2XnvD8yL6cmLc5zxM3sAWUrNb3L2gsHm4AuMoe3K974?cluster=devnet) |
+| Curve filled | DBC `Swap2` | [tx](https://solscan.io/tx/4PTjxZRHF2y3C1kgYY6rr2j5h4vCALHx6WM1aW2QQNRWezJ5i2Q8wD3zx6gpELJKPo5M4Q49uj4Gj55YocseL4s8?cluster=devnet) |
+| Team vesting escrow | recipient is the vault, not the team | [tx](https://solscan.io/tx/2HSHDS7izjfz7JXgA4L42y4D6vk4rYPQB2QFDeoeNW5nUqayjguuF3s7Y5fLKCyBdnkFsbTSjkXVC8uNKa1AXhuU?cluster=devnet) |
+| Graduated to DAMM v2 | DBC `MigrationDammV2` | [tx](https://solscan.io/tx/3TG5RKCDZEJz5hjfDMnd4kuFrnLYTP6R4GyjuyR5vNBcsTeqbx4Yr8MsFtAsjnuTZgzRuTWgzniWc4BDc3QwJSTw?cluster=devnet) |
+| `claim_vested` | Meteora Lock `ClaimV2` signed by the vault PDA; 10M tokens into the vault, 0 to the team | [tx](https://solscan.io/tx/ChxGpkaZ4ZJN9MfwFUiEB6z4mqt7WNJZvb28f1pL5A6CUh1akqiMksxs6Vd93UPRbwPv1vtRrrJFPhjRwWSBa8N?cluster=devnet) |
+| DLMM pair | created by a holder (DLMM requires the creator to hold the token) | [tx](https://solscan.io/tx/3dyErdY9Ugse4JXGerq3zGWejcoK8LwB2ToPZXjKa7jnM8DTsq3Qn3G3m2dNtWW4tTaJm5LRX56e5ARVrZsW8mPy?cluster=devnet) |
+| `place_ask` at 1.25× and 2× | DLMM `PlaceLimitOrder`, owner = vault | [tx](https://solscan.io/tx/2guBbnRYjYGrZhERoB858Nqu6G8MfnPzn4ecWMrZLQt1FRK9a82nBhch3pzfmDdiAhwPehJxWxWDvh73BBhyuwBD?cluster=devnet) |
+| Refused: ask at 1.2×, one bin under 1.25×, from a non-beneficiary, lowering the floor, ask at 1.3× after raising to 1.5× | `BelowFloor` / `NotBeneficiary` / `FloorCannotDecrease` (rejected in simulation, so no tx) | – |
+| `raise_floor` to 1.5× | | [tx](https://solscan.io/tx/ueG1EqpnHwNqwTKS7SUUCNTmq7wWyotJuMMmmMqZ4gftRBZF1NNCNzeiKff5jkQwQ3mRNSLkEdw2G8AoHW7x3Cr?cluster=devnet) |
+| A buyer lifts the 1.25× ask | DLMM `Swap2`: the team sold into strength | [tx](https://solscan.io/tx/35iwpdhis9G9rLYzVXxYMJ3gL2qPAWQGnfXWRqDr7EetHAsco49PRiMiusqcG1et7fKdZtQRT3ByxzzBeNYdgEyH?cluster=devnet) |
+| `cancel_ask` | unsold tokens back to the vault, sale proceeds to the team | [tx](https://solscan.io/tx/29deY5PafssogLh7fWHToTD9jNJwjQHiNoJMXc5gbHwLiVLY5TratsDGZQrjEpVu6VrgNS7A9LL4NnW2pc1JK7qt?cluster=devnet) |
+| `collect_fees` | DBC creator fees claimed by the vault, SOL forwarded to the team | [tx](https://solscan.io/tx/3wGBvm1dbQiPxLjbWZpif3LccwCnPN5VuxGCF8x1VthJQbTs9mjXn13VypkUnpqZ5QhnW3fv7eoYagzX7ay1n3Ld?cluster=devnet) |
+
+The same script also passes 20/20 on a local validator running Meteora's **mainnet** program
+binaries ([`local-validator.sh`](../programs/ratchet-vault/scripts/local-validator.sh)).
 
 ## Devnet: full lifecycle, including the DLMM unlock ladder
 

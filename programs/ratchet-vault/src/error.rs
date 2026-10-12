@@ -1,6 +1,6 @@
 use solana_program::program_error::ProgramError;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
 pub enum VaultError {
     InvalidVault = 6000,

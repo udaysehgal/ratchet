@@ -89,8 +89,8 @@ build orders below 1.25× the graduation price ([`lib/ladder.ts`](../scaffolds/f
 shared with the UI and unit-tested), and every order is visible on-chain and on the token page.
 The creator's wallet owns the orders, so it could cancel them directly.
 
-The next version makes this binding with a vault program. Verified against the DBC and DLMM
-programs:
+The [ratchet-vault program](../programs/ratchet-vault) makes it binding, and runs on devnet
+([spec](VAULT.md), [transactions](EVIDENCE.md#devnet-the-vault-enforcing-the-ladder-on-chain)). It rests on:
 
 - DBC's `transfer_pool_creator` works at any point before the curve completes. Moving the
   creator role to a vault PDA sends the vesting escrow, creator fees and creator LP to the vault.
@@ -141,6 +141,7 @@ before any buy.
 | [`scaffolds/fun-launch`](../scaffolds/fun-launch) | The Next.js app: pages, API routes, Meteora server layer |
 | [`presets/`](../presets) | Preset configs for the Invent studio CLI (devnet and mainnet) |
 | [`studio/`](../studio) | Meteora Invent studio, with config-path overrides and xStock token-badge support |
+| [`programs/ratchet-vault`](../programs/ratchet-vault) | The vault program (native Solana), Meteora IDLs, local-validator script |
 | [`packages/ratchet-mcp`](../packages/ratchet-mcp) | MCP server and Agent Skill |
 | [`scripts/make-figures.mjs`](../scripts/make-figures.mjs) | Regenerates the README figure from live preset data |
 | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) | Typecheck, unit tests, production build, MCP typecheck |

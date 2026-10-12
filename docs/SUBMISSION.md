@@ -35,13 +35,16 @@ fun-launch scaffold. Every call is listed in [ARCHITECTURE.md](ARCHITECTURE.md#m
 
 ## Originality
 Launchpads compete on curves; nobody handles what happens at unlock. Ratchet uses DLMM's
-native limit orders as an unlock-commitment primitive, and lays out a verified path to make
-it trustless: DBC `transfer_pool_creator` to a vault PDA before graduation, plus PDA-owned DLMM
-limit orders that only the vault can cancel.
+native limit orders as an unlock-commitment primitive, and makes it trustless with its own
+program: DBC `transfer_pool_creator` to a vault PDA at launch, Meteora Lock vesting claimed by
+that PDA, and PDA-owned DLMM limit orders that only the vault can cancel.
 
 Mainnet backed this up: on CHRL a sniper paid ~37% in anti-sniper fees to get in and still
 profited by selling into the fresh DAMM v2 pool 7 s after graduation. Fees tax unwanted supply;
-only a program can hold it back. That is what the vault does for team unlocks.
+only a program can hold it back. So we built it: the **ratchet-vault program** takes the DBC
+creator role at launch and lets team tokens leave only as DLMM asks at ≥ 1.25× the graduation
+price, with a floor that only rises. It runs on devnet and passes 20/20 end-to-end checks
+against Meteora's deployed programs (docs/VAULT.md, docs/EVIDENCE.md).
 
 ## Impact
 Every launchpad on DBC can adopt the pattern: a preset plus a post-graduation unlock ladder.
@@ -60,6 +63,7 @@ All on mainnet, through the live app (every transaction in [EVIDENCE.md](EVIDENC
 - Met Lock vesting claim and a one-transaction fee claim (DBC creator + partner + locked-LP
   DAMM v2 fees) on mainnet.
 - The DLMM unlock ladder ran end to end on devnet ([txs](EVIDENCE.md#devnet-full-lifecycle-including-the-dlmm-unlock-ladder)).
+- The ratchet-vault program is deployed on devnet and enforced the ladder in a 20/20 lifecycle run ([txs](EVIDENCE.md#devnet-the-vault-enforcing-the-ladder-on-chain)).
 
 ## Built in 3 days
 Day 1: presets + full devnet lifecycle. Day 2: app (board, token page, ladder, DAMM v2 trading,

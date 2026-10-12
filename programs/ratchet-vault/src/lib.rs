@@ -31,7 +31,7 @@ solana_program::declare_id!("BrwQHeRJWXDbXgUVi1TKdoDbnfB5kcRTcieYmSH2NzWB");
 #[cfg(not(feature = "no-entrypoint"))]
 solana_program::entrypoint!(process_instruction);
 
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, PartialEq)]
 pub enum VaultInstruction {
     /// Take over a DBC pool's creator role. Signer: the current creator.
     /// Accounts: creator (s, w), vault (w), virtual_pool (w), config, system_program,
@@ -181,7 +181,7 @@ fn adopt_launch(program_id: &Pubkey, accounts: &[AccountInfo], beneficiary: Pubk
         &meteora::transfer_pool_creator([pool_info, config_info, creator, vault_info, event_authority, dbc_program]),
         &[pool_info.clone(), config_info.clone(), creator.clone(), vault_info.clone(), event_authority.clone(), dbc_program.clone()],
     )?;
-    msg!("ratchet-vault: adopted pool {} (floor {} bps)", pool_info.key, MIN_FLOOR_BPS);
+    msg!("ratchet-vault: adopted launch");
     Ok(())
 }
 
@@ -255,7 +255,7 @@ fn place_ask(program_id: &Pubkey, accounts: &[AccountInfo], nonce: u64, bins: Ve
     let floor = price::floor_price_up(vault.graduation_price_q64, vault.floor_bps).ok_or(VaultError::MathOverflow)?;
     for (bin_id, _) in &bins {
         if !price::bin_at_or_above_floor(*bin_id, pair.bin_step, floor) {
-            msg!("ratchet-vault: bin {} is below the floor ({} bps of graduation)", bin_id, vault.floor_bps);
+            msg!("ratchet-vault: bin below the floor");
             return Err(VaultError::BelowFloor.into());
         }
     }
@@ -279,7 +279,7 @@ fn place_ask(program_id: &Pubkey, accounts: &[AccountInfo], nonce: u64, bins: Ve
 
     vault.orders_placed += 1;
     vault.save(vault_info)?;
-    msg!("ratchet-vault: placed ask #{} over {} bins", nonce, bins.len());
+    msg!("ratchet-vault: ask placed");
     Ok(())
 }
 
@@ -355,7 +355,7 @@ fn raise_floor(program_id: &Pubkey, accounts: &[AccountInfo], floor_bps: u16) ->
     }
     vault.floor_bps = floor_bps;
     vault.save(vault_info)?;
-    msg!("ratchet-vault: floor raised to {} bps", floor_bps);
+    msg!("ratchet-vault: floor raised");
     Ok(())
 }
 

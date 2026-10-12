@@ -1,7 +1,11 @@
 # Ratchet vault: enforcing the unlock ladder on-chain
 
-Status: **spec + devnet implementation** ([`programs/ratchet-vault`](../programs/ratchet-vault)).
-Not deployed to mainnet.
+Status: **implemented and deployed on devnet** at
+[`BrwQHe…NzWB`](https://solscan.io/account/BrwQHeRJWXDbXgUVi1TKdoDbnfB5kcRTcieYmSH2NzWB?cluster=devnet)
+([`programs/ratchet-vault`](../programs/ratchet-vault)). The end-to-end test passes **20/20 on
+public devnet** and on a local validator running Meteora's mainnet binaries
+([transactions](EVIDENCE.md#devnet-the-vault-enforcing-the-ladder-on-chain)). Not on mainnet:
+it needs an audit first.
 
 ## Problem
 
@@ -119,7 +123,31 @@ conservative: a bin that passes is never below the floor.
 - Launch check: a pass when the pool creator is a Ratchet vault, with the sunset date if any.
 - Creator controls call `place_ask` / `cancel_ask` / `raise_floor` instead of the DLMM SDK.
 
-## Test plan (devnet)
+## What the real programs taught us
+
+Two details that only showed up when running against Meteora's deployed programs:
+
+- **DBC's pool authority pays the Meteora Lock escrow rent** at `create_locker`. It's funded on
+  mainnet and devnet; a local validator must clone it.
+- **DLMM requires a customizable pair's creator to hold some of the token** (launch-owner
+  proof). In a vaulted launch the team wallet holds none by design, so a holder creates the
+  pair, or the team buys a dust amount first. The vault doesn't need to own the pair, only its
+  orders.
+
+## Implementation notes
+
+- Native Solana program (no framework): instruction bytes for Meteora CPIs are built from
+  Meteora's published IDLs ([`idls/`](../programs/ratchet-vault/idls)); account fields are read
+  at byte offsets computed from the IDLs and verified against live accounts with the SDKs.
+- The order account is a PDA (`["order", vault, nonce]`), so the program signs its creation.
+- DLMM's transfer-hook `RemainingAccountsInfo` slices are passed through from the client; they
+  never affect the price check.
+- Unit tests cover the Q64.64 math (including the "one bin under 1.25× is refused" edge) and
+  the account layout. The client and e2e test are
+  [`src/lib/vault.ts`](../scaffolds/fun-launch/src/lib/vault.ts) and
+  [`scripts/vault-lifecycle.ts`](../scaffolds/fun-launch/scripts/vault-lifecycle.ts).
+
+## Test plan (devnet) — all passing
 
 Devnet runs the same Meteora program IDs as mainnet.
 

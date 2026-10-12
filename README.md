@@ -33,6 +33,7 @@ wallet. Half of every DAMM v2 fee compounds back into the pool, so liquidity onl
 | **Sniper paid ~37%** | in anti-sniper fees 15 s after launch, and those fees went to the creator |
 | **4 preset configs** | including an **equity raise priced in tokenized Tesla stock (TSLAx)** |
 | **Full ladder on devnet** | DLMM asks from 1.25× to 6× the graduation price ([txs](docs/EVIDENCE.md#devnet-full-lifecycle-including-the-dlmm-unlock-ladder)) |
+| **Vault program on devnet** | enforces the ladder on-chain, 20/20 lifecycle checks ([txs](docs/EVIDENCE.md#devnet-the-vault-enforcing-the-ladder-on-chain)) |
 
 ## Presets
 
@@ -66,14 +67,18 @@ is generated from live config data by [`scripts/make-figures.mjs`](scripts/make-
 - **Earnings**: one transaction claims creator, partner and locked-LP fees.
 - **For AI agents**: an [MCP server and Agent Skill](packages/ratchet-mcp) to list launches, check any DBC token and build unsigned transactions.
 - **Public APIs**: graduation feed, launch check and presets as CORS-open JSON ([endpoints](docs/ARCHITECTURE.md#apis-and-the-mcp-server)).
-- **21 unit tests and CI** (typecheck, tests, build) on every push.
+- **30 unit tests and CI** (app typecheck, tests and build; vault program tests) on every push.
 
-## Trust model
+## The vault: enforcing the ladder on-chain
 
-Today the ladder is enforced by Ratchet's API and visible on-chain; the creator's wallet owns the
-orders. The next version moves the creator role and the ladder into a vault program, so only
-the program can cancel an order, and only to move it higher. Both halves are verified against
-the DBC and DLMM programs. [Details →](docs/ARCHITECTURE.md#trust-model-and-the-vault)
+On mainnet today the ladder is enforced by Ratchet's API and visible on-chain. The
+[**ratchet-vault program**](programs/ratchet-vault) makes it binding: it takes the DBC pool's
+creator role in the launch transaction, so team vesting and creator fees land in a PDA, and
+team tokens can only leave as DLMM asks at ≥ 1.25× the graduation price. The floor only rises.
+
+**Deployed on devnet and passing 20/20 end-to-end checks**: asks above the floor accepted,
+below-floor asks and floor cuts refused, a buyer lifting the ask with proceeds reaching the team
+only through the vault. [Spec](docs/VAULT.md) · [transactions](docs/EVIDENCE.md#devnet-the-vault-enforcing-the-ladder-on-chain)
 
 ## Run it locally
 

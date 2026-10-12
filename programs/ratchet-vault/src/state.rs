@@ -10,7 +10,7 @@ pub const VAULT_DISCRIMINATOR: [u8; 8] = *b"RTVAULT1";
 pub const MIN_FLOOR_BPS: u16 = 12_500;
 pub const VAULT_SPACE: usize = 8 + 32 * 4 + 16 + 2 + 8 + 8 + 1;
 
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, PartialEq)]
 pub struct Vault {
     pub discriminator: [u8; 8],
     /// The DBC virtual pool whose creator role this vault holds.
