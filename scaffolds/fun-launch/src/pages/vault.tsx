@@ -7,7 +7,8 @@ import { formatSol, formatTokens } from '@/lib/format/ratchet';
 import type { VaultView } from '@/server/vault';
 import { cn } from '@/lib/utils';
 
-const DEMO_VAULT = '9g7Gu6NfiKyUN62UvULD9qx1A4hHh4kA2f4xZTUdMQwp';
+// The vault from the demo video's launch (DEMO): live asks at 1.25× and 2× the graduation price
+const DEMO_VAULT = 'Cerw2e1NzsdMJg1YTr872dFAsnKkz2e4fnPkyPBLcZy6';
 const devnet = (kind: 'account' | 'tx', id: string) => `https://solscan.io/${kind}/${id}?cluster=devnet`;
 const short = (s: string) => `${s.slice(0, 4)}…${s.slice(-4)}`;
 
@@ -139,7 +140,7 @@ export default function VaultPage() {
               </div>
 
               <div className="panel flex flex-col gap-4 p-5 sm:p-6">
-                <h2 className="text-xl font-semibold">What the program refused</h2>
+                <h2 className="text-xl font-semibold">What the program refused in our test runs</h2>
                 <ul className="flex flex-col gap-3">
                   {REFUSALS.map(([what, code]) => (
                     <li key={what} className="flex items-start gap-3">

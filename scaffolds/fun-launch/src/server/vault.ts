@@ -11,7 +11,7 @@ import { DAILY_ASK_BPS, DLMM_PROGRAM, VAULT_PROGRAM_ID, decodeVault } from '@/li
 import { devnet } from './devnet';
 
 /** The vault from the devnet lifecycle run (docs/EVIDENCE.md). */
-export const DEMO_VAULT = '9g7Gu6NfiKyUN62UvULD9qx1A4hHh4kA2f4xZTUdMQwp';
+export const DEMO_VAULT = 'Cerw2e1NzsdMJg1YTr872dFAsnKkz2e4fnPkyPBLcZy6';
 
 export type VaultView = {
   address: string;
