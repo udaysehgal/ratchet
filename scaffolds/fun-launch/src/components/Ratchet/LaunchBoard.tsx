@@ -8,6 +8,7 @@ import { ProgressBar } from './ProgressBar';
 import { TokenAvatar } from './TokenAvatar';
 import { MeteorField } from './MeteorField';
 import { StackHub } from './StackHub';
+import { ProblemSection } from './ProblemSection';
 
 const NEAR_GRADUATION = 0.8;
 
@@ -173,6 +174,9 @@ export function LaunchBoard() {
       </section>
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-28 py-24">
+        {/* The problem, with live data */}
+        <ProblemSection />
+
         {/* Stack */}
         <section className="flex flex-col items-center gap-4 text-center">
           <Eyebrow>The whole stack</Eyebrow>
