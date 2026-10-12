@@ -5,6 +5,7 @@
 [![Mainnet: CHRL graduated](https://img.shields.io/badge/mainnet-CHRL%20graduated%20to%20DAMM%20v2-14F195)](docs/EVIDENCE.md)
 [![Meteora: DBC · DAMM v2 · DLMM · Lock](https://img.shields.io/badge/Meteora-DBC%20%C2%B7%20DAMM%20v2%20%C2%B7%20DLMM%20%C2%B7%20Lock-FF6B1A)](docs/ARCHITECTURE.md#meteora-integration)
 [![Vault: unaudited](https://img.shields.io/badge/vault%20program-unaudited-F59E0B)](docs/VAULT.md#threats-and-answers)
+[![X: @ratchetxyz](https://img.shields.io/badge/X-@ratchetxyz-000000?logo=x)](https://x.com/ratchetxyz)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE.md)
 
 **A Meteora launchpad where team unlocks only sell into strength.**

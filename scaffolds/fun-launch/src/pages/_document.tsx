@@ -16,6 +16,7 @@ export default function Document() {
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@ratchetxyz" />
         <meta name="twitter:image" content="https://www.useratchet.xyz/og.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
