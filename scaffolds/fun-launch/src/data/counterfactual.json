@@ -1,0 +1,27 @@
+{
+ "generatedAt": "2026-10-12T19:34:07.839Z",
+ "sample": {
+  "everyNthTeam": 19,
+  "latestSignaturesPerWallet": 30
+ },
+ "teamsChecked": 41,
+ "complete": true,
+ "teamsWithPricedSales": 14,
+ "skipped": {
+  "noPool": 0,
+  "noSales": 27,
+  "error": 0
+ },
+ "teamsWithAnySaleBelowFloor": 14,
+ "teamsThatWouldBeBlockedEntirely": 14,
+ "teamsOverDailyCap": 14,
+ "quoteMints": {
+  "So11111111111111111111111111111111111111112": 6,
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": 8
+ },
+ "proceedsSolOfSolQuotedTeams": 57.00285424,
+ "proceedsSolBelowFloorOfSolQuotedTeams": 57.00285424,
+ "medianTeamSaleRatio": 0.09740288074969213,
+ "maxSaleRatio": 0.5419,
+ "salesPriced": 32
+}

@@ -20,6 +20,30 @@ the measurement, from mainnet, for every DBC launch that has a team allocation.
   <img alt="Of 1,413 unlocked DBC team allocations: 762 claimed then moved out, 595 never claimed, 49 kept, 7 partly moved" src="img/unlock-study-light.svg" width="760">
 </picture>
 
+## Would Ratchet have stopped them? (sample, 2026-10-13)
+
+We took an evenly spaced sample of **41 teams** (every 19th of the 762 that moved ≥90% of their
+claimed unlocks). For each, we read the latest 30 transactions on the team wallet's token account
+and priced every DEX sale (quote token received ÷ tokens sold) against that token's graduation
+price (the DBC config's migration price).
+
+- **14** teams had DEX sales we could price (32 sales, in SOL or USDC). The other 27 moved their
+  tokens by plain transfer, or sold into a different token, so we left them unpriced.
+- **14 of 14** sold below 1.25× the graduation price, the vault's floor. **None of the 32 sales
+  reached even the graduation price**: the best was 0.54×, and the typical team's typical sale was
+  at **0.10×**.
+- **14 of 14** sold more than 10% of their claimed unlock within 24 hours, above the vault's daily cap.
+- For the 6 SOL-quoted teams, all 57 SOL they took out came from sales below the floor.
+
+A Ratchet vault would have refused every one of these sales. Data, with every transaction:
+[evidence/unlock-counterfactual.json](evidence/unlock-counterfactual.json). Script:
+[scripts/unlock-counterfactual.ts](../scaffolds/fun-launch/scripts/unlock-counterfactual.ts)
+(`STEP=19 SIGS=30 npx tsx scripts/unlock-counterfactual.ts`).
+
+**Limits:** a sample, not the full population; sales outside the latest 30 transactions, or routed
+through another wallet first, are missed. It shows the price teams sold at, not whether they would
+have waited for a higher one.
+
 ## Method
 
 1. **Find every team allocation.** DBC creates a Meteora Lock vesting escrow at graduation, with

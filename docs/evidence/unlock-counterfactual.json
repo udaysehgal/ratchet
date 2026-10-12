@@ -1,0 +1,476 @@
+{
+ "generatedAt": "2026-10-12T19:34:07.839Z",
+ "method": "Teams from unlock-study.json that moved ≥90% of claimed unlocks. For each, every transaction on the team wallet’s token account (latest SIGS, see sample) that touched a DEX program, lowered the team’s token balance and raised its balance of the pool’s quote token (SOL or e.g. USDC): price = quote received / tokens sold, compared with the DBC config’s migration (graduation) price. Teams whose unlocks left by plain transfer, or sold into a different quote token, are counted as unpriced.",
+ "sample": {
+  "everyNthTeam": 19,
+  "latestSignaturesPerWallet": 30
+ },
+ "teamsChecked": 41,
+ "complete": true,
+ "teamsWithPricedSales": 14,
+ "skipped": {
+  "noPool": 0,
+  "noSales": 27,
+  "error": 0
+ },
+ "teamsWithAnySaleBelowFloor": 14,
+ "teamsThatWouldBeBlockedEntirely": 14,
+ "teamsOverDailyCap": 14,
+ "quoteMints": {
+  "So11111111111111111111111111111111111111112": 6,
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": 8
+ },
+ "proceedsSolOfSolQuotedTeams": 57.00285424,
+ "proceedsSolBelowFloorOfSolQuotedTeams": 57.00285424,
+ "medianTeamSaleRatio": 0.09740288074969213,
+ "teams": [
+  {
+   "mint": "E8HYPNXeXk5tjd1z3Se1qDBuVkjKvj7gEsKriRYtjups",
+   "quoteMint": "So11111111111111111111111111111111111111112",
+   "recipient": "Gr4UJFwgysRNRFLr5RPUEcFRt9G3wRV4QeNzkwBfsBVZ",
+   "graduationPrice": 0.000001004369658885,
+   "claimed": 500000000,
+   "sold": 573395403.601982,
+   "soldBelowFloor": 573395403.601982,
+   "soldBelowGraduation": 573395403.601982,
+   "proceedsSol": 8.691211262,
+   "proceedsSolBelowFloor": 8.691211262,
+   "medianRatio": 0.03056084281018006,
+   "maxSoldIn24h": 573395403.601982,
+   "sales": [
+    {
+     "sig": "2yWDFAKwprcLHLgXfxuDbvN6o1KjrwJCCkcZJWurffU7gdP1PPs7EPtXRnmwKV5Y8SwY48x371TxLHHDfF3jxRWc",
+     "time": 1786759965,
+     "tokens": 188149563.601982,
+     "sol": 5.775134817,
+     "ratio": 0.0306
+    },
+    {
+     "sig": "4s7xxb9jWDQ5ARNoRbvFNdZBn594mE39amnei6wXEbY5DUU12xC55WofPRCxPda9ub1wh9GDEkkgingu4p8yEsDR",
+     "time": 1786760245,
+     "tokens": 385245840,
+     "sol": 2.916076445,
+     "ratio": 0.0075
+    }
+   ]
+  },
+  {
+   "mint": "JBFJCKxrN5FXn8JENtK9LMHJx9NyHWGVjwmFEJg2jups",
+   "quoteMint": "So11111111111111111111111111111111111111112",
+   "recipient": "AMKPMr3gvtn1EFM9YW7CS4MQoVXptWk8WtYvmVX3GdTR",
+   "graduationPrice": 0.00001212,
+   "claimed": 10000000,
+   "sold": 22907201.421388,
+   "soldBelowFloor": 22907201.421388,
+   "soldBelowGraduation": 22907201.421388,
+   "proceedsSol": 17.63929277,
+   "proceedsSolBelowFloor": 17.63929277,
+   "medianRatio": 0.08819659471240959,
+   "maxSoldIn24h": 19590819.773031,
+   "sales": [
+    {
+     "sig": "5WpSSDNMty55pTwvpQ4dbahKesVUbBEXGPU2w5D8oiPXgYp741fhvozB7Qe3EM994jBaNiZ7aktvpZDXTwuVbG4q",
+     "time": 1752762737,
+     "tokens": 3316381.648357,
+     "sol": 3.545022046,
+     "ratio": 0.0882
+    },
+    {
+     "sig": "5S9MwYLFf6fgmhKZpNvA69hJgurhGykzNHXr5JxFKh8X91BHGMGedoYT2DfHLK1EMApF9N4D4ivnzY67Qmnc28YG",
+     "time": 1754746433,
+     "tokens": 19590819.773031,
+     "sol": 14.094270724,
+     "ratio": 0.0594
+    }
+   ]
+  },
+  {
+   "mint": "8bAc5SepjKXGH349EMVF6jF1zLjPqi83Q9m4MHdPjups",
+   "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+   "recipient": "8wgvjXbWhNiCf6YUCK6oGn4hXS11u8TLHdzbsif6NQwp",
+   "graduationPrice": 0.00003,
+   "claimed": 10000000,
+   "sold": 40756712.768607,
+   "soldBelowFloor": 40756712.768607,
+   "soldBelowGraduation": 40756712.768607,
+   "proceedsSol": 167.688624,
+   "proceedsSolBelowFloor": 167.688624,
+   "medianRatio": 0.2936679056827383,
+   "maxSoldIn24h": 34975942.107285,
+   "sales": [
+    {
+     "sig": "3QJReVfSjoSezvWY9acwagmWGchTfC5DES3oHskiik51LRfAU6KaKTGDF9qH9JCqgVzZF7P2w93t8XP9zJLK1fJR",
+     "time": 1762458351,
+     "tokens": 1000000,
+     "sol": 11.560014,
+     "ratio": 0.3853
+    },
+    {
+     "sig": "4wmvGMNbdcu36wa5chjv8DWBsfBVVkC2x49hgdjaonvkZ8Wwdtfn1x5DkHvJ3DET7tLuzcGtJUyNaiRTtn4vwi4t",
+     "time": 1764266061,
+     "tokens": 3187263.96457,
+     "sol": 28.079914,
+     "ratio": 0.2937
+    },
+    {
+     "sig": "4EP6qnEsV9ijHomBFNrz445Ba67nCozp1qLKtmUsukyfHEYyPcZwJxad5WUmVDvsaBQfXaMLNxNJ27yMfbA848gf",
+     "time": 1765594866,
+     "tokens": 1593506.696752,
+     "sol": 12.861436,
+     "ratio": 0.269
+    },
+    {
+     "sig": "qdXqUtQXGpWNVz2TNmDUVNq5NuG9ZU8FwbMGxKxBuafv3F29T8spxXYQyhwKJcp6FsFCrzLHGPXjHnEJFm5iare",
+     "time": 1783598545,
+     "tokens": 34975942.107285,
+     "sol": 115.18726,
+     "ratio": 0.1098
+    }
+   ]
+  },
+  {
+   "mint": "8BNNTDqoqqJo7noQwUWfdZaiwi3iKn6LKX9f3b9Ujups",
+   "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+   "recipient": "2JarGaaVhqcV2FbsxQPLagFpPi4qh3SuKt7adYk299hr",
+   "graduationPrice": 0.000067,
+   "claimed": 200000000,
+   "sold": 498073477.8191,
+   "soldBelowFloor": 498073477.8191,
+   "soldBelowGraduation": 498073477.8191,
+   "proceedsSol": 1148.022026,
+   "proceedsSolBelowFloor": 1148.022026,
+   "medianRatio": 0.03440186612526457,
+   "maxSoldIn24h": 498073477.8191,
+   "sales": [
+    {
+     "sig": "2Z6ZKQYeRFGRQqPrnnxwUrdYsJmq87HRTgvczQF9HcHLFPNzECLT6PbEr7pNfrtP8TC8P6hrrBASBAbpAVh23rnD",
+     "time": 1785162619,
+     "tokens": 498073477.8191,
+     "sol": 1148.022026,
+     "ratio": 0.0344
+    }
+   ]
+  },
+  {
+   "mint": "wFeucThJrw6ziJiUm4gVAGYfcrAiFQgU3Kunykobrrr",
+   "quoteMint": "So11111111111111111111111111111111111111112",
+   "recipient": "7w9u4iJgY4nKUbx2kyYTxvTD7rihPT6pGSnKkCtAig8k",
+   "graduationPrice": 6.760563376312574e-7,
+   "claimed": 90000000,
+   "sold": 90000000,
+   "soldBelowFloor": 90000000,
+   "soldBelowGraduation": 90000000,
+   "proceedsSol": 0.055010928,
+   "proceedsSolBelowFloor": 0.055010928,
+   "medianRatio": 0.0009041147894196932,
+   "maxSoldIn24h": 90000000,
+   "sales": [
+    {
+     "sig": "3rZngS23VbStjfTA5wV8JUw1GCGpbpXKxirYG937vsA9jZLD3pkRk44jgh8HNoGQzDjoeNg34W8WEFfL39ffWNLe",
+     "time": 1776386695,
+     "tokens": 90000000,
+     "sol": 0.055010928,
+     "ratio": 0.0009
+    }
+   ]
+  },
+  {
+   "mint": "3uz4sNrRXmzqH41q9PvW7e2UHnBHd7M2Dtzv1egCjups",
+   "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+   "recipient": "31wKdcaPh7CZm8rMcfxtqGVqqpLuEyARDQZVq76dt6iE",
+   "graduationPrice": 0.0001,
+   "claimed": 10000000,
+   "sold": 51380030.321086004,
+   "soldBelowFloor": 51380030.321086004,
+   "soldBelowGraduation": 51380030.321086004,
+   "proceedsSol": 269.493385,
+   "proceedsSolBelowFloor": 269.493385,
+   "medianRatio": 0.10314822055356809,
+   "maxSoldIn24h": 49713322.654416,
+   "sales": [
+    {
+     "sig": "4VxYCGNqauErAnjCpfHqrNBpAjhQkyS8WitpHwcNsNgL3oXxZAnpTuU6feTrhtYSz6kYCR38LXhX9SMgdEMXWwQK",
+     "time": 1778254935,
+     "tokens": 1666707.66667,
+     "sol": 17.191793,
+     "ratio": 0.1031
+    },
+    {
+     "sig": "tGHMuuqHge1JSmGk8fZvCT9C8nhDPT3d2KXdULDj3iXZgTXvWrSJmZh6K7buN7wFVK9r5SF9EiDTCbP9m9arecv",
+     "time": 1783263163,
+     "tokens": 49713322.654416,
+     "sol": 252.301592,
+     "ratio": 0.0508
+    }
+   ]
+  },
+  {
+   "mint": "7gX52to8BZWZUgqVjKbEkfTQH8wjycWhz2Uttt7Hjups",
+   "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+   "recipient": "FhuH6fQ1GNVbwQqyMUjtC3BzKT2jLX4XuQcxCcPHyadh",
+   "graduationPrice": 0.00003,
+   "claimed": 10000000,
+   "sold": 10000000,
+   "soldBelowFloor": 10000000,
+   "soldBelowGraduation": 10000000,
+   "proceedsSol": 54.107308,
+   "proceedsSolBelowFloor": 54.107308,
+   "medianRatio": 0.18035769333333335,
+   "maxSoldIn24h": 10000000,
+   "sales": [
+    {
+     "sig": "4AwzRzukHPhgmGTmWwKkcYGEuG8eDRS2B9A6ccmDVCLhd22mesXB9URq257T46Ntv3ayT2EwS5fveLimEK69wXjw",
+     "time": 1751578415,
+     "tokens": 10000000,
+     "sol": 54.107308,
+     "ratio": 0.1804
+    }
+   ]
+  },
+  {
+   "mint": "HrcFJszwstifpLK1h7fABdz59zKHhBXMVgqm97bHjups",
+   "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+   "recipient": "A5xYtCSoQb8hVs7VSJgLgFmxiKhhkMrgwQEbaTgU24Pv",
+   "graduationPrice": 0.00003,
+   "claimed": 10000000,
+   "sold": 77255377.124421,
+   "soldBelowFloor": 77255377.124421,
+   "soldBelowGraduation": 77255377.124421,
+   "proceedsSol": 523.7294430000001,
+   "proceedsSolBelowFloor": 523.7294430000001,
+   "medianRatio": 0.5419194180198229,
+   "maxSoldIn24h": 49997356.881038,
+   "sales": [
+    {
+     "sig": "zkcqyPfpgAzLcufdmCVnNkHNWC2ypkPb4UnJEUotZakx22ByZVtKYNeTPbSGSYfzJWbbdU3eNAUoE5eXtoNSVZZ",
+     "time": 1751563380,
+     "tokens": 27258020.243383,
+     "sol": 443.149514,
+     "ratio": 0.5419
+    },
+    {
+     "sig": "8qGa2AY7No9bXzsWJcawudFn5A1tkSSZSJABpa92BnYaRHWQ7SBM8M5kvKi2avSUchMZ6UFL2DetjJLdNYbDTju",
+     "time": 1783614155,
+     "tokens": 49997356.881038,
+     "sol": 80.579929,
+     "ratio": 0.0537
+    }
+   ]
+  },
+  {
+   "mint": "GTjBDhfgLfinqk19imhaiwpjV2Zn2Um7fbeUcdtygoat",
+   "quoteMint": "So11111111111111111111111111111111111111112",
+   "recipient": "8kkPr5xySYp6b7NUnX89fDXpuFC2sXtWjK61WoVMpWN8",
+   "graduationPrice": 2.2900000000000003e-7,
+   "claimed": 800000000,
+   "sold": 815884948.925954,
+   "soldBelowFloor": 815884948.925954,
+   "soldBelowGraduation": 815884948.925954,
+   "proceedsSol": 2.975190918,
+   "proceedsSolBelowFloor": 2.975190918,
+   "medianRatio": 0.015923936451708857,
+   "maxSoldIn24h": 815884948.925954,
+   "sales": [
+    {
+     "sig": "zH64NDF7yoe2kfv6avQSAFPXR4vz45ete5j8VU2njtbednhyLTFxT3f7Mbs2gYsAgwUXAThGrqtGiEQEeTaQ6Cr",
+     "time": 1774459955,
+     "tokens": 815884948.925954,
+     "sol": 2.975190918,
+     "ratio": 0.0159
+    }
+   ]
+  },
+  {
+   "mint": "BzteLGhwyv3k267FK7RyRbN1BompNy5boBHbrXYgsity",
+   "quoteMint": "So11111111111111111111111111111111111111112",
+   "recipient": "B6SKUiE61wr8yhkJmeArAt9CQYYtZzex2wj6CkbL5BmE",
+   "graduationPrice": 0.2602602602602603,
+   "claimed": 500,
+   "sold": 500,
+   "soldBelowFloor": 500,
+   "soldBelowGraduation": 500,
+   "proceedsSol": 17.794663115,
+   "proceedsSolBelowFloor": 17.794663115,
+   "medianRatio": 0.1367451419375769,
+   "maxSoldIn24h": 500,
+   "sales": [
+    {
+     "sig": "3eBYDYtp7t3M8SrxCwKciKAASNciUKTjeo9A8Bro1TPRgyQiu1bsP3DMMAtxhPpSnw2U5LcuRHrencwzjiUEQ1GX",
+     "time": 1779895730,
+     "tokens": 500,
+     "sol": 17.794663115,
+     "ratio": 0.1367
+    }
+   ]
+  },
+  {
+   "mint": "FNL7CGKepAYVM1LwuHXkp92eN2bSx6qFJx2bucPpjups",
+   "quoteMint": "So11111111111111111111111111111111111111112",
+   "recipient": "CU1cG3s1Fe3mEkBPiVJYCEYsQj4c3Q2i12VMUxAQ8zsp",
+   "graduationPrice": 0.000004450000000000001,
+   "claimed": 13000000,
+   "sold": 47785318.622851,
+   "soldBelowFloor": 47785318.622851,
+   "soldBelowGraduation": 47785318.622851,
+   "proceedsSol": 9.847485247,
+   "proceedsSolBelowFloor": 9.847485247,
+   "medianRatio": 0.09740288074969213,
+   "maxSoldIn24h": 47217014.622851,
+   "sales": [
+    {
+     "sig": "4NXjmgjMEGssA7NL3FEwP4zwnDwp1ad8GaAf3trqhxq6CGGt4zf4HKpzttGhVRfMxkXUM6NBmWmnXhk8JXAZzAri",
+     "time": 1767263532,
+     "tokens": 71038,
+     "sol": 0.031079811,
+     "ratio": 0.0983
+    },
+    {
+     "sig": "RUAgRSMuzLTt434p2bQgXxPgCp5ExP3zeD9oRJo5xyHUs4cqL6W8uzW4GupMAmaGh63y77ypF7eG2WogfnnsyZe",
+     "time": 1767705385,
+     "tokens": 71038,
+     "sol": 0.030838781,
+     "ratio": 0.0976
+    },
+    {
+     "sig": "5goDwQU884o5gWscHkNDi5LuevQt6KRUy4vLsfUp9tuKkzWE455g6PuhTSFNo493UMF9RMt7CWhrUkJsMuCMfWDe",
+     "time": 1767773358,
+     "tokens": 71038,
+     "sol": 0.030790911,
+     "ratio": 0.0974
+    },
+    {
+     "sig": "3BTcBEUjJnyWXyLAgGuUjJJ3igeFQfj7oHatp6ttPcyMnJzFetHVShicxycytPoQRjfJigRX8qwbnmuAWJkkqQXw",
+     "time": 1768074080,
+     "tokens": 213114,
+     "sol": 0.089142721,
+     "ratio": 0.094
+    },
+    {
+     "sig": "5789LQDDjbr1oxJJmyfckqhRi9BmwncsRfZJuUJFD2P57FyzkegSN6FJY1H1wyZjRUWraKQU7F1YEEzXDDS29DZa",
+     "time": 1768421135,
+     "tokens": 142076,
+     "sol": 0.05921425,
+     "ratio": 0.0937
+    },
+    {
+     "sig": "QwBMtCaGD5iSAVwZyJpLnNCygVzmXgTiiw3KKmbVLme2GKq3V2bP48RvcSsFcP4N21pZkCtymYq5eCs9Wrcneb1",
+     "time": 1783896585,
+     "tokens": 47217014.622851,
+     "sol": 9.606418773,
+     "ratio": 0.0457
+    }
+   ]
+  },
+  {
+   "mint": "5TboneTP3C4EjmF9UYrWdk7aFiyXGKAqMULB6f7Rjups",
+   "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+   "recipient": "Eijdqs2MSn6FaxeFgsW255DhQ8J95pfsTrqP17GJsE3p",
+   "graduationPrice": 0.00009999999999999999,
+   "claimed": 25000000,
+   "sold": 12583335,
+   "soldBelowFloor": 12583335,
+   "soldBelowGraduation": 12583335,
+   "proceedsSol": 120.73278099999999,
+   "proceedsSolBelowFloor": 120.73278099999999,
+   "medianRatio": 0.0936671861867498,
+   "maxSoldIn24h": 4166666,
+   "sales": [
+    {
+     "sig": "5hLtTpCbqLZYWdup1iibWaJaZ8KmBETHZfLnxAmSX2APmeRNHCDVT6tpnewMjqjHPeg6fh5M1kNjXQaWGkVyHW6D",
+     "time": 1757300545,
+     "tokens": 2166670,
+     "sol": 27.558337,
+     "ratio": 0.1272
+    },
+    {
+     "sig": "6bBrHph4qcdVHHkZB2t8BDDmo2kpQEsprBPArvhgGCse1GkDSUHhHLy3UE3ZU4Q4JRqaRrpmBUSQeJDKS5zZeeV",
+     "time": 1760427527,
+     "tokens": 2083333,
+     "sol": 22.684081,
+     "ratio": 0.1089
+    },
+    {
+     "sig": "GEhdkx4GHCAEJKdDf1G4465RaNUnKAYXXBByfQmc8A9vG3y2GFB4M4H5dDAh8YDbwRBSH1EbVCdizdUevfhPDXU",
+     "time": 1769089472,
+     "tokens": 2083333,
+     "sol": 19.513994,
+     "ratio": 0.0937
+    },
+    {
+     "sig": "3fSE6rVZM8ePReKPXjnPK2vmdXVo8ZquTVCXQcTJ5jzvquaQaVjbgcMMcWgp4i9tJ6EXGN5fCTqUVsbEZZKT7qeM",
+     "time": 1777510894,
+     "tokens": 4166666,
+     "sol": 34.74834,
+     "ratio": 0.0834
+    },
+    {
+     "sig": "ELqbmwo3Qi4BmThQ39CpnKo3G4rqA8keS8YLBWrMpVovym3b6uniNADBep1qMuTp8oSc1Hr9MfwULH6Lii7RRrK",
+     "time": 1779974140,
+     "tokens": 2083333,
+     "sol": 16.228029,
+     "ratio": 0.0779
+    }
+   ]
+  },
+  {
+   "mint": "BGJmv1dDvQbjhNoKgbaJwRnjLKN9ECnevxczm5QVjups",
+   "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+   "recipient": "3Y8oZTqQyPBhrTVtLCtwN6RWzBVmq2qGSNMb1biYVQkc",
+   "graduationPrice": 0.00003,
+   "claimed": 22000000,
+   "sold": 80129460.642049,
+   "soldBelowFloor": 80129460.642049,
+   "soldBelowGraduation": 80129460.642049,
+   "proceedsSol": 181.395532,
+   "proceedsSolBelowFloor": 181.395532,
+   "medianRatio": 0.130653078282004,
+   "maxSoldIn24h": 49539875.210517,
+   "sales": [
+    {
+     "sig": "34eVaGi7ThNh21m7GxoR1cxqrfEMaZn1kGFvWune6EWDmPZdbB1oS2fR5EztYqZqtFW7grz85YSZ2tbzXGtB29oF",
+     "time": 1753840654,
+     "tokens": 30589585.431532,
+     "sol": 119.898705,
+     "ratio": 0.1307
+    },
+    {
+     "sig": "2ZfajQigEKnFipf2rM8cAZ24eDZsANVcDZ5iNFw8CrNJQLEgj7WXv2r8t9oXbhJf2yHxFZ4rihBXhbGy23EUzv9H",
+     "time": 1783277508,
+     "tokens": 49539875.210517,
+     "sol": 61.496827,
+     "ratio": 0.0414
+    }
+   ]
+  },
+  {
+   "mint": "2H3ax84PXwVnYBVRFjdsa7CwiutASotme7haRb7Rjups",
+   "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+   "recipient": "FFPcHazuQ2bMpmRahJoiZ31DprkQgEjxWWjnEdHGGUqC",
+   "graduationPrice": 0.00003,
+   "claimed": 4000000,
+   "sold": 49980327.389151,
+   "soldBelowFloor": 49980327.389151,
+   "soldBelowGraduation": 49980327.389151,
+   "proceedsSol": 91.558837,
+   "proceedsSolBelowFloor": 91.558837,
+   "medianRatio": 0.08147202601592286,
+   "maxSoldIn24h": 49980327.389151,
+   "sales": [
+    {
+     "sig": "2ana5GmJ5t3QTzD7inoa2QmmtKysbtmrErXF8gTfA3GJEgJkuaDzjPfoxR3kQNAAWYKPWYmVbtJcuV5DgdGi87H6",
+     "time": 1783086233,
+     "tokens": 24990163.694576,
+     "sol": 61.079978,
+     "ratio": 0.0815
+    },
+    {
+     "sig": "51fMLSYwzFQ4e136k3KdaHD7oYBJbkQgcpyNqrkKqnKhPj5uRqYyEwuUhNTs37fYskeG4Q5QNWnrzpcXRCrVAL4Z",
+     "time": 1783086253,
+     "tokens": 24990163.694575,
+     "sol": 30.478859,
+     "ratio": 0.0407
+    }
+   ]
+  }
+ ]
+}

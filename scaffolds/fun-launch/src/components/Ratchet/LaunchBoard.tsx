@@ -10,6 +10,7 @@ import { BeforeAfter, HomeFooter, LaunchTimeline, StorySection } from './HomeSto
 import { ClosingBand, FaqSection, NumbersRow, RadarStrip, RaiseStrip } from './HomeExtras';
 import { NetworkStatus } from './NetworkStatus';
 import { VaultConsole } from './VaultConsole';
+import { WouldItStop } from './WouldItStop';
 import { VIDEO_URL } from '@/lib/links';
 
 const NEAR_GRADUATION = 0.8;
@@ -148,6 +149,7 @@ export function LaunchBoard() {
         <NetworkStatus />
         <NumbersRow />
         <StorySection />
+        <WouldItStop />
         <LaunchTimeline />
         <RaiseStrip />
         <RadarStrip />

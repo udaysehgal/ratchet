@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { RatchetMark } from '@/components/Ratchet/Logo';
 import { GITHUB_URL, VIDEO_URL, X_URL } from '@/lib/links';
 import { cn } from '@/lib/utils';
+import cf from '@/data/counterfactual.json';
 
 /*
  * The pitch deck. One 16:9 slide per screen, sized in container units so it scales to any window;
@@ -39,7 +40,7 @@ function Slide({
             <RatchetMark className="h-[1.3cqw] w-[1.3cqw] text-[#F97316]" />
             RATCHET
           </span>
-          <span>{String(n).padStart(2, '0')} / 10</span>
+          <span>{String(n).padStart(2, '0')} / 11</span>
         </div>
       </div>
     </section>
@@ -224,8 +225,39 @@ export default function Pitch() {
           </div>
         </Slide>
 
-        {/* 3. Our launch */}
+        {/* 3. Would Ratchet have stopped them */}
         <Slide n={3}>
+          <Kicker>Would Ratchet have stopped them?</Kicker>
+          <Title>
+            Every team we could price sold below the <O>graduation price.</O>
+          </Title>
+          <p className="mt-[1.6cqw] max-w-[62cqw] text-[1.55cqw] leading-relaxed text-neutral-400">
+            An evenly spaced sample of {cf.teamsChecked} teams that emptied their unlocks. We priced
+            every DEX sale against the token’s graduation price, from mainnet, and checked it
+            against the vault’s rules.
+          </p>
+          <div className="mt-[4.5cqw] grid grid-cols-4 gap-[2.4cqw]">
+            <Stat
+              value={`${cf.teamsWithAnySaleBelowFloor}/${cf.teamsWithPricedSales}`}
+              label="teams sold below the 1.25× floor"
+            />
+            <Stat
+              value={`${cf.maxSaleRatio.toFixed(2)}×`}
+              label={`best price of all ${cf.salesPriced} sales`}
+            />
+            <Stat
+              value={`${cf.medianTeamSaleRatio.toFixed(2)}×`}
+              label="typical sale, vs. graduation price"
+            />
+            <Stat
+              value={`${cf.teamsOverDailyCap}/${cf.teamsWithPricedSales}`}
+              label="sold over 10% of the unlock in a day"
+            />
+          </div>
+        </Slide>
+
+        {/* 4. Our launch */}
+        <Slide n={4}>
           <Kicker>We saw it on our own launch</Kicker>
           <Title>A fee can make a dump expensive. It can’t stop one.</Title>
           <ol className="mt-[3cqw] flex flex-col gap-[1.5cqw]">
@@ -255,8 +287,8 @@ export default function Pitch() {
           </p>
         </Slide>
 
-        {/* 4. Live on mainnet */}
-        <Slide n={4}>
+        {/* 5. Live on mainnet */}
+        <Slide n={5}>
           <Net kind="mainnet">Live on Solana mainnet · real tokens, real SOL</Net>
           <Title>Not a mockup. Use it today.</Title>
           <div className="mt-[4.5cqw] grid grid-cols-3 gap-x-[3cqw] gap-y-[2.2cqw]">
@@ -294,8 +326,8 @@ export default function Pitch() {
           </div>
         </Slide>
 
-        {/* 5. How it works */}
-        <Slide n={5}>
+        {/* 6. How it works */}
+        <Slide n={6}>
           <Kicker>How Ratchet works</Kicker>
           <Title>The team’s tokens never touch the team’s wallet.</Title>
           <div className="mt-[4.5cqw] grid grid-cols-4 gap-[1.6cqw]">
@@ -315,8 +347,8 @@ export default function Pitch() {
           </div>
         </Slide>
 
-        {/* 6. Meteora */}
-        <Slide n={6}>
+        {/* 7. Meteora */}
+        <Slide n={7}>
           <Kicker>Built on Meteora, end to end</Kicker>
           <Title>Four Meteora programs, called directly.</Title>
           <div className="mt-[4.5cqw] grid grid-cols-2 gap-[1.6cqw]">
@@ -346,8 +378,8 @@ export default function Pitch() {
           </div>
         </Slide>
 
-        {/* 7. The vault refuses */}
-        <Slide n={7}>
+        {/* 8. The vault refuses */}
+        <Slide n={8}>
           <div className="grid grid-cols-[1fr_1.1fr] items-center gap-[5cqw]">
             <div className="flex flex-col">
               <Kicker>The vault</Kicker>
@@ -370,8 +402,8 @@ export default function Pitch() {
           </div>
         </Slide>
 
-        {/* 8. Why it matters */}
-        <Slide n={8}>
+        {/* 9. Why it matters */}
+        <Slide n={9}>
           <Kicker>Why it matters</Kicker>
           <Title className="max-w-[70cqw]">
             Holders get a floor the team can’t break. Teams get a way to prove it.
@@ -399,8 +431,8 @@ export default function Pitch() {
           </div>
         </Slide>
 
-        {/* 9. Roadmap */}
-        <Slide n={9}>
+        {/* 10. Roadmap */}
+        <Slide n={10}>
           <Kicker>What’s next</Kicker>
           <Title>From our launches to every Meteora launch.</Title>
           <ol className="mt-[4.5cqw] flex flex-col gap-[1.4cqw]">
@@ -428,8 +460,8 @@ export default function Pitch() {
           </ol>
         </Slide>
 
-        {/* 10. Close */}
-        <Slide n={10}>
+        {/* 11. Close */}
+        <Slide n={11}>
           <RatchetMark className="pointer-events-none absolute -right-[7cqw] top-1/2 h-[36cqw] w-[36cqw] -translate-y-1/2 text-[#F97316]/90" />
           <div className="my-auto flex max-w-[56cqw] flex-col">
             <h2 className="text-[5cqw] font-extrabold leading-[1.04] tracking-[-0.03em]">
@@ -463,7 +495,7 @@ export default function Pitch() {
         >
           ←
         </button>
-        <span>{i + 1}/10</span>
+        <span>{i + 1}/11</span>
         <button
           className="rounded border border-white/10 px-2 py-1 hover:text-white"
           onClick={() => go(i + 1)}

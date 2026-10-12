@@ -56,6 +56,10 @@ into the DAMM v2 pool holders trade in. Only 49 teams kept theirs. [Full study �
   <img alt="Of 1,413 unlocked DBC team allocations: 762 claimed then moved out, 595 never claimed, 49 kept, 7 partly moved" src="docs/img/unlock-study-light.svg" width="760">
 </picture>
 
+**Would Ratchet have stopped them?** In an evenly spaced sample of 41 of those teams, every one
+whose sales we could price (14 of 14) sold below the vault's 1.25× floor, and none of their 32 sales
+reached even the graduation price (best 0.54×, typical 0.10×). [Details](docs/UNLOCK-STUDY.md#would-ratchet-have-stopped-them-sample-2026-10-13)
+
 ## How it works
 
 ```mermaid
