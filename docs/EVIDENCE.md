@@ -76,6 +76,12 @@ now running on devnet.
 
 ## Devnet: the vault enforcing the ladder on-chain
 
+**Current build** (daily sell cap, canonical pair, LP-fee and surplus claims), deployed by the
+test-then-deploy workflow: **25/25 checks** on public devnet, vault
+[`9g7Gu6…MQwp`](https://solscan.io/account/9g7Gu6NfiKyUN62UvULD9qx1A4hHh4kA2f4xZTUdMQwp?cluster=devnet)
+([raw results](evidence/vault-devnet-run-v2.json)). Anyone can repeat it from a browser at
+[/try](https://ratchet-olive.vercel.app/try). The first build's run, with every transaction:
+
 The [ratchet-vault program](../programs/ratchet-vault) ([`BrwQHe…NzWB`](https://solscan.io/account/BrwQHeRJWXDbXgUVi1TKdoDbnfB5kcRTcieYmSH2NzWB?cluster=devnet), [deploy](https://solscan.io/tx/4RL3kbKwtf1irGG2SnCkpjeJm5jDhdTeQiyfu34Enfh3BA2w7Ugd9ejNmywykWdcHg1wjFGJzymvHNH1DvBiK6o6?cluster=devnet)) ran the full lifecycle on public devnet against Meteora's deployed programs, **20/20 checks**
 ([`scripts/vault-lifecycle.ts`](../scaffolds/fun-launch/scripts/vault-lifecycle.ts), [raw results](evidence/vault-devnet-run.json)).
 Pool [`8MrMPv…9C8A`](https://solscan.io/account/8MrMPvfH9wPGaPZomLEGFwSMyA8Xew5D2aJfHH8u9C8A?cluster=devnet) · vault [`2LmfUM…E6wF`](https://solscan.io/account/2LmfUMgwN3Kt1dmu7MR4KrkJTQBTeMFVhdT4M9jJE6wF?cluster=devnet) · DLMM pair [`8Rkpbt…SUqb`](https://solscan.io/account/8RkpbtVZGWQKAGoYRHBTDWPhdMsYnsvmAJ975LDhSUqb?cluster=devnet)

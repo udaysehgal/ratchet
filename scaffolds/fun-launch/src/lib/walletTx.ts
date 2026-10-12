@@ -1,6 +1,6 @@
 import type { Keypair, Transaction } from '@solana/web3.js';
 import type { ConfirmResponse } from '@/pages/api/confirm';
-import { getClientConnection } from './clientConnection';
+import { getClientConnection, type Cluster } from './clientConnection';
 
 /** How long to keep checking after the wallet submits; a blockhash is valid for ~60-90s. */
 const CONFIRM_TIMEOUT_MS = 90_000;
@@ -10,19 +10,19 @@ const CONFIRM_TIMEOUT_MS = 90_000;
  * warning screens doesn't expire it. Skipped when the server already co-signed it (changing the
  * blockhash would invalidate that signature).
  */
-export async function withFreshBlockhash(tx: Transaction): Promise<Transaction> {
+export async function withFreshBlockhash(tx: Transaction, cluster: Cluster = 'mainnet'): Promise<Transaction> {
   if (tx.signatures.some((s) => s.signature !== null)) return tx;
-  const { blockhash, lastValidBlockHeight } = await getClientConnection().getLatestBlockhash('confirmed');
+  const { blockhash, lastValidBlockHeight } = await getClientConnection(cluster).getLatestBlockhash('confirmed');
   tx.recentBlockhash = blockhash;
   tx.lastValidBlockHeight = lastValidBlockHeight;
   return tx;
 }
 
 /** Poll the server until the signature confirms, fails, or the blockhash window has passed. */
-export async function confirmSignature(signature: string): Promise<void> {
+export async function confirmSignature(signature: string, cluster: Cluster = 'mainnet'): Promise<void> {
   const deadline = Date.now() + CONFIRM_TIMEOUT_MS;
   while (Date.now() < deadline) {
-    const res = await fetch('/api/confirm', {
+    const res = await fetch(cluster === 'devnet' ? '/api/try/confirm' : '/api/confirm', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ signature }),
@@ -53,9 +53,10 @@ export function walletErrorMessage(error: unknown): string {
 export async function signSubmitConfirm(
   tx: Transaction,
   signTransaction: SignTransaction,
-  coSigners: Keypair[] = []
+  coSigners: Keypair[] = [],
+  cluster: Cluster = 'mainnet'
 ): Promise<string> {
-  const fresh = await withFreshBlockhash(tx);
+  const fresh = await withFreshBlockhash(tx, cluster);
   if (coSigners.length) fresh.partialSign(...coSigners);
   let signed: Transaction;
   try {
@@ -63,9 +64,9 @@ export async function signSubmitConfirm(
   } catch (error) {
     throw new Error(walletErrorMessage(error));
   }
-  const signature = await getClientConnection().sendRawTransaction(signed.serialize(), {
+  const signature = await getClientConnection(cluster).sendRawTransaction(signed.serialize(), {
     preflightCommitment: 'confirmed',
   });
-  await confirmSignature(signature);
+  await confirmSignature(signature, cluster);
   return signature;
 }

@@ -2,17 +2,16 @@
  * Live state of a ratchet-vault on devnet (the program isn't on mainnet yet).
  * Reads the vault account, its token balances, its open DLMM asks and its recent history.
  */
-import { Connection, PublicKey } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync } from '@solana/spl-token';
 import DLMM, { deriveCustomizablePermissionlessLbPair, getPriceOfBinByBinId } from '@meteora-ag/dlmm';
 import { deriveBaseKeyForLocker, deriveEscrow } from '@meteora-ag/dynamic-bonding-curve-sdk';
 import { DAILY_ASK_BPS, DLMM_PROGRAM, VAULT_PROGRAM_ID, decodeVault } from '@/lib/vault';
 
-const DEVNET_RPC = process.env.DEVNET_RPC_URL ?? 'https://api.devnet.solana.com';
-const devnet = new Connection(DEVNET_RPC, 'confirmed');
+import { devnet } from './devnet';
 
 /** The vault from the devnet lifecycle run (docs/EVIDENCE.md). */
-export const DEMO_VAULT = '2LmfUMgwN3Kt1dmu7MR4KrkJTQBTeMFVhdT4M9jJE6wF';
+export const DEMO_VAULT = '9g7Gu6NfiKyUN62UvULD9qx1A4hHh4kA2f4xZTUdMQwp';
 
 export type VaultView = {
   address: string;

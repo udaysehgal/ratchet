@@ -9,7 +9,7 @@
 
 **A Meteora launchpad where team unlocks only sell into strength.**
 
-**[Live on Solana mainnet →](https://ratchet-olive.vercel.app)** · [Unlock study](docs/UNLOCK-STUDY.md) · [Vault](docs/VAULT.md) · [Evidence](docs/EVIDENCE.md) · [Architecture](docs/ARCHITECTURE.md) · [Submission](docs/SUBMISSION.md)
+**[Live on Solana mainnet →](https://ratchet-olive.vercel.app)** · **[Try the vault yourself (devnet) →](https://ratchet-olive.vercel.app/try)** · [Unlock study](docs/UNLOCK-STUDY.md) · [Vault](docs/VAULT.md) · [Evidence](docs/EVIDENCE.md) · [Architecture](docs/ARCHITECTURE.md) · [Submission](docs/SUBMISSION.md)
 
 ![Ratchet home page](docs/img/home.png)
 
@@ -31,7 +31,7 @@ curl -s https://ratchet-olive.vercel.app/api/feed | jq '.launches[] | {symbol, r
 curl -s https://ratchet-olive.vercel.app/api/unlocks | jq .stats
 
 # The fix: the ratchet-vault on devnet, its floor, holdings and the asks it allowed
-curl -s https://ratchet-olive.vercel.app/api/vault/2LmfUMgwN3Kt1dmu7MR4KrkJTQBTeMFVhdT4M9jJE6wF | jq '{floorMultiple, tokensInVault, asks: [.asks[].multiple]}'
+curl -s https://ratchet-olive.vercel.app/api/vault/9g7Gu6NfiKyUN62UvULD9qx1A4hHh4kA2f4xZTUdMQwp | jq '{floorMultiple, tokensInVault, asks: [.asks[].multiple]}'
 
 # The launch check on any DBC token (here: ours)
 curl -s https://ratchet-olive.vercel.app/api/check/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5 | jq '[.checks[] | {status, title}]'
@@ -79,7 +79,7 @@ wallet. Half of every DAMM v2 fee compounds back into the pool, so liquidity onl
 | Criterion | Where to look |
 |---|---|
 | **Depth of Meteora integration** | Four Meteora programs from one app: DBC presets and launches, DAMM v2 trading and locked-LP fees, DLMM limit-order ladder, Meteora Lock vesting, plus Invent studio for configs. Our own program calls DBC, Meteora Lock and DLMM directly. Equity-raise presets in four xStocks (TSLAx, NVDAx, AAPLx, GOOGLx) using Meteora's token badges. [Call table](docs/ARCHITECTURE.md#meteora-integration) |
-| **Technical execution** | A native Solana program with conservative Q64.64 price checks, 20/20 end-to-end on public devnet and on Meteora's mainnet binaries locally. 30 unit tests and CI on every push. [Vault spec](docs/VAULT.md) · [tests](.github/workflows/ci.yml) |
+| **Technical execution** | A native Solana program with conservative Q64.64 price checks, a daily sell cap and a canonical-pair rule; 25/25 end-to-end on public devnet and on Meteora's mainnet binaries locally, deployed by a test-then-deploy workflow. **[Try it yourself](https://ratchet-olive.vercel.app/try)**: launch a vaulted token on devnet and watch the program refuse a below-floor sale. 30 unit tests and CI on every push. [Vault spec](docs/VAULT.md) · [tests](.github/workflows/ci.yml) |
 | **Originality** | DLMM limit orders as an *unlock commitment*, enforced by a vault that holds the DBC creator role, plus an **unlock radar** tracking every DBC team allocation on mainnet. Nobody else addresses what happens at unlock. [Vault](#the-vault-enforcing-the-ladder-on-chain) |
 | **Impact** | The problem is everywhere: 93% of DBC teams that claim unlocks move them out ([study](docs/UNLOCK-STUDY.md)). Any DBC launchpad can adopt the preset + vault pattern. The launch check grades *any* DBC token; feed, check and MCP server are public. [What's in the box](#whats-in-the-box) |
 | **Traction** | Live on mainnet: a graduation through the app, 9 trading wallets, a sniper that paid ~37% in fees, 4 configs. [Evidence](docs/EVIDENCE.md) |
@@ -126,7 +126,7 @@ On mainnet today the ladder is enforced by Ratchet's API and visible on-chain. T
 creator role in the launch transaction, so team vesting and creator fees land in a PDA, and
 team tokens can only leave as DLMM asks at ≥ 1.25× the graduation price. The floor only rises.
 
-**Deployed on devnet and passing 20/20 end-to-end checks**: asks above the floor accepted,
+**Deployed on devnet and passing 25/25 end-to-end checks** ([try it yourself](https://ratchet-olive.vercel.app/try)): asks above the floor accepted,
 below-floor asks and floor cuts refused, a buyer lifting the ask with proceeds reaching the team
 only through the vault. [Spec](docs/VAULT.md) · [transactions](docs/EVIDENCE.md#devnet-the-vault-enforcing-the-ladder-on-chain)
 

@@ -7,7 +7,7 @@ import { formatSol, formatTokens } from '@/lib/format/ratchet';
 import type { VaultView } from '@/server/vault';
 import { cn } from '@/lib/utils';
 
-const DEMO_VAULT = '2LmfUMgwN3Kt1dmu7MR4KrkJTQBTeMFVhdT4M9jJE6wF';
+const DEMO_VAULT = '9g7Gu6NfiKyUN62UvULD9qx1A4hHh4kA2f4xZTUdMQwp';
 const devnet = (kind: 'account' | 'tx', id: string) => `https://solscan.io/${kind}/${id}?cluster=devnet`;
 const short = (s: string) => `${s.slice(0, 4)}…${s.slice(-4)}`;
 

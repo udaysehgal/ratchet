@@ -38,6 +38,12 @@ export const Header = () => {
         {/* Navigation and Actions */}
         <div className="flex items-center gap-1.5 md:gap-3">
           <Link
+            href="/try"
+            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-primary hover:text-foreground md:block"
+          >
+            Try the vault
+          </Link>
+          <Link
             href="/unlocks"
             className="hidden rounded-lg px-3 py-2 text-sm text-neutral-300 hover:text-foreground md:block"
           >

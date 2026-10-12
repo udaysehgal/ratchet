@@ -1,0 +1,134 @@
+{
+  "rpc": "https://api.devnet.solana.com",
+  "pool": "7tK77wDT9PGEEpxnzD7skkXDB3nXggZcZP57HkxCpNM5",
+  "vault": "9g7Gu6NfiKyUN62UvULD9qx1A4hHh4kA2f4xZTUdMQwp",
+  "baseMint": "93Lvvkx3oCCgAKPTheRJXnaNgpACKC7RXQbYZNSWTPCy",
+  "lbPair": "K3bfRXwyNMW5rTNk19wriT4SDfhjP2ayhV6YqfG7J6f",
+  "results": [
+    {
+      "step": "launch + adopt_launch in one tx: DBC pool creator is now the vault",
+      "ok": true,
+      "detail": "3TTY1ds3RbAPUDHEcCVTSMNz38pJNVYYSBhsQL5RCB1vHAkd5ReKgiXnnft6b6QN4bNa2nnZQCHQAfghi6977FcM"
+    },
+    {
+      "step": "vault floor starts at 1.25x graduation price",
+      "ok": true,
+      "detail": "graduation price q64 27670116110565"
+    },
+    {
+      "step": "curve filled",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "graduated to DAMM v2",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "claim_vested: tokens in the vault",
+      "ok": true,
+      "detail": "10000000000000 raw"
+    },
+    {
+      "step": "team wallet received none of them",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "DLMM pair created",
+      "ok": true,
+      "detail": "K3bfRXwyNMW5rTNk19wriT4SDfhjP2ayhV6YqfG7J6f"
+    },
+    {
+      "step": "place_ask at 1.25x and 2x graduation price",
+      "ok": true,
+      "detail": "bins -1325, -1278"
+    },
+    {
+      "step": "place_ask at 1.2x is refused",
+      "ok": true,
+      "detail": "refused with BelowFloor"
+    },
+    {
+      "step": "place_ask one bin below 1.25x is refused",
+      "ok": true,
+      "detail": "refused with BelowFloor"
+    },
+    {
+      "step": "place_ask by a non-beneficiary is refused",
+      "ok": true,
+      "detail": "refused with NotBeneficiary"
+    },
+    {
+      "step": "place_ask over the daily cap is refused",
+      "ok": true,
+      "detail": "refused with DailyCapExceeded"
+    },
+    {
+      "step": "raise_floor to 1.5x",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "lowering the floor is refused",
+      "ok": true,
+      "detail": "refused with FloorCannotDecrease"
+    },
+    {
+      "step": "place_ask at 1.3x after the raise is refused",
+      "ok": true,
+      "detail": "refused with BelowFloor"
+    },
+    {
+      "step": "a buyer lifts the vault ask on DLMM",
+      "ok": true,
+      "detail": "paid 487500 lamports at >= 1.25x"
+    },
+    {
+      "step": "cancel_ask: unfilled tokens back to the vault, sold tokens gone",
+      "ok": true,
+      "detail": "9000000000000 → 9766634102521"
+    },
+    {
+      "step": "cancel_ask: sale proceeds forwarded to the team in SOL",
+      "ok": true,
+      "detail": "+463124 lamports (wSOL)"
+    },
+    {
+      "step": "team wallet still holds no team tokens",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "collect_fees: creator curve fees forwarded to the team in SOL",
+      "ok": true,
+      "detail": "+1212122 lamports (wSOL)"
+    },
+    {
+      "step": "the vault holds the creator DAMM v2 position",
+      "ok": true,
+      "detail": "1 position(s)"
+    },
+    {
+      "step": "claim_position_fee: the vault signs for its LP position",
+      "ok": true,
+      "detail": "2AcgKXwMCGZSvhLro13JYLWWiVm46yQFyyGX7E6JPNx1Wcs65iQK6c8h3BmKrZKEiCrujFgcrfzR1Mv5Z1oFsQBY"
+    },
+    {
+      "step": "vault quote account is empty after the claims (everything forwarded)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "withdraw_surplus: the vault signs as creator, SOL to the team",
+      "ok": true,
+      "detail": "2URdgmD66VUDMnsgudPA1u5F719f5ScptCJrLmNoJG5CCnxpdJyW66YVUNiMH9GMhzUbjUsL9DJFnJH9gZB5WzeY"
+    },
+    {
+      "step": "first accepted bin matches DLMM's own price ≥ 1.25x",
+      "ok": true,
+      "detail": "1.2534x"
+    }
+  ]
+}

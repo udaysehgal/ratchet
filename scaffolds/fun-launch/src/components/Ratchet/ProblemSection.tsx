@@ -112,8 +112,8 @@ export function ProblemSection() {
             <Link href="/unlocks" className="inline-flex items-center gap-1 hover:text-primary">
               Unlock radar <span className="iconify ph--caret-right-bold h-4 w-4" />
             </Link>
-            <Link href="/vault" className="inline-flex items-center gap-1 hover:text-primary">
-              The vault <span className="iconify ph--caret-right-bold h-4 w-4" />
+            <Link href="/try" className="inline-flex items-center gap-1 text-primary hover:underline">
+              Try the vault on devnet <span className="iconify ph--caret-right-bold h-4 w-4" />
             </Link>
             <a href={STUDY_URL} className="inline-flex items-center gap-1 text-neutral-400 hover:text-primary">
               Method & data <span className="iconify ph--arrow-up-right-bold h-4 w-4" />

@@ -1,17 +1,20 @@
 import { Connection } from '@solana/web3.js';
 
-let connection: Connection | null = null;
+export type Cluster = 'mainnet' | 'devnet';
+
+const connections: Partial<Record<Cluster, Connection>> = {};
+const PROXY: Record<Cluster, string> = { mainnet: '/api/rpc', devnet: '/api/try/rpc' };
 
 /**
- * Browser-side connection through our /api/rpc proxy (public RPCs reject browser requests).
- * Used by the wallet adapter to prepare/submit transactions and to fetch fresh blockhashes.
+ * Browser-side connection through our RPC proxy (public RPCs reject browser requests).
+ * Used by the wallet flow to fetch fresh blockhashes and submit. Devnet is only for /try.
  */
-export function getClientConnection(): Connection {
-  if (!connection) {
-    connection = new Connection(`${window.location.origin}/api/rpc`, {
+export function getClientConnection(cluster: Cluster = 'mainnet'): Connection {
+  if (!connections[cluster]) {
+    connections[cluster] = new Connection(`${window.location.origin}${PROXY[cluster]}`, {
       commitment: 'confirmed',
       disableRetryOnRateLimit: false,
     });
   }
-  return connection;
+  return connections[cluster]!;
 }
