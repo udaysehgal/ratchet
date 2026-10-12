@@ -2,14 +2,14 @@
 
 [![CI](https://github.com/udaysehgal/ratchet/actions/workflows/ci.yml/badge.svg)](https://github.com/udaysehgal/ratchet/actions/workflows/ci.yml)
 [![App: Solana mainnet](https://img.shields.io/badge/app-Solana%20mainnet-14F195)](https://www.useratchet.xyz)
-[![Vault program: devnet](https://img.shields.io/badge/vault%20program-devnet-9945FF)](https://solscan.io/account/BrwQHeRJWXDbXgUVi1TKdoDbnfB5kcRTcieYmSH2NzWB?cluster=devnet)
+[![Mainnet: CHRL graduated](https://img.shields.io/badge/mainnet-CHRL%20graduated%20to%20DAMM%20v2-14F195)](docs/EVIDENCE.md)
 [![Meteora: DBC · DAMM v2 · DLMM · Lock](https://img.shields.io/badge/Meteora-DBC%20%C2%B7%20DAMM%20v2%20%C2%B7%20DLMM%20%C2%B7%20Lock-FF6B1A)](docs/ARCHITECTURE.md#meteora-integration)
 [![Vault: unaudited](https://img.shields.io/badge/vault%20program-unaudited-F59E0B)](docs/VAULT.md#threats-and-answers)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE.md)
 
 **A Meteora launchpad where team unlocks only sell into strength.**
 
-**[Live on Solana mainnet →](https://www.useratchet.xyz)** · **[Try the vault yourself (devnet) →](https://www.useratchet.xyz/try)** · [Unlock study](docs/UNLOCK-STUDY.md) · [Vault](docs/VAULT.md) · [Evidence](docs/EVIDENCE.md) · [Architecture](docs/ARCHITECTURE.md) · [Submission](docs/SUBMISSION.md)
+**[Live on Solana mainnet →](https://www.useratchet.xyz)** · **[Try the vault yourself →](https://www.useratchet.xyz/try)** · [Unlock study](docs/UNLOCK-STUDY.md) · [Vault](docs/VAULT.md) · [Evidence](docs/EVIDENCE.md) · [Architecture](docs/ARCHITECTURE.md) · [Submission](docs/SUBMISSION.md)
 
 ![Ratchet home page](docs/img/home.png)
 

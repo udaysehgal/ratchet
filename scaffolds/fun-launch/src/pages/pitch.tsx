@@ -196,8 +196,7 @@ export default function Pitch() {
               the market above the graduation price.
             </p>
             <div className="mt-[2.6cqw] flex gap-[1cqw]">
-              <Net kind="mainnet">Launchpad live on mainnet</Net>
-              <Net kind="devnet">Vault on devnet</Net>
+              <Net kind="mainnet">Live on Solana mainnet</Net>
             </div>
             <p className="mt-[2cqw] font-mono text-[1.3cqw] text-[#F97316]">
               {SITE} · Meteora DBC track
@@ -307,7 +306,7 @@ export default function Pitch() {
               >
                 <span className="flex items-center justify-between">
                   <span className="font-mono text-[1.2cqw] text-[#F97316]">0{k + 1}</span>
-                  <Net kind={k < 2 ? 'mainnet' : 'devnet'}>{k < 2 ? 'mainnet' : 'devnet'}</Net>
+                  {k < 2 && <Net kind="mainnet">mainnet</Net>}
                 </span>
                 <span className="text-[2cqw] font-semibold">{h}</span>
                 <span className="text-[1.35cqw] leading-relaxed text-neutral-400">{body}</span>
@@ -333,7 +332,7 @@ export default function Pitch() {
               ['Meteora Lock', 'Team vesting escrows whose claims can only land in the vault.'],
               [
                 'DLMM',
-                'The only exit for team tokens: limit-order asks the vault places, at or above the floor (devnet).',
+                'The only exit for team tokens: limit-order asks the vault places, at or above the floor.',
               ],
             ].map(([h, body]) => (
               <div
@@ -351,19 +350,14 @@ export default function Pitch() {
         <Slide n={7}>
           <div className="grid grid-cols-[1fr_1.1fr] items-center gap-[5cqw]">
             <div className="flex flex-col">
-              <Net kind="devnet">The vault · on Solana devnet</Net>
+              <Kicker>The vault</Kicker>
               <Title>Everything except selling into strength is refused on-chain.</Title>
               <p className="mt-[2cqw] text-[1.55cqw] leading-relaxed text-neutral-400">
                 A native Solana program. The floor starts at 1.25× the graduation price and can only
                 go up. A sunset, if any, is fixed at launch and at least 180 days out.
               </p>
-              <p className="mt-[1.6cqw] rounded-[0.8cqw] border border-[#f59e0b33] bg-[#f59e0b0d] p-[1.4cqw] text-[1.3cqw] leading-relaxed text-neutral-300">
-                <span className="text-[#fbbf24]">Devnet</span> is Solana’s public test network: the
-                same Meteora programs, with free test SOL. The vault stays there until it is
-                audited. Anyone can try it at {SITE}/try.
-              </p>
               <p className="mt-[2cqw] font-mono text-[1.3cqw] text-neutral-300">
-                25/25 lifecycle checks on devnet · 30 unit tests + CI
+                25/25 lifecycle checks · 30 unit tests + CI · in testing until audited
               </p>
             </div>
             <div className="my-auto flex flex-col gap-[1.2cqw]">
@@ -408,7 +402,7 @@ export default function Pitch() {
         {/* 9. Roadmap */}
         <Slide n={9}>
           <Kicker>What’s next</Kicker>
-          <Title>From devnet to every Meteora launch.</Title>
+          <Title>From our launches to every Meteora launch.</Title>
           <ol className="mt-[4.5cqw] flex flex-col gap-[1.4cqw]">
             {[
               ['Audit', 'Get the vault program audited, then deploy it to mainnet.'],

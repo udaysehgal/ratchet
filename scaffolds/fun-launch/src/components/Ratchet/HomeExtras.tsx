@@ -153,7 +153,7 @@ export function NumbersRow() {
     { value: s ? s.allocations.toLocaleString('en-US') : '1,477', label: 'Meteora team allocations we read' },
     { value: s ? `${Math.round(s.movedShareOfClaimed * 100)}%` : '98%', label: 'of claimed team tokens left the wallet' },
     { value: '5 min', label: 'from launch to a locked pool, on mainnet' },
-    { value: '25/25', label: 'vault checks passed on devnet, Solana’s test network' },
+    { value: '37%', label: 'anti-sniper fee a bot paid on our mainnet launch' },
   ];
   return (
     <section className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
@@ -299,7 +299,7 @@ export function ClosingBand() {
             Launch a token
           </Link>
           <Link href="/try" className={buttonVariants({ size: 'lg', variant: 'outline' })}>
-            Try the vault on devnet
+            Try the vault
           </Link>
         </div>
       </div>

@@ -170,7 +170,7 @@ export function BeforeAfter() {
           </p>
         </div>
         <div className="flex flex-col gap-3 bg-neutral-950 p-6 md:p-8">
-          <span className="text-sm text-primary">With the Ratchet vault (on devnet until audited)</span>
+          <span className="text-sm text-primary">With the Ratchet vault</span>
           <p className="text-lg leading-relaxed text-foreground">
             Team tokens vest into a vault no one holds the keys to. They can only be sold as limit orders
             at 1.25× the graduation price or higher, at most 10% a day, and that price floor can only go up.
@@ -179,9 +179,8 @@ export function BeforeAfter() {
       </div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-[56ch] text-neutral-400">
-          It’s a real Solana program, running on devnet (Solana’s test network, with free test SOL) until it
-          has been audited. Launch a token with it in about five minutes and try to sell the team’s tokens too
-          cheap yourself.
+          It’s a real Solana program. Launch a token with it in about five minutes, free, and try to sell the
+          team’s tokens too cheap yourself.
         </p>
         <Link
           href="/try"
