@@ -18,6 +18,7 @@ const REFUSALS = [
   ['Sell order from a wallet that isn’t the beneficiary', 'NotBeneficiary'],
   ['Lowering the floor from 1.5× back to 1.25×', 'FloorCannotDecrease'],
   ['Sell order at 1.3× after the floor rose to 1.5×', 'BelowFloor'],
+  ['Offering more than 10% of the vault in one day', 'DailyCapExceeded'],
 ];
 
 const RULES = [
@@ -151,7 +152,7 @@ export default function VaultPage() {
                   ))}
                 </ul>
                 <Link href="https://github.com/udaysehgal/ratchet/blob/main/docs/EVIDENCE.md#devnet-the-vault-enforcing-the-ladder-on-chain" className="text-xs text-neutral-500 hover:text-primary">
-                  20/20 lifecycle checks on devnet →
+                  25/25 lifecycle checks on devnet →
                 </Link>
               </div>
             </section>
