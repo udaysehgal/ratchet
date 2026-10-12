@@ -1,0 +1,31 @@
+name: Vault keeper (devnet)
+
+# Runs the ratchet-vault's permissionless protections on a schedule: claims newly vested team
+# tokens into each vault and forwards creator fees. Either can only move tokens into the vault
+# (base) or to the beneficiary (quote); the keeper key is devnet-only and has no authority.
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: vault-keeper
+  cancel-in-progress: false
+
+jobs:
+  keep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter @meteora-invent/scaffold/fun-launch...
+      - name: Run keeper
+        working-directory: scaffolds/fun-launch
+        env:
+          KEEPER_KEY: ${{ secrets.KEEPER_DEVNET_KEY }}
+          RPC_URL: https://api.devnet.solana.com
+        run: npx tsx scripts/vault-keeper.ts
