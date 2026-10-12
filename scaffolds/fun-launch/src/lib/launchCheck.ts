@@ -62,6 +62,14 @@ export type LaunchFacts = {
   migrated: boolean;
   /** Symbol of the token the curve raises in (SOL, TSLAx, ...) */
   quoteSymbol: string;
+  /** What the team has done with its unlocked allocation so far (Meteora Lock escrow + wallet). */
+  teamUnlock?: {
+    vaulted: boolean; // pool creator is a Ratchet vault: unlocks can only sell above a floor
+    verdict: 'sold' | 'held' | 'mixed' | 'unclaimed' | 'locked';
+    movedShare: number | null;
+    claimedShare: number; // claimed / total allocation
+    nextUnlockAt: number | null;
+  };
 };
 
 /**
@@ -199,6 +207,26 @@ export function assessLaunch(f: LaunchFacts): Check[] {
           detail: 'The config sets aside no locked team tokens.',
         }
   );
+
+  // Team unlock behaviour (93% of DBC teams that claim move their unlocks out: docs/UNLOCK-STUDY.md)
+  const tu = f.teamUnlock;
+  if (tu) {
+    const next = tu.nextUnlockAt ? ` Next unlock ${new Date(tu.nextUnlockAt * 1000).toISOString().slice(0, 10)}.` : ' Fully unlocked.';
+    const claimed = `${pct(tu.claimedShare * 100)} of the allocation claimed so far`;
+    checks.push(
+      tu.vaulted
+        ? { id: 'team-unlocks', title: 'Team unlocks are vaulted', status: 'pass', detail: 'A Ratchet vault holds the team allocation: it can only be sold as DLMM asks at 1.25x the graduation price or higher.' + next }
+        : tu.verdict === 'sold'
+          ? { id: 'team-unlocks', title: 'Team sold its unlocks', status: 'fail', detail: `The team moved ${pct((tu.movedShare ?? 0) * 100)} of the tokens it claimed out of its wallet (${claimed}).` + next }
+          : tu.verdict === 'mixed'
+            ? { id: 'team-unlocks', title: 'Team moved part of its unlocks', status: 'warn', detail: `The team moved ${pct((tu.movedShare ?? 0) * 100)} of the tokens it claimed out of its wallet (${claimed}).` + next }
+            : tu.verdict === 'held'
+              ? { id: 'team-unlocks', title: 'Team has kept its unlocks', status: 'pass', detail: `The team still holds what it claimed (${claimed}).` + next }
+              : tu.verdict === 'unclaimed'
+                ? { id: 'team-unlocks', title: 'Unlocked team tokens not claimed yet', status: 'info', detail: 'Tokens have vested but the team hasn’t claimed them; they can be claimed and sold at any time.' + next }
+                : { id: 'team-unlocks', title: 'Team tokens still locked', status: 'info', detail: 'Nothing has vested yet.' + next }
+    );
+  }
 
   // Post-graduation exit risk (thin pool)
   const drain = exitDrain(f.curveSupply, f.graduationPoolSupply);

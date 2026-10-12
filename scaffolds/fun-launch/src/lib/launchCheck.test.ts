@@ -72,6 +72,28 @@ describe('assessLaunch', () => {
   });
 });
 
+describe('team unlocks', () => {
+  type TeamUnlock = NonNullable<LaunchFacts['teamUnlock']>;
+  const unlock = (over: Partial<TeamUnlock>): LaunchFacts => {
+    const base: TeamUnlock = { vaulted: false, verdict: 'held', movedShare: 0, claimedShare: 0.2, nextUnlockAt: null };
+    return { ...ratchetAntiSniper, teamUnlock: { ...base, ...over } };
+  };
+
+  it('fails a launch whose team sold its unlocks', () => {
+    const c = byId(unlock({ verdict: 'sold', movedShare: 0.97 }), 'team-unlocks');
+    expect(c?.status).toBe('fail');
+    expect(c?.detail).toContain('97%');
+  });
+
+  it('passes vaulted launches whatever the history', () => {
+    expect(byId(unlock({ vaulted: true, verdict: 'sold', movedShare: 1 }), 'team-unlocks')?.status).toBe('pass');
+  });
+
+  it('only adds the check when unlock data is known', () => {
+    expect(byId(ratchetAntiSniper, 'team-unlocks')).toBeUndefined();
+  });
+});
+
 describe('exitDrain', () => {
   it('is the constant-product share curve buyers can withdraw', () => {
     expect(exitDrain(700, 200)).toBeCloseTo(0.7778, 4);

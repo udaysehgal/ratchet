@@ -59,7 +59,7 @@ wallet. Half of every DAMM v2 fee compounds back into the pool, so liquidity onl
 |---|---|
 | **Depth of Meteora integration** | Four Meteora programs from one app: DBC presets and launches, DAMM v2 trading and locked-LP fees, DLMM limit-order ladder, Meteora Lock vesting, plus Invent studio for configs. Our own program calls DBC, Meteora Lock and DLMM directly. An xStock (TSLAx) preset using Meteora's token badge. [Call table](docs/ARCHITECTURE.md#meteora-integration) |
 | **Technical execution** | A native Solana program with conservative Q64.64 price checks, 20/20 end-to-end on public devnet and on Meteora's mainnet binaries locally. 30 unit tests and CI on every push. [Vault spec](docs/VAULT.md) · [tests](.github/workflows/ci.yml) |
-| **Originality** | DLMM limit orders as an *unlock commitment*, enforced by a vault that holds the DBC creator role. Nobody else addresses what happens at unlock. [Vault](#the-vault-enforcing-the-ladder-on-chain) |
+| **Originality** | DLMM limit orders as an *unlock commitment*, enforced by a vault that holds the DBC creator role, plus an **unlock radar** tracking every DBC team allocation on mainnet. Nobody else addresses what happens at unlock. [Vault](#the-vault-enforcing-the-ladder-on-chain) |
 | **Impact** | The problem is everywhere: 93% of DBC teams that claim unlocks move them out ([study](docs/UNLOCK-STUDY.md)). Any DBC launchpad can adopt the preset + vault pattern. The launch check grades *any* DBC token; feed, check and MCP server are public. [What's in the box](#whats-in-the-box) |
 | **Traction** | Live on mainnet: a graduation through the app, 9 trading wallets, a sniper that paid ~37% in fees, 4 configs. [Evidence](docs/EVIDENCE.md) |
 
@@ -89,6 +89,7 @@ is generated from live config data by [`scripts/make-figures.mjs`](scripts/make-
 </tr>
 </table>
 
+- **Unlock radar** (`/unlocks`): every Meteora DBC team allocation, its next unlock, and whether the team sold its past unlocks. The launch check flags teams that did.
 - **Launch** from four presets ([create page](docs/img/create.png)), with a live curve preview read from each DBC config.
 - **Graduate** with one click: anyone can migrate a full curve into DAMM v2.
 - **Unlock ladder**: vested team tokens become DLMM limit asks at 1.25× the graduation price or higher.

@@ -116,6 +116,7 @@ Meteora DBC token, not only Ratchet's, from its config and mint:
 | Freeze | freeze authority is set | |
 | Team allocation | | > 30% of supply |
 | Exit drain | | curve buyers can pull > 90% of the graduated pool's quote by selling at once |
+| Team unlocks | the team moved ≥ 90% of the tokens it claimed out of its wallet | it moved some (passes if a Ratchet vault holds the allocation) |
 
 On real mainnet configs it already flags launches that pay out 99% of the raise at graduation.
 
@@ -127,6 +128,7 @@ On real mainnet configs it already flags launches that pay out 99% of the raise 
 | `GET /api/launch/<mint>` | One launch: prices, DAMM v2 pool, vesting, DLMM ladder |
 | `GET /api/check/<mint>` | Launch check for any DBC token (CORS-open) |
 | `GET /api/badge/<mint>` | Embeddable SVG badge with the launch-check result |
+| `GET /api/unlocks` | Unlock radar: every DBC team allocation, upcoming unlocks, which teams sold or kept their unlocks |
 | `GET /api/vault/<address>` | Live state of a ratchet-vault on devnet: floor, holdings, open asks, history |
 | `GET /api/presets` | Live parameters and curve points of each preset |
 | `POST /api/tx` | Unsigned transaction: `swap`, `graduate`, `claim-vesting`, `create-dlmm-pair`, `ladder`, `claim-fees` |
