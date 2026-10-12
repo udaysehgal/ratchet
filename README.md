@@ -4,6 +4,7 @@
 [![App: Solana mainnet](https://img.shields.io/badge/app-Solana%20mainnet-14F195)](https://ratchet-olive.vercel.app)
 [![Vault program: devnet](https://img.shields.io/badge/vault%20program-devnet-9945FF)](https://solscan.io/account/BrwQHeRJWXDbXgUVi1TKdoDbnfB5kcRTcieYmSH2NzWB?cluster=devnet)
 [![Meteora: DBC · DAMM v2 · DLMM · Lock](https://img.shields.io/badge/Meteora-DBC%20%C2%B7%20DAMM%20v2%20%C2%B7%20DLMM%20%C2%B7%20Lock-FF6B1A)](docs/ARCHITECTURE.md#meteora-integration)
+[![Vault: unaudited](https://img.shields.io/badge/vault%20program-unaudited-F59E0B)](docs/VAULT.md#threats-and-answers)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE.md)
 
 **A Meteora launchpad where team unlocks only sell into strength.**
@@ -17,6 +18,26 @@ holders. Ratchet launches every token on Meteora's bonding curve, graduates it i
 liquidity can never be pulled, and only lets the team's unlocked tokens reach the market as
 sell orders **at 1.25× the graduation price or higher**. If the team sells, it sells into
 strength.
+
+## Verify it in 60 seconds
+
+No wallet needed. Every number below is read live from chain by the deployed app.
+
+```bash
+# Our mainnet launches: CHRL graduated into a locked DAMM v2 pool
+curl -s https://ratchet-olive.vercel.app/api/feed | jq '.launches[] | {symbol, raised, graduated}'
+
+# The problem: every DBC team allocation on mainnet, and how many teams sold their unlocks
+curl -s https://ratchet-olive.vercel.app/api/unlocks | jq .stats
+
+# The fix: the ratchet-vault on devnet, its floor, holdings and the asks it allowed
+curl -s https://ratchet-olive.vercel.app/api/vault/2LmfUMgwN3Kt1dmu7MR4KrkJTQBTeMFVhdT4M9jJE6wF | jq '{floorMultiple, tokensInVault, asks: [.asks[].multiple]}'
+
+# The launch check on any DBC token (here: ours)
+curl -s https://ratchet-olive.vercel.app/api/check/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5 | jq '[.checks[] | {status, title}]'
+```
+
+Every transaction behind these numbers is linked in [EVIDENCE.md](docs/EVIDENCE.md).
 
 ## The problem, measured
 
