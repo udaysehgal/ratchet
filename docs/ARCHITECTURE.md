@@ -66,16 +66,18 @@ also read live from each config by `GET /api/presets`.
 | | Anti-sniper | Fair raise | Micro raise | Equity raise |
 |---|---|---|---|---|
 | Config | [`6tMtkf…YhH9`](https://solscan.io/account/6tMtkfHkvvSVsCSpXbcCqVCAJYEg7SJQkDmvYH2urYh9) | [`Ery2mG…wwBW`](https://solscan.io/account/Ery2mGuMQ27iV3wCqCd7Ne45XkRCV6fSf2s1j87WwwBW) | [`FQt9kW…goGp`](https://solscan.io/account/FQt9kWsBwHwkhq3TEBXCWqnEqD2GxjxjBVNuJ29igoGp) | [`BBzvZ8…wCC1`](https://solscan.io/account/BBzvZ84fDNHeE7y4ZiYhBgWRN3dZr6gjdFm9TMJ8wCC1) |
-| Raises in | SOL | SOL | SOL | **TSLAx** (Tesla xStock) |
+| Raises in | SOL | SOL | SOL | **TSLAx, NVDAx, AAPLx or GOOGLx** (xStocks; one config each) |
 | Curve | `buildCurve`, 20% of supply to the graduated pool | custom sqrt prices: last buyer pays ~5% more than the first | `buildCurve`, 5% to the graduated pool | same as fair raise |
-| Graduates at | 10 SOL | ~10 SOL | 0.1 SOL | ~5 TSLAx |
+| Graduates at | 10 SOL | ~10 SOL | 0.1 SOL | ~$1,900 of stock (5 TSLAx, 8.4 NVDAx, 5.7 AAPLx, 5.4 GOOGLx) |
 | Base fee | exponential scheduler, 50% → 1% over 2 min, + volatility fee | 1% flat | as anti-sniper | 1% flat |
 | Launch fee | 0.02 SOL (90% to partner) | 0.02 SOL | none | none |
 | Curve fee split | 50% creator / 50% partner | same | same | same |
 | Team allocation | 10% via DBC locked vesting: 1% 1 h after graduation, 9% daily for 30 days | same | 1% after 60 s, the rest every minute for 30 min | as anti-sniper |
 | Graduated pool | DAMM v2: 1% fee, dynamic fee, 50% of fees compound into liquidity, 100% of LP permanently locked | same | same | same, in TSLAx |
 
-**TSLAx** is a Token-2022 mint with a permanent delegate, pausable config, scaled UI amount and a
+Configs: TSLAx [`BBzvZ8…wCC1`](https://solscan.io/account/BBzvZ84fDNHeE7y4ZiYhBgWRN3dZr6gjdFm9TMJ8wCC1), NVDAx [`6DaBRb…tddc`](https://solscan.io/account/6DaBRbCGaGW4vNDiHgrk7WC8XudL8tt484Anu3Xftddc), AAPLx [`8jHJkk…U8jN`](https://solscan.io/account/8jHJkk4EEcUP5LJq2H1JB9YmauwvNhuhrFKNtyJxU8jN), GOOGLx [`jqine2…Gkfp`](https://solscan.io/account/jqine24k4Wdm2YA7QkBYKL4ZjRTckmAEnsfCPBVGkfp). Each is the same curve scaled so the raise is the same in dollars.
+
+**xStocks** (TSLAx shown; the others are the same) are Token-2022 mints. TSLAx with a permanent delegate, pausable config, scaled UI amount and a
 transfer-hook extension with no program set. Meteora has issued it token badges on DBC and DAMM v2.
 SDK 1.5.11 couldn't pass the DBC badge (the program rejects config creation with
 `InvalidTokenBadge`); with 1.5.13 Ratchet passes it on config and pool creation. Swaps and

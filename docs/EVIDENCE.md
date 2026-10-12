@@ -21,6 +21,9 @@ claimer wallet `5mjWGA…cSsyBi`; deployer `4re4BQ…EMLV`.
 | Fair raise | SOL | [`Ery2mG…wwBW`](https://solscan.io/account/Ery2mGuMQ27iV3wCqCd7Ne45XkRCV6fSf2s1j87WwwBW) | [tx](https://solscan.io/tx/4FeJYGd9KyjWGDy1hjPs6AQvzfcXnGQg8LPtRyQo4ohDduN6VpXgGUrdzj6KYpzSGfPTp64JjUd6mi6j39rs9HN8) |
 | Micro raise | SOL | [`FQt9kW…goGp`](https://solscan.io/account/FQt9kWsBwHwkhq3TEBXCWqnEqD2GxjxjBVNuJ29igoGp) | [tx](https://solscan.io/tx/5GRNsZkJkdQjtDCWU8zqpH4SmmrHMfiPSFAprpPHuxwtxAGaxzR43S4iyM7xfaTbRFz1NhiGYPqJUZ8Uz3ADf8HZ) |
 | Equity raise | **TSLAx** (Tesla xStock, Token-2022, with Meteora's DBC token badge) | [`BBzvZ8…wCC1`](https://solscan.io/account/BBzvZ84fDNHeE7y4ZiYhBgWRN3dZr6gjdFm9TMJ8wCC1) | [tx](https://solscan.io/tx/H7G695qJrDwSjqcuJLTu5PJS4Cu986gFL86qzqWt8CC5aMZZ4vxR9Xs84gCcs7F6eNSVMwtckQQ8qXCVviUr14c) |
+| Equity raise | **NVDAx** | [`6DaBRb…tddc`](https://solscan.io/account/6DaBRbCGaGW4vNDiHgrk7WC8XudL8tt484Anu3Xftddc) | [tx](https://solscan.io/tx/4JSiqgWRs2A6aU3nraQy6B33vKsi3z8n7M4poPCuJNH5dsjy6qH6ggeWB445999KFWKUWyBghAdvG481yr6x9xdK) |
+| Equity raise | **AAPLx** | [`8jHJkk…U8jN`](https://solscan.io/account/8jHJkk4EEcUP5LJq2H1JB9YmauwvNhuhrFKNtyJxU8jN) | [tx](https://solscan.io/tx/65jid5RfTC5mjHiF6o2hEejN6XYuGJ4eKdF6Vg8CCZApaJpV9wFC7zBDNrjmD47dabo4GdUdGGsNwpU9YsNCZtA6) |
+| Equity raise | **GOOGLx** | [`jqine2…Gkfp`](https://solscan.io/account/jqine24k4Wdm2YA7QkBYKL4ZjRTckmAEnsfCPBVGkfp) | [tx](https://solscan.io/tx/2qNSL3QMQZaZKQPDHH9hgVP73tP1Wxa9nXNbQP7egoVs8pY93fP9EqHhkNPk7V1dkQvapMQF96PWeB5YiKo3mPYg) |
 
 ## Mainnet: CHRL, launch to graduation in 5 minutes
 

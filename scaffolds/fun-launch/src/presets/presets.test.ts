@@ -6,7 +6,7 @@ const BASE58 = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
 describe('preset registry', () => {
   it('has a valid config address for every mainnet preset', () => {
-    for (const id of ['anti-sniper', 'fair-raise', 'micro-raise']) {
+    for (const id of ['anti-sniper', 'fair-raise', 'micro-raise', 'equity-raise', 'equity-raise-nvdax', 'equity-raise-aaplx', 'equity-raise-googlx']) {
       expect(getPresetConfig(id, 'mainnet')).toMatch(BASE58);
     }
   });

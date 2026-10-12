@@ -49,7 +49,7 @@ wallet. Half of every DAMM v2 fee compounds back into the pool, so liquidity onl
 | **Launch → graduation in 5 minutes** | CHRL went from launch to a locked DAMM v2 pool through the live app ([timeline + every tx](docs/EVIDENCE.md#mainnet-chrl-launch-to-graduation-in-5-minutes)) |
 | **9 wallets** | traded CHRL across DBC and DAMM v2; 7 hit the graduated pool within 15 s |
 | **Sniper paid ~37%** | in anti-sniper fees 15 s after launch, and those fees went to the creator |
-| **4 preset configs** | including an **equity raise priced in tokenized Tesla stock (TSLAx)** |
+| **7 preset configs** | including **equity raises priced in tokenized Tesla, NVIDIA, Apple and Alphabet stock** |
 | **Full ladder on devnet** | DLMM asks from 1.25× to 6× the graduation price ([txs](docs/EVIDENCE.md#devnet-full-lifecycle-including-the-dlmm-unlock-ladder)) |
 | **Vault program on devnet** | enforces the ladder on-chain, 20/20 lifecycle checks ([txs](docs/EVIDENCE.md#devnet-the-vault-enforcing-the-ladder-on-chain)) |
 
@@ -57,7 +57,7 @@ wallet. Half of every DAMM v2 fee compounds back into the pool, so liquidity onl
 
 | Criterion | Where to look |
 |---|---|
-| **Depth of Meteora integration** | Four Meteora programs from one app: DBC presets and launches, DAMM v2 trading and locked-LP fees, DLMM limit-order ladder, Meteora Lock vesting, plus Invent studio for configs. Our own program calls DBC, Meteora Lock and DLMM directly. An xStock (TSLAx) preset using Meteora's token badge. [Call table](docs/ARCHITECTURE.md#meteora-integration) |
+| **Depth of Meteora integration** | Four Meteora programs from one app: DBC presets and launches, DAMM v2 trading and locked-LP fees, DLMM limit-order ladder, Meteora Lock vesting, plus Invent studio for configs. Our own program calls DBC, Meteora Lock and DLMM directly. Equity-raise presets in four xStocks (TSLAx, NVDAx, AAPLx, GOOGLx) using Meteora's token badges. [Call table](docs/ARCHITECTURE.md#meteora-integration) |
 | **Technical execution** | A native Solana program with conservative Q64.64 price checks, 20/20 end-to-end on public devnet and on Meteora's mainnet binaries locally. 30 unit tests and CI on every push. [Vault spec](docs/VAULT.md) · [tests](.github/workflows/ci.yml) |
 | **Originality** | DLMM limit orders as an *unlock commitment*, enforced by a vault that holds the DBC creator role, plus an **unlock radar** tracking every DBC team allocation on mainnet. Nobody else addresses what happens at unlock. [Vault](#the-vault-enforcing-the-ladder-on-chain) |
 | **Impact** | The problem is everywhere: 93% of DBC teams that claim unlocks move them out ([study](docs/UNLOCK-STUDY.md)). Any DBC launchpad can adopt the preset + vault pattern. The launch check grades *any* DBC token; feed, check and MCP server are public. [What's in the box](#whats-in-the-box) |
@@ -74,7 +74,7 @@ wallet. Half of every DAMM v2 fee compounds back into the pool, so liquidity onl
 |---|---|---|
 | **Anti-sniper** | SOL | Memes: launch-block buyers pay up to 50%, decaying to 1% in 2 minutes |
 | **Fair raise** | SOL | Communities that want price discovery without a pump: last buyer pays ~5% more |
-| **Equity raise** | **TSLAx** | Raising in tokenized stock on the same flat curve, graduating into a TSLAx pool |
+| **Equity raise** | **TSLAx · NVDAx · AAPLx · GOOGLx** | Raising in tokenized stock on the same flat curve, graduating into a pool in that stock |
 | **Micro raise** | SOL | Small raises (0.1 SOL). The thin pool it creates is what our launch check now warns about |
 
 Full parameters and config addresses: [ARCHITECTURE.md](docs/ARCHITECTURE.md#presets). The figure

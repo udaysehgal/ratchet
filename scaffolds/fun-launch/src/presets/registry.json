@@ -25,6 +25,18 @@
     "equity-raise": {
       "config": "BBzvZ84fDNHeE7y4ZiYhBgWRN3dZr6gjdFm9TMJ8wCC1",
       "file": "presets/mainnet/equity-raise.jsonc"
+    },
+    "equity-raise-nvdax": {
+      "config": "6DaBRbCGaGW4vNDiHgrk7WC8XudL8tt484Anu3Xftddc",
+      "file": "presets/mainnet/equity-raise-nvdax.jsonc"
+    },
+    "equity-raise-aaplx": {
+      "config": "8jHJkk4EEcUP5LJq2H1JB9YmauwvNhuhrFKNtyJxU8jN",
+      "file": "presets/mainnet/equity-raise-aaplx.jsonc"
+    },
+    "equity-raise-googlx": {
+      "config": "jqine24k4Wdm2YA7QkBYKL4ZjRTckmAEnsfCPBVGkfp",
+      "file": "presets/mainnet/equity-raise-googlx.jsonc"
     }
   }
 }
