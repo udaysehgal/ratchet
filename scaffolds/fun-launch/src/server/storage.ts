@@ -36,7 +36,11 @@ export async function uploadPublic(path: string, body: Buffer, contentType: stri
     return blob.url;
   }
   if (r2) {
-    await r2.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: path, Body: body, ContentType: contentType }));
+    // Never overwrite (matches Vercel Blob's default): paths are public mints, so overwriting
+    // would let anyone replace a launched token's logo or metadata
+    await r2.send(
+      new PutObjectCommand({ Bucket: R2_BUCKET, Key: path, Body: body, ContentType: contentType, IfNoneMatch: '*' })
+    );
     return `${R2_PUBLIC_URL}/${path}`;
   }
   throw new Error('No storage configured: connect a Vercel Blob store or set the R2_* variables');

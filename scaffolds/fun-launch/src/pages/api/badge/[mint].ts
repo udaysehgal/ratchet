@@ -18,7 +18,9 @@ const width = (s: string) => Math.round(s.length * 6.4 + 12);
 function badge(label: string, value: string, color: string) {
   const lw = width(label);
   const vw = width(value);
-  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  // The symbol is on-chain and attacker-chosen; it lands in attributes too, so escape quotes
+  const esc = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${lw + vw}" height="20" role="img" aria-label="${esc(label)}: ${esc(value)}">
 <title>${esc(label)}: ${esc(value)}</title>
 <clipPath id="r"><rect width="${lw + vw}" height="20" rx="3"/></clipPath>

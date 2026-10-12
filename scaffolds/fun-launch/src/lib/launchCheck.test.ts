@@ -89,6 +89,32 @@ describe('team unlocks', () => {
     expect(byId(unlock({ vaulted: true, verdict: 'sold', movedShare: 1 }), 'team-unlocks')?.status).toBe('pass');
   });
 
+  describe('vault sunset', () => {
+    const now = 1_700_000_000;
+    const day = 86_400;
+    const check = (sunsetTs: number | null) =>
+      assessLaunch(unlock({ vaulted: true, sunsetTs }), now).find((c) => c.id === 'team-unlocks');
+
+    it('passes a vault with no sunset', () => {
+      expect(check(null)?.status).toBe('pass');
+    });
+
+    it('fails a vault whose sunset has passed', () => {
+      expect(check(1)?.status).toBe('fail');
+      expect(check(now)?.status).toBe('fail');
+    });
+
+    it('warns when the sunset is under 180 days away', () => {
+      expect(check(now + 179 * day)?.status).toBe('warn');
+    });
+
+    it('passes a distant sunset but names its date', () => {
+      const c = check(now + 365 * day);
+      expect(c?.status).toBe('pass');
+      expect(c?.title).toContain('until 2024-11-13');
+    });
+  });
+
   it('only adds the check when unlock data is known', () => {
     expect(byId(ratchetAntiSniper, 'team-unlocks')).toBeUndefined();
   });

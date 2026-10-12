@@ -1,24 +1,35 @@
 /**
  * Permissionless keeper for ratchet-vaults. For every vault the program owns:
  *   - claim_vested when the Meteora Lock escrow has unlocked more than was claimed,
- *   - collect_fees when the DBC pool holds creator fees.
- * Both instructions can only move tokens into the vault (base) or to the beneficiary (quote),
+ *   - collect_fees when the DBC pool holds creator fees,
+ *   - after graduation: the creator's curve surplus, migration-fee share and DAMM v2 LP fees.
+ * Every one of these can only move tokens into the vault (base) or to the beneficiary (quote),
  * so anyone can run this with any funded key. Runs on a schedule in .github/workflows/keeper.yml.
  *
  *   KEEPER_KEY='[...]' npx tsx scripts/vault-keeper.ts [rpc]
  */
 import fs from 'node:fs';
-import { Connection, Keypair, PublicKey, Transaction, sendAndConfirmTransaction } from '@solana/web3.js';
+import { Connection, Keypair, PublicKey, Transaction, TransactionInstruction, sendAndConfirmTransaction } from '@solana/web3.js';
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, createAssociatedTokenAccountIdempotentInstruction, getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { DynamicBondingCurveClient, deriveBaseKeyForLocker, deriveDbcPoolAuthority, deriveEscrow } from '@meteora-ag/dynamic-bonding-curve-sdk';
-import { VAULT_PROGRAM_ID, claimVestedIx, collectFeesIx, decodeVault } from '../src/lib/vault';
+import { CpAmm, derivePoolAuthority as deriveDammPoolAuthority, getUnClaimLpFee } from '@meteora-ag/cp-amm-sdk';
+import {
+  VAULT_PROGRAM_ID,
+  VAULT_SPACE,
+  claimPositionFeeIx,
+  claimVestedIx,
+  collectFeesIx,
+  decodeVault,
+  withdrawMigrationFeeIx,
+  withdrawSurplusIx,
+} from '../src/lib/vault';
 
 const RPC = process.argv[2] ?? process.env.RPC_URL ?? 'https://api.devnet.solana.com';
 const conn = new Connection(RPC, 'confirmed');
 const dbc = new DynamicBondingCurveClient(conn, 'confirmed');
+const cpAmm = new CpAmm(conn);
 const keySource = process.env.KEEPER_KEY ?? fs.readFileSync(process.env.KEEPER_KEY_PATH ?? '', 'utf8');
 const keeper = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(keySource)));
-const VAULT_SPACE = 171;
 const log: string[] = [];
 const note = (s: string) => {
   console.log(s);
@@ -91,6 +102,48 @@ async function main() {
         note(`${tag} collect_fees · ${sig}`);
       } else {
         note(`${tag} no creator fees`);
+      }
+
+      // 3. After graduation: creator surplus and migration-fee share (quote) → the beneficiary.
+      // Preflight simulation rejects these when there is nothing to withdraw, at no cost.
+      if (state?.isMigrated === 1) {
+        const config = await dbc.state.getPoolConfig(state.config);
+        const quoteAccounts = {
+          vault, poolAuthority: deriveDbcPoolAuthority(), config: state.config, pool: v.dbcPool, vaultQuoteToken: vaultQuote,
+          quoteVault: state.quoteVault, quoteMint: v.quoteMint, quoteTokenProgram: quoteProgram, beneficiaryQuoteToken: beneficiaryQuote,
+        };
+        const withdrawals: [string, TransactionInstruction][] = [['surplus', withdrawSurplusIx(quoteAccounts)]];
+        if (config.creatorMigrationFeePercentage > 0) withdrawals.push(['migration fee', withdrawMigrationFeeIx(quoteAccounts)]);
+        for (const [label, ix] of withdrawals) {
+          try {
+            const sig = await sendAndConfirmTransaction(conn, new Transaction().add(...ensureAtas, ix), [keeper]);
+            note(`${tag} withdraw ${label} · ${sig}`);
+          } catch {
+            note(`${tag} no ${label} to withdraw`);
+          }
+        }
+
+        // 4. LP fees on the creator's DAMM v2 position, whose NFT the vault holds
+        const damm = (await cpAmm.fetchPoolStatesByTokenAMint(v.baseMint)).find((p) => p.account.tokenBMint.equals(v.quoteMint));
+        for (const pos of damm ? await cpAmm.getUserPositionByPool(damm.publicKey, vault) : []) {
+          const fee = getUnClaimLpFee(damm!.account, pos.positionState);
+          if (fee.feeTokenA.isZero() && fee.feeTokenB.isZero()) continue;
+          const sig = await sendAndConfirmTransaction(
+            conn,
+            new Transaction().add(
+              ...ensureAtas,
+              claimPositionFeeIx({
+                vault, poolAuthority: deriveDammPoolAuthority(), pool: damm!.publicKey, position: pos.position,
+                vaultBaseToken: vaultBase, vaultQuoteToken: vaultQuote, tokenAVault: damm!.account.tokenAVault,
+                tokenBVault: damm!.account.tokenBVault, baseMint: v.baseMint, quoteMint: v.quoteMint,
+                positionNftAccount: pos.positionNftAccount, baseTokenProgram: baseProgram, quoteTokenProgram: quoteProgram,
+                beneficiaryQuoteToken: beneficiaryQuote,
+              })
+            ),
+            [keeper]
+          );
+          note(`${tag} claim_position_fee · ${sig}`);
+        }
       }
     } catch (e) {
       note(`${tag} error: ${String(e).slice(0, 200)}`);

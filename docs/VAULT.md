@@ -60,6 +60,9 @@ Vault  PDA ["vault", dbc_pool]
   sunset_ts           i64      0 = never; else team tokens may be released after this time
   orders_placed       u64      nonce for order PDAs
   bump                u8
+  window_start_ts     i64      start of the current 24h daily-cap window
+  window_budget       u64      base tokens that may be offered as asks this window (10% of the balance at its start)
+  window_used         u64      base tokens offered so far this window (cancels don't refund)
 
 Order  PDA ["order", vault, nonce]   (owned by DLMM: the limit_order account itself)
 ```
@@ -73,12 +76,15 @@ the floor can't be gamed by moving the pool price.
 |---|---|---|
 | `adopt_launch(beneficiary, sunset_ts)` | current pool creator | Checks the pool is DBC-owned and not graduated, reads the graduation price from its config, creates the vault, then CPIs `transfer_pool_creator` to the vault PDA. Meant to run in the launch transaction, right after `initialize_virtual_pool`. |
 | `claim_vested()` | anyone | CPIs Meteora Lock `claim_v2` with the vault as recipient. Tokens stay in the vault. |
-| `place_ask(nonce, bins[])` | beneficiary | Checks the DLMM pair trades `base_mint` against `quote_mint`, and that **every bin's price ≥ floor**. CPIs `place_limit_order` with the vault as owner and sender. |
+| `place_ask(nonce, bins[])` | beneficiary | Requires the token's **canonical** customizable permissionless DLMM pair (`["ILM_BASE", min_mint, max_mint]`), checks it trades `base_mint` against `quote_mint`, that **every bin's price ≥ floor**, and that the asks fit the **daily cap** (10% of the vault's balance per 24h). CPIs `place_limit_order` with the vault as owner and sender. |
 | `cancel_ask(nonce)` | beneficiary | CPIs `cancel_limit_order` (unfilled base back to the vault, filled quote to the vault), forwards all quote to the beneficiary, closes the order. |
 | `raise_floor(floor_bps)` | beneficiary | Only increases. Existing orders below a new floor can be cancelled, never re-placed. |
 | `collect_fees()` | anyone | CPIs DBC `claim_creator_trading_fee`; **quote** goes to the beneficiary, **base** fees stay in the vault (they're supply too). |
+| `claim_position_fee()` | anyone | CPIs DAMM v2 `claim_position_fee` on the creator's LP position (the vault holds its NFT); quote to the beneficiary, base stays. |
+| `withdraw_surplus()` | anyone | CPIs DBC `creator_withdraw_surplus`; quote to the beneficiary. |
+| `withdraw_migration_fee()` | anyone | CPIs DBC `withdraw_migration_fee` for the creator's share; quote to the beneficiary. |
 | `set_beneficiary(new)` | beneficiary | Key rotation. |
-| `release_after_sunset()` | beneficiary | Only if `sunset_ts` is set and has passed. Set at adoption, visible to holders. |
+| `release_after_sunset()` | beneficiary | Only if `sunset_ts` is set and has passed. Set at adoption, visible to holders. `adopt_launch` rejects a sunset less than 180 days away (`SunsetTooSoon`), and the launch check shows the date and warns inside 180 days. |
 
 ## Invariants
 
@@ -88,9 +94,13 @@ the floor can't be gamed by moving the pool price.
 3. Quote (proceeds and fees) is never held: each instruction that receives it forwards it to the
    beneficiary.
 4. The vault signs only these CPIs: `transfer_pool_creator` (as recipient, not signer),
-   `claim_v2`, `claim_creator_trading_fee`, `place_limit_order`, `cancel_limit_order`,
-   `close_limit_order_if_empty`. No instruction lets the beneficiary name an arbitrary token
-   destination for base tokens.
+   `claim_v2`, `claim_creator_trading_fee`, `creator_withdraw_surplus`, `withdraw_migration_fee`,
+   DAMM v2 `claim_position_fee`, `place_limit_order`, `cancel_limit_order`,
+   `close_limit_order_if_empty`, and SPL `transfer_checked` (quote to the beneficiary, or base
+   after sunset) through the token program that owns the mint. No instruction lets the
+   beneficiary name an arbitrary token destination for base tokens.
+6. At most 10% of the vault's base balance (measured when a 24h window opens) can be offered as
+   asks per window.
 5. Every Meteora account passed in is checked for its owning program and its link to the vault
    (pool ↔ config ↔ mints ↔ pair).
 
@@ -110,7 +120,8 @@ conservative: a bin that passes is never below the floor.
 | Team places an ask at a low price | `place_ask` rejects any bin below the floor. |
 | Team lowers the floor | `raise_floor` only increases. |
 | Fake DLMM pair or pool | Owner-program checks and mint links on every account. |
-| Team buys its own asks | They pay ≥ 1.25× graduation price with their own money; no harm to holders. |
+| Team buys its own asks | **Limited, not prevented.** The quote they pay returns to the beneficiary on `cancel_ask`, so the floor guarantees the price on an ask, not who fills it. Asks must rest on the token's public DLMM pair, where real buyers compete for them, and at most 10% of the vault can be offered per 24h, so cycling the allocation out takes weeks rather than minutes. |
+| Pre-funding the vault address | Anyone can send lamports to the predictable vault PDA. `adopt_launch` tops up, allocates and assigns instead of `create_account`, so this can't block adoption. |
 | Team sells tokens it bought on the curve | Out of scope: the vault governs the team allocation, not market buys. The launch check shows holder concentration risks separately. |
 | Program upgrade | Devnet build keeps an upgrade authority. A mainnet release would be made immutable after audit (or held by a timelocked multisig), and the launch check would show which. |
 | Meteora interface changes | CPIs are built from Meteora's published IDLs; integration tests run the full lifecycle on devnet against the deployed programs. |

@@ -29,7 +29,7 @@ const multiples = (multArg ?? '1.6,2.5,4').split(',').map(Number);
   };
   const vaultBase = getAssociatedTokenAddressSync(v.baseMint, vault, true, TOKEN_PROGRAM_ID);
   const held = BigInt((await conn.getTokenAccountBalance(vaultBase)).value.amount);
-  const each = held / BigInt(multiples.length * 2); // commit half the inventory, split evenly
+  const each = held / BigInt(multiples.length * 10); // the daily cap: 10% of the inventory, split evenly
   const bins = multiples.map((m) => ({ id: atOrAbove(m), amount: each }));
   const { binArrayAccountMetas, binArrayIndexes } = getBinArrayInfoForNonContiguousBinIds(bins.map((b) => b.id), DLMM_PROGRAM, lbPair);
   const init = await dlmm.initializeBinArrays(binArrayIndexes, team.publicKey);
