@@ -1,5 +1,11 @@
 # Ratchet
 
+[![CI](https://github.com/udaysehgal/ratchet/actions/workflows/ci.yml/badge.svg)](https://github.com/udaysehgal/ratchet/actions/workflows/ci.yml)
+[![App: Solana mainnet](https://img.shields.io/badge/app-Solana%20mainnet-14F195)](https://ratchet-olive.vercel.app)
+[![Vault program: devnet](https://img.shields.io/badge/vault%20program-devnet-9945FF)](https://solscan.io/account/BrwQHeRJWXDbXgUVi1TKdoDbnfB5kcRTcieYmSH2NzWB?cluster=devnet)
+[![Meteora: DBC · DAMM v2 · DLMM · Lock](https://img.shields.io/badge/Meteora-DBC%20%C2%B7%20DAMM%20v2%20%C2%B7%20DLMM%20%C2%B7%20Lock-FF6B1A)](docs/ARCHITECTURE.md#meteora-integration)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE.md)
+
 **A Meteora launchpad where team unlocks only sell into strength.**
 
 **[Live on Solana mainnet →](https://ratchet-olive.vercel.app)** · [Evidence](docs/EVIDENCE.md) · [Architecture](docs/ARCHITECTURE.md) · [Submission](docs/SUBMISSION.md)
@@ -34,6 +40,16 @@ wallet. Half of every DAMM v2 fee compounds back into the pool, so liquidity onl
 | **4 preset configs** | including an **equity raise priced in tokenized Tesla stock (TSLAx)** |
 | **Full ladder on devnet** | DLMM asks from 1.25× to 6× the graduation price ([txs](docs/EVIDENCE.md#devnet-full-lifecycle-including-the-dlmm-unlock-ladder)) |
 | **Vault program on devnet** | enforces the ladder on-chain, 20/20 lifecycle checks ([txs](docs/EVIDENCE.md#devnet-the-vault-enforcing-the-ladder-on-chain)) |
+
+## For judges
+
+| Criterion | Where to look |
+|---|---|
+| **Depth of Meteora integration** | Four Meteora programs from one app: DBC presets and launches, DAMM v2 trading and locked-LP fees, DLMM limit-order ladder, Meteora Lock vesting, plus Invent studio for configs. Our own program calls DBC, Meteora Lock and DLMM directly. An xStock (TSLAx) preset using Meteora's token badge. [Call table](docs/ARCHITECTURE.md#meteora-integration) |
+| **Technical execution** | A native Solana program with conservative Q64.64 price checks, 20/20 end-to-end on public devnet and on Meteora's mainnet binaries locally. 30 unit tests and CI on every push. [Vault spec](docs/VAULT.md) · [tests](.github/workflows/ci.yml) |
+| **Originality** | DLMM limit orders as an *unlock commitment*, enforced by a vault that holds the DBC creator role. Nobody else addresses what happens at unlock. [Vault](#the-vault-enforcing-the-ladder-on-chain) |
+| **Impact** | Any DBC launchpad can adopt the preset + vault pattern. The launch check grades *any* DBC token; feed, check and MCP server are public. [What's in the box](#whats-in-the-box) |
+| **Traction** | Live on mainnet: a graduation through the app, 9 trading wallets, a sniper that paid ~37% in fees, 4 configs. [Evidence](docs/EVIDENCE.md) |
 
 ## Presets
 
