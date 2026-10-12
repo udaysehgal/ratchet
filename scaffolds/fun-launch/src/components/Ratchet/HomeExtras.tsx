@@ -160,7 +160,7 @@ export function NumbersRow() {
       {numbers.map((x) => (
         <div key={x.label} className="flex flex-col gap-1.5">
           <span className="display text-4xl md:text-5xl">{x.value}</span>
-          <span className="text-sm text-neutral-500">{x.label}</span>
+          <span className="text-sm text-neutral-400">{x.label}</span>
         </div>
       ))}
     </section>
@@ -252,36 +252,49 @@ export function FaqSection() {
   const [showAll, setShowAll] = useState(false);
   const shown = showAll ? FAQS : FAQS.slice(0, 5);
   return (
-    <section className="flex flex-col gap-4">
-      <h2 className="text-sm text-neutral-500">FAQs</h2>
-      <div className="flex max-w-4xl flex-col gap-2">
-        {shown.map((f, i) => {
-          const isOpen = open === i;
-          return (
-            <div key={f.q} className={cn('rounded-xl transition-colors', isOpen ? 'bg-neutral-900' : 'bg-neutral-950 hover:bg-neutral-925')}>
-              <button
-                type="button"
-                aria-expanded={isOpen}
-                onClick={() => setOpen(isOpen ? null : i)}
-                className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left md:px-8"
-              >
-                <span className="text-base font-medium md:text-lg">{f.q}</span>
-                <span className={cn('iconify h-4 w-4 shrink-0 text-neutral-400 transition-transform', isOpen ? 'ph--x-bold' : 'ph--plus-bold')} />
-              </button>
-              {isOpen && <div className="max-w-[70ch] px-6 pb-6 leading-relaxed text-neutral-400 md:px-8">{f.a}</div>}
-            </div>
-          );
-        })}
+    <section className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">
+      <div className="flex flex-col gap-4">
+        <h2 className="display text-3xl leading-tight md:text-[2.75rem]">Questions, answered</h2>
+        <p className="max-w-[32ch] text-neutral-400">
+          Something else? Ask us on{' '}
+          <a href="https://x.com/ratchetxyz" className="text-foreground underline-offset-4 hover:underline">
+            X
+          </a>
+          .
+        </p>
       </div>
-      {!showAll && (
-        <button
-          type="button"
-          onClick={() => setShowAll(true)}
-          className="flex w-fit items-center gap-3 rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium hover:bg-neutral-850"
-        >
-          More questions <span className="iconify ph--plus-bold h-3.5 w-3.5" />
-        </button>
-      )}
+      <div className="flex flex-col">
+        <div className="border-t border-neutral-850">
+          {shown.map((f, i) => {
+            const isOpen = open === i;
+            return (
+              <div key={f.q} className="border-b border-neutral-850">
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  className="group flex w-full items-center justify-between gap-6 py-5 text-left"
+                >
+                  <span className={cn('text-base font-medium transition-colors md:text-lg', isOpen ? 'text-foreground' : 'text-neutral-200 group-hover:text-foreground')}>
+                    {f.q}
+                  </span>
+                  <span className={cn('iconify h-4 w-4 shrink-0 text-neutral-500 transition-transform duration-200 ph--plus-bold', isOpen && 'rotate-45 text-foreground')} />
+                </button>
+                {isOpen && <div className="max-w-[65ch] pb-6 leading-relaxed text-neutral-400">{f.a}</div>}
+              </div>
+            );
+          })}
+        </div>
+        {!showAll && (
+          <button
+            type="button"
+            onClick={() => setShowAll(true)}
+            className="mt-6 flex w-fit items-center gap-2 text-sm font-medium text-neutral-300 hover:text-foreground"
+          >
+            More questions <span className="iconify ph--plus-bold h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
     </section>
   );
 }
@@ -289,10 +302,10 @@ export function FaqSection() {
 /** The closing call to action, bookending the hero. */
 export function ClosingBand() {
   return (
-    <section className="relative -mx-2 overflow-hidden border-y border-neutral-900 md:-mx-4">
+    <section className="relative -mx-5 overflow-hidden border-y border-neutral-900 md:-mx-6">
       <MeteorField className="pointer-events-none absolute inset-0 h-full w-full opacity-60" />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
-      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-24 md:py-32">
+      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-24 md:px-6 md:py-32">
         <h2 className="display max-w-3xl text-5xl leading-[1.02] md:text-7xl">Make your team sell into strength.</h2>
         <div className="flex flex-wrap items-center gap-4">
           <Link href="/create-pool" className={buttonVariants({ size: 'lg' })}>

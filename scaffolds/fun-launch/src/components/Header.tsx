@@ -58,10 +58,10 @@ export const Header = () => {
             Try the vault
           </Link>
           <Link
-            href="/vault"
-            className="hidden rounded-lg px-3 py-2 text-sm text-neutral-300 hover:text-foreground md:block"
+            href="/pitch"
+            className="hidden rounded-lg px-3 py-2 text-sm text-neutral-300 hover:text-foreground lg:block"
           >
-            Vault
+            Pitch
           </Link>
           {address && (
             <Link

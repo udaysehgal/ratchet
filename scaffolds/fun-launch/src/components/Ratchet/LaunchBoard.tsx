@@ -9,6 +9,7 @@ import { MeteorField } from './MeteorField';
 import { BeforeAfter, HomeFooter, LaunchTimeline, StorySection } from './HomeStory';
 import { ClosingBand, FaqSection, NumbersRow, RadarStrip, RaiseStrip } from './HomeExtras';
 import { NetworkStatus } from './NetworkStatus';
+import { VaultConsole } from './VaultConsole';
 import { VIDEO_URL } from '@/lib/links';
 
 const NEAR_GRADUATION = 0.8;
@@ -43,7 +44,8 @@ function LaunchCard({ launch }: { launch: LaunchSummary }) {
       <ProgressBar value={launch.progress} className="h-1.5" />
       <div className="flex items-center justify-between gap-2 text-xs">
         <span className="num text-neutral-500">
-          {formatSol(launch.quoteReserve, 2)} / {formatSol(launch.threshold, 2)} {launch.quoteSymbol}
+          {formatSol(launch.quoteReserve, 2)} / {formatSol(launch.threshold, 2)}{' '}
+          {launch.quoteSymbol}
         </span>
         <span className={launch.migrated ? 'text-emerald' : 'text-neutral-500'}>
           {launch.migrated ? 'Graduated to DAMM v2' : presetName(launch.presetId)}
@@ -53,7 +55,15 @@ function LaunchCard({ launch }: { launch: LaunchSummary }) {
   );
 }
 
-function Section({ title, hint, launches }: { title: string; hint: string; launches: LaunchSummary[] }) {
+function Section({
+  title,
+  hint,
+  launches,
+}: {
+  title: string;
+  hint: string;
+  launches: LaunchSummary[];
+}) {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-baseline justify-between gap-3 border-b border-neutral-900 pb-3">
@@ -63,15 +73,13 @@ function Section({ title, hint, launches }: { title: string; hint: string; launc
         </div>
         <span className="num text-sm text-neutral-500">{launches.length}</span>
       </div>
-      {launches.length === 0 ? (
-        <p className="py-4 text-sm text-neutral-600">None right now.</p>
-      ) : (
+      {
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {launches.map((l) => (
             <LaunchCard key={l.pool} launch={l} />
           ))}
         </div>
-      )}
+      }
     </section>
   );
 }
@@ -87,44 +95,46 @@ export function LaunchBoard() {
   return (
     <div className="flex w-full flex-col">
       {/* Hero */}
-      <section className="relative -mx-2 -mt-3 overflow-hidden md:-mx-4">
+      <section className="relative -mx-5 -mt-3 overflow-hidden md:-mx-6">
         <MeteorField className="pointer-events-none absolute inset-0 h-full w-full opacity-90" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent" />
-        <div className="relative mx-auto flex min-h-[520px] w-full max-w-6xl flex-col justify-center gap-6 px-4 py-20 md:min-h-[620px]">
-          <span className="flex w-fit items-center gap-2 rounded-full border border-neutral-800 bg-background/60 px-3 py-1 text-xs text-neutral-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald" />
-            Live on Solana mainnet
-          </span>
-          <h1 className="display max-w-2xl text-5xl leading-[1.02] sm:text-6xl md:text-7xl">
-            Launches where the team can only sell into strength.
-          </h1>
-          <p className="max-w-lg text-lg text-neutral-300">
-            Launch on a Meteora bonding curve, graduate into a pool whose liquidity is locked
-            forever, and commit team unlocks as sell orders above the graduation price.
-          </p>
-          <div className="flex flex-wrap items-center gap-6">
-            <Link href="/create-pool" className={buttonVariants({ size: 'lg' })}>
-              Launch a token
-            </Link>
-            <a href="#launches" className="inline-flex items-center gap-1 text-sm font-medium hover:text-primary">
-              Browse launches
-              <span className="iconify ph--caret-right-bold h-4 w-4" />
-            </a>
-            <a href={VIDEO_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm font-medium hover:text-primary">
-              Watch the demo
-              <span className="iconify ph--play-fill h-3.5 w-3.5" />
-            </a>
-            <a href="/pitch" className="inline-flex items-center gap-1 text-sm font-medium hover:text-primary">
-              Pitch deck
-              <span className="iconify ph--caret-right-bold h-4 w-4" />
-            </a>
+        <div className="relative mx-auto grid min-h-[560px] w-full max-w-6xl grid-cols-1 items-center gap-12 px-5 py-20 md:min-h-[640px] md:px-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+          <div className="flex flex-col gap-7">
+            <span className="flex w-fit items-center gap-2 rounded-full border border-neutral-800 bg-background/60 px-3 py-1 text-xs text-neutral-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald" />
+              Live on Solana mainnet
+            </span>
+            <h1 className="display max-w-2xl text-[2.75rem] leading-[1.02] sm:text-6xl md:text-7xl">
+              Launches where the team can only sell into strength.
+            </h1>
+            <p className="max-w-lg text-lg leading-relaxed text-neutral-300">
+              Launch on a Meteora bonding curve, graduate into a pool whose liquidity is locked
+              forever, and commit team unlocks as sell orders above the graduation price.
+            </p>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+              <Link href="/create-pool" className={buttonVariants({ size: 'lg' })}>
+                Launch a token
+              </Link>
+              <a
+                href={VIDEO_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-medium text-neutral-200 hover:text-primary"
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-neutral-700">
+                  <span className="iconify ph--play-fill h-3 w-3" />
+                </span>
+                Watch the 2-min demo
+              </a>
+            </div>
           </div>
+          <VaultConsole className="w-full lg:ml-auto lg:max-w-md" />
         </div>
       </section>
 
       {/* Program strip */}
-      <section className="-mx-2 border-y border-neutral-900 md:-mx-4">
-        <div className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-y-6 px-4 py-8 md:grid-cols-4">
+      <section className="-mx-5 border-y border-neutral-900 md:-mx-6">
+        <div className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-y-6 px-5 py-8 md:grid-cols-4 md:px-6">
           {PROGRAMS.map(([name, id]) => (
             <div key={name} className="flex flex-col gap-1">
               <span className="text-2xl font-medium tracking-tight text-neutral-200">{name}</span>
@@ -144,9 +154,12 @@ export function LaunchBoard() {
         {/* Board */}
         <section id="launches" className="flex scroll-mt-24 flex-col gap-10">
           <div className="flex flex-col gap-3">
-            <h2 className="display text-3xl leading-tight md:text-[2.75rem]">Launches on Ratchet right now</h2>
+            <h2 className="display text-3xl leading-tight md:text-[2.75rem]">
+              Launches on Ratchet right now
+            </h2>
             <p className="max-w-[56ch] text-neutral-400">
-              Read straight from Solana mainnet. Click one to trade it or to check its team’s unlocks.
+              Read straight from Solana mainnet. Click one to trade it or to check its team’s
+              unlocks.
             </p>
           </div>
           {isLoading ? (
@@ -157,18 +170,26 @@ export function LaunchBoard() {
             </div>
           ) : error ? (
             <p className="text-neutral-400">
-              Solana is slow to answer right now, so we couldn&apos;t load launches. They&apos;ll appear here
-              in a few seconds.
+              Solana is slow to answer right now, so we couldn&apos;t load launches. They&apos;ll
+              appear here in a few seconds.
             </p>
           ) : (
             <>
+              {near.length > 0 && (
+                <Section
+                  title="Near graduation"
+                  hint={`${Math.round(NEAR_GRADUATION * 100)}%+ of the way to DAMM v2`}
+                  launches={near}
+                />
+              )}
+              {live.length > 0 && (
+                <Section title="On the curve" hint="Trading on Meteora DBC" launches={live} />
+              )}
               <Section
-                title="Near graduation"
-                hint={`${Math.round(NEAR_GRADUATION * 100)}%+ of the way to DAMM v2`}
-                launches={near}
+                title="Graduated"
+                hint="Trading on DAMM v2, unlocks on DLMM"
+                launches={graduated}
               />
-              <Section title="On the curve" hint="Trading on Meteora DBC" launches={live} />
-              <Section title="Graduated" hint="Trading on DAMM v2, unlocks on DLMM" launches={graduated} />
             </>
           )}
         </section>

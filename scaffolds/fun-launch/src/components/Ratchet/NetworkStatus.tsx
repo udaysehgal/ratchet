@@ -42,16 +42,16 @@ const MAINNET = [
 /** What is live on mainnet today, with the vault demo as a footnote. */
 export function NetworkStatus() {
   return (
-    <section className="flex flex-col gap-px overflow-hidden rounded-2xl border border-neutral-850 bg-neutral-850">
-      <div className="flex flex-col gap-6 bg-neutral-950 p-6 md:p-8">
+    <section className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8">
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-emerald" />
           <span className="text-sm font-medium text-foreground">Live on Solana mainnet</span>
           <span className="text-sm text-neutral-500">· real tokens, real SOL</span>
         </div>
-        <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {MAINNET.map((m) => (
-            <div key={m.title} className="flex flex-col gap-1.5">
+            <div key={m.title} className="flex flex-col gap-2 border-t border-neutral-850 pt-5">
               <span className="text-lg font-medium">{m.title}</span>
               <p className="text-sm leading-relaxed text-neutral-400">{m.body}</p>
               <Link
@@ -64,7 +64,7 @@ export function NetworkStatus() {
           ))}
         </div>
       </div>
-      <div className="flex flex-col gap-2 bg-neutral-950 px-6 py-4 text-sm text-neutral-400 sm:flex-row sm:items-center sm:justify-between md:px-8">
+      <div className="flex flex-col gap-2 rounded-xl border border-neutral-850 px-5 py-4 text-sm text-neutral-400 sm:flex-row sm:items-center sm:justify-between">
         <span>
           The team-token vault is in testing on Solana’s test network until it’s audited. You can
           try it free.
