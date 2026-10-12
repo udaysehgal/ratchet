@@ -1,0 +1,170 @@
+name: Deploy vault (devnet)
+
+# Builds ratchet-vault, runs the full lifecycle against Meteora's mainnet programs on a local
+# validator, and only then upgrades the devnet program with that exact binary.
+# Start it from the Actions tab (or the GitHub app): Deploy vault (devnet) → Run workflow.
+#
+# Needs one repository secret, DEVNET_VAULT_UPGRADE_AUTHORITY: the program's upgrade-authority
+# keypair as the JSON byte array `solana-keygen` writes. It pays the deploy (keep ~3 devnet SOL
+# on it). Optional secret DEVNET_RPC_URL replaces the public devnet endpoint.
+on:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy to devnet if the tests pass (untick to only build and test)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vault-deploy-devnet
+  cancel-in-progress: false
+
+env:
+  PROGRAM_ID: BrwQHeRJWXDbXgUVi1TKdoDbnfB5kcRTcieYmSH2NzWB
+  PROGRAM_DIR: programs/ratchet-vault
+
+jobs:
+  test:
+    name: Build and test on a local validator
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+      - run: solana --version
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/solana
+            ~/.cargo/registry
+            ${{ env.PROGRAM_DIR }}/target
+          key: sbf-${{ runner.os }}-${{ hashFiles('programs/ratchet-vault/Cargo.lock') }}
+
+      - name: Unit tests
+        run: cargo test --manifest-path $PROGRAM_DIR/Cargo.toml --lib
+
+      - name: Build the program
+        run: cargo build-sbf --manifest-path $PROGRAM_DIR/Cargo.toml
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter @meteora-invent/scaffold/fun-launch...
+
+      - name: Start a local validator with Meteora's mainnet programs
+        run: |
+          nohup $PROGRAM_DIR/scripts/local-validator.sh "$RUNNER_TEMP/ledger" > "$RUNNER_TEMP/validator.log" 2>&1 &
+          for i in $(seq 1 90); do
+            solana cluster-version --url http://127.0.0.1:8899 >/dev/null 2>&1 && exit 0
+            sleep 2
+          done
+          echo "Validator didn't start"; tail -50 "$RUNNER_TEMP/validator.log"; exit 1
+
+      - name: Vault lifecycle test
+        working-directory: scaffolds/fun-launch
+        env:
+          RPC_URL: http://127.0.0.1:8899
+          RESULTS_PATH: ${{ runner.temp }}/vault-lifecycle.json
+        run: |
+          mkdir -p ../../$PROGRAM_DIR/keys
+          solana-keygen new --no-bip39-passphrase --silent --force -o ../../$PROGRAM_DIR/keys/local-payer.json
+          CONFIG=$(npx tsx scripts/vault-ci-config.ts | tail -1)
+          echo "DBC config: $CONFIG"
+          npx tsx scripts/vault-lifecycle.ts "$CONFIG"
+
+      - name: Lifecycle results in the run summary
+        if: always()
+        run: |
+          [ -f "$RUNNER_TEMP/vault-lifecycle.json" ] || exit 0
+          {
+            echo "### Vault lifecycle (local validator)"
+            jq -r '.results[] | "- \(if .ok then "✅" else "❌" end) \(.step)"' "$RUNNER_TEMP/vault-lifecycle.json"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Validator log on failure
+        if: failure()
+        run: tail -100 "$RUNNER_TEMP/validator.log" || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ratchet-vault-so
+          path: ${{ env.PROGRAM_DIR }}/target/deploy/ratchet_vault.so
+          if-no-files-found: error
+
+  deploy:
+    name: Upgrade the devnet program
+    needs: test
+    if: ${{ inputs.deploy }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      RPC: ${{ secrets.DEVNET_RPC_URL || 'https://api.devnet.solana.com' }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ratchet-vault-so
+
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+
+      - name: Load the upgrade authority
+        env:
+          AUTHORITY: ${{ secrets.DEVNET_VAULT_UPGRADE_AUTHORITY }}
+        run: |
+          [ -n "$AUTHORITY" ] || { echo "::error::Add the DEVNET_VAULT_UPGRADE_AUTHORITY secret"; exit 1; }
+          umask 077
+          printf '%s' "$AUTHORITY" > "$RUNNER_TEMP/authority.json"
+
+      - name: Check authority and balance
+        run: |
+          KEY="$RUNNER_TEMP/authority.json"
+          SIGNER=$(solana-keygen pubkey "$KEY")
+          ONCHAIN=$(solana program show "$PROGRAM_ID" --url "$RPC" --output json | jq -r .authority)
+          echo "upgrade authority on chain: $ONCHAIN · secret's key: $SIGNER"
+          [ "$SIGNER" = "$ONCHAIN" ] || { echo "::error::The secret isn't the program's upgrade authority"; exit 1; }
+          solana balance "$SIGNER" --url "$RPC"
+
+      - name: Extend program data if the new build is larger
+        run: |
+          NEW=$(stat -c%s ratchet_vault.so)
+          HAVE=$(solana program show "$PROGRAM_ID" --url "$RPC" --output json | jq -r .dataLen)
+          echo "new build $NEW bytes · allocated $HAVE bytes"
+          if [ "$NEW" -gt "$HAVE" ]; then
+            solana program extend "$PROGRAM_ID" $((NEW - HAVE)) --url "$RPC" --keypair "$RUNNER_TEMP/authority.json"
+          fi
+
+      - name: Deploy
+        run: |
+          KEY="$RUNNER_TEMP/authority.json"
+          solana program deploy ratchet_vault.so --program-id "$PROGRAM_ID" \
+            --upgrade-authority "$KEY" --keypair "$KEY" --url "$RPC" --with-compute-unit-price 10000
+
+      - name: Verify the deployed bytes match the tested build
+        run: |
+          solana program dump "$PROGRAM_ID" deployed.so --url "$RPC"
+          SIZE=$(stat -c%s ratchet_vault.so)
+          cmp -n "$SIZE" ratchet_vault.so deployed.so
+          {
+            echo "### Deployed to devnet"
+            echo "Program \`$PROGRAM_ID\` · sha256 \`$(sha256sum ratchet_vault.so | cut -c1-16)…\` · commit \`${GITHUB_SHA::7}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Reclaim SOL from a failed deploy's buffer
+        if: failure()
+        run: solana program close --buffers --url "$RPC" --keypair "$RUNNER_TEMP/authority.json" || true
+
+      - name: Remove the key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/authority.json"
