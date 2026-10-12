@@ -40,28 +40,31 @@ export const Header = () => {
         {/* Navigation and Actions */}
         <div className="flex items-center gap-1.5 md:gap-3">
           <Link
-            href="/try"
-            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-primary hover:text-foreground md:block"
-          >
-            Try the vault
-          </Link>
-          <Link
             href="/unlocks"
             className="hidden rounded-lg px-3 py-2 text-sm text-neutral-300 hover:text-foreground md:block"
           >
             Unlocks
           </Link>
           <Link
-            href="/vault"
-            className="hidden rounded-lg px-3 py-2 text-sm text-neutral-300 hover:text-foreground md:block"
-          >
-            Vault
-          </Link>
-          <Link
             href="/check"
             className="hidden rounded-lg px-3 py-2 text-sm text-neutral-300 hover:text-foreground sm:block"
           >
             Check a token
+          </Link>
+          <Link
+            href="/try"
+            className="hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-primary hover:text-foreground md:flex"
+          >
+            Try the vault
+            <span className="rounded border border-amber/40 px-1 py-px font-mono text-[9px] uppercase tracking-wider text-amber">
+              devnet
+            </span>
+          </Link>
+          <Link
+            href="/vault"
+            className="hidden rounded-lg px-3 py-2 text-sm text-neutral-300 hover:text-foreground md:block"
+          >
+            Vault <span className="font-mono text-[10px] text-neutral-500">(devnet)</span>
           </Link>
           {address && (
             <Link

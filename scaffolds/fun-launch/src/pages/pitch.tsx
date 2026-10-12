@@ -63,6 +63,23 @@ const O = ({ children }: { children: React.ReactNode }) => (
   <span className="text-[#F97316]">{children}</span>
 );
 
+function Net({ kind, children }: { kind: 'mainnet' | 'devnet'; children?: React.ReactNode }) {
+  const main = kind === 'mainnet';
+  return (
+    <span
+      className={cn(
+        'inline-flex w-fit items-center gap-[0.6cqw] rounded-full border px-[1cqw] py-[0.35cqw] font-mono text-[1cqw] uppercase tracking-wider',
+        main ? 'border-[#10b98155] text-[#34d399]' : 'border-[#f59e0b55] text-[#fbbf24]'
+      )}
+    >
+      <span
+        className={cn('h-[0.6cqw] w-[0.6cqw] rounded-full', main ? 'bg-[#34d399]' : 'bg-[#fbbf24]')}
+      />
+      {children ?? (main ? 'Live on mainnet' : 'On devnet')}
+    </span>
+  );
+}
+
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex flex-col gap-[0.6cqw] border-l-2 border-[#F97316] pl-[1.6cqw]">
@@ -178,7 +195,11 @@ export default function Pitch() {
               A Meteora launchpad where the team allocation is held by a program, and can only reach
               the market above the graduation price.
             </p>
-            <p className="mt-[3cqw] font-mono text-[1.3cqw] text-[#F97316]">
+            <div className="mt-[2.6cqw] flex gap-[1cqw]">
+              <Net kind="mainnet">Launchpad live on mainnet</Net>
+              <Net kind="devnet">Vault on devnet</Net>
+            </div>
+            <p className="mt-[2cqw] font-mono text-[1.3cqw] text-[#F97316]">
               {SITE} · Meteora DBC track
             </p>
           </div>
@@ -235,8 +256,47 @@ export default function Pitch() {
           </p>
         </Slide>
 
-        {/* 4. How it works */}
+        {/* 4. Live on mainnet */}
         <Slide n={4}>
+          <Net kind="mainnet">Live on Solana mainnet · real tokens, real SOL</Net>
+          <Title>Not a mockup. Use it today.</Title>
+          <div className="mt-[4.5cqw] grid grid-cols-3 gap-x-[3cqw] gap-y-[2.2cqw]">
+            {[
+              [
+                'The launchpad',
+                'Four presets on a Meteora bonding curve. CHRL went from curve to a locked DAMM v2 pool in 5 minutes.',
+              ],
+              [
+                'Equity raises',
+                'Curves priced in tokenized TSLA, NVDA, AAPL and GOOGL (xStocks), via DBC token badges.',
+              ],
+              [
+                'Locked liquidity',
+                'Every graduation lands in DAMM v2 with 100% of the LP locked forever.',
+              ],
+              [
+                'Unlock radar',
+                'Every upcoming DBC team unlock, and what that team did with its last one.',
+              ],
+              ['Launch check + badge', 'Grade any DBC token. Embeddable SVG badge, public API.'],
+              [
+                'For agents',
+                'An MCP server and Agent Skill to list launches, check tokens and build transactions.',
+              ],
+            ].map(([h, body]) => (
+              <div
+                key={h}
+                className="flex flex-col gap-[0.6cqw] border-t border-white/10 pt-[1.2cqw]"
+              >
+                <span className="text-[1.8cqw] font-semibold">{h}</span>
+                <span className="text-[1.35cqw] leading-relaxed text-neutral-400">{body}</span>
+              </div>
+            ))}
+          </div>
+        </Slide>
+
+        {/* 5. How it works */}
+        <Slide n={5}>
           <Kicker>How Ratchet works</Kicker>
           <Title>The team’s tokens never touch the team’s wallet.</Title>
           <div className="mt-[4.5cqw] grid grid-cols-4 gap-[1.6cqw]">
@@ -245,35 +305,14 @@ export default function Pitch() {
                 key={h}
                 className="flex flex-col gap-[1cqw] rounded-[1cqw] border border-white/10 bg-white/[0.02] p-[2cqw]"
               >
-                <span className="font-mono text-[1.2cqw] text-[#F97316]">0{k + 1}</span>
+                <span className="flex items-center justify-between">
+                  <span className="font-mono text-[1.2cqw] text-[#F97316]">0{k + 1}</span>
+                  <Net kind={k < 2 ? 'mainnet' : 'devnet'}>{k < 2 ? 'mainnet' : 'devnet'}</Net>
+                </span>
                 <span className="text-[2cqw] font-semibold">{h}</span>
                 <span className="text-[1.35cqw] leading-relaxed text-neutral-400">{body}</span>
               </div>
             ))}
-          </div>
-        </Slide>
-
-        {/* 5. The vault refuses */}
-        <Slide n={5}>
-          <div className="grid grid-cols-[1fr_1.1fr] items-center gap-[5cqw]">
-            <div className="flex flex-col">
-              <Kicker>The vault</Kicker>
-              <Title>Everything except selling into strength is refused on-chain.</Title>
-              <p className="mt-[2cqw] text-[1.55cqw] leading-relaxed text-neutral-400">
-                A native Solana program. The floor starts at 1.25× the graduation price and can only
-                go up. A sunset, if any, is fixed at launch and at least 180 days out.
-              </p>
-              <p className="mt-[4.5cqw] font-mono text-[1.3cqw] text-neutral-300">
-                25/25 lifecycle checks on devnet · 30 unit tests + CI
-              </p>
-            </div>
-            <div className="my-auto flex flex-col gap-[1.2cqw]">
-              <Refusal action="Sell below 1.25× graduation" result="BelowFloor" />
-              <Refusal action="Lower the floor" result="FloorCannotDecrease" />
-              <Refusal action="Sell over 10% in a day" result="DailyCapExceeded" />
-              <Refusal action="Send tokens to the team wallet" result="impossible before sunset" />
-              <Refusal ok action="Ask at ≥1.25×, within the cap" result="order placed" />
-            </div>
           </div>
         </Slide>
 
@@ -294,7 +333,7 @@ export default function Pitch() {
               ['Meteora Lock', 'Team vesting escrows whose claims can only land in the vault.'],
               [
                 'DLMM',
-                'The only exit for team tokens: limit-order asks the vault places, at or above the floor.',
+                'The only exit for team tokens: limit-order asks the vault places, at or above the floor (devnet).',
               ],
             ].map(([h, body]) => (
               <div
@@ -308,30 +347,32 @@ export default function Pitch() {
           </div>
         </Slide>
 
-        {/* 7. Live today */}
+        {/* 7. The vault refuses */}
         <Slide n={7}>
-          <Kicker>Live today</Kicker>
-          <Title>Not a mockup. Try every piece of it.</Title>
-          <div className="mt-[4.5cqw] grid grid-cols-3 gap-x-[3cqw] gap-y-[2.2cqw]">
-            {[
-              [
-                'Launchpad on mainnet',
-                'CHRL went from curve to a locked DAMM v2 pool in 5 minutes.',
-              ],
-              ['Equity raises', 'Curves priced in tokenized TSLA, NVDA, AAPL and GOOGL (xStocks).'],
-              ['Vault on devnet', 'Launch a vaulted token at /try and try to dump it yourself.'],
-              ['Unlock radar', 'Every upcoming DBC team unlock, and what that team did last time.'],
-              ['Launch check + badge', 'Grade any DBC token. Embeddable SVG badge, public API.'],
-              ['For agents', 'MCP server and Agent Skill; a keeper cranks the vault every 30 min.'],
-            ].map(([h, body]) => (
-              <div
-                key={h}
-                className="flex flex-col gap-[0.6cqw] border-t border-white/10 pt-[1.2cqw]"
-              >
-                <span className="text-[1.8cqw] font-semibold">{h}</span>
-                <span className="text-[1.35cqw] leading-relaxed text-neutral-400">{body}</span>
-              </div>
-            ))}
+          <div className="grid grid-cols-[1fr_1.1fr] items-center gap-[5cqw]">
+            <div className="flex flex-col">
+              <Net kind="devnet">The vault · on Solana devnet</Net>
+              <Title>Everything except selling into strength is refused on-chain.</Title>
+              <p className="mt-[2cqw] text-[1.55cqw] leading-relaxed text-neutral-400">
+                A native Solana program. The floor starts at 1.25× the graduation price and can only
+                go up. A sunset, if any, is fixed at launch and at least 180 days out.
+              </p>
+              <p className="mt-[1.6cqw] rounded-[0.8cqw] border border-[#f59e0b33] bg-[#f59e0b0d] p-[1.4cqw] text-[1.3cqw] leading-relaxed text-neutral-300">
+                <span className="text-[#fbbf24]">Devnet</span> is Solana’s public test network: the
+                same Meteora programs, with free test SOL. The vault stays there until it is
+                audited. Anyone can try it at {SITE}/try.
+              </p>
+              <p className="mt-[2cqw] font-mono text-[1.3cqw] text-neutral-300">
+                25/25 lifecycle checks on devnet · 30 unit tests + CI
+              </p>
+            </div>
+            <div className="my-auto flex flex-col gap-[1.2cqw]">
+              <Refusal action="Sell below 1.25× graduation" result="BelowFloor" />
+              <Refusal action="Lower the floor" result="FloorCannotDecrease" />
+              <Refusal action="Sell over 10% in a day" result="DailyCapExceeded" />
+              <Refusal action="Send tokens to the team wallet" result="impossible before sunset" />
+              <Refusal ok action="Ask at ≥1.25×, within the cap" result="order placed" />
+            </div>
           </div>
         </Slide>
 

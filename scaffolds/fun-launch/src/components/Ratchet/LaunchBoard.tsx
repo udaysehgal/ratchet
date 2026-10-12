@@ -8,6 +8,7 @@ import { TokenAvatar } from './TokenAvatar';
 import { MeteorField } from './MeteorField';
 import { BeforeAfter, HomeFooter, LaunchTimeline, StorySection } from './HomeStory';
 import { ClosingBand, FaqSection, NumbersRow, RadarStrip, RaiseStrip } from './HomeExtras';
+import { NetworkStatus } from './NetworkStatus';
 
 const NEAR_GRADUATION = 0.8;
 
@@ -89,6 +90,10 @@ export function LaunchBoard() {
         <MeteorField className="pointer-events-none absolute inset-0 h-full w-full opacity-90" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent" />
         <div className="relative mx-auto flex min-h-[520px] w-full max-w-6xl flex-col justify-center gap-6 px-4 py-20 md:min-h-[620px]">
+          <span className="flex w-fit items-center gap-2 rounded-full border border-neutral-800 bg-background/60 px-3 py-1 text-xs text-neutral-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald" />
+            Live on Solana mainnet
+          </span>
           <h1 className="display max-w-2xl text-5xl leading-[1.02] sm:text-6xl md:text-7xl">
             Launches where the team can only sell into strength.
           </h1>
@@ -102,6 +107,10 @@ export function LaunchBoard() {
             </Link>
             <a href="#launches" className="inline-flex items-center gap-1 text-sm font-medium hover:text-primary">
               Browse launches
+              <span className="iconify ph--caret-right-bold h-4 w-4" />
+            </a>
+            <a href="/pitch" className="inline-flex items-center gap-1 text-sm font-medium hover:text-primary">
+              Pitch deck
               <span className="iconify ph--caret-right-bold h-4 w-4" />
             </a>
           </div>
@@ -121,13 +130,12 @@ export function LaunchBoard() {
       </section>
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-28 py-24">
+        <NetworkStatus />
         <NumbersRow />
         <StorySection />
-        <RaiseStrip />
         <LaunchTimeline />
+        <RaiseStrip />
         <RadarStrip />
-        <BeforeAfter />
-
         {/* Board */}
         <section id="launches" className="flex scroll-mt-24 flex-col gap-10">
           <div className="flex flex-col gap-3">
@@ -159,6 +167,8 @@ export function LaunchBoard() {
             </>
           )}
         </section>
+
+        <BeforeAfter />
 
         <FaqSection />
       </div>
