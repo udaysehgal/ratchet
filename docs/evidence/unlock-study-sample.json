@@ -1,0 +1,38 @@
+{
+ "sampled": 40,
+ "soldViaDex": 29,
+ "transferredOnly": 4,
+ "undetermined": 7,
+ "venues": {
+  "Meteora DAMM v2": 17,
+  "Jupiter": 11,
+  "OKX DEX": 1
+ },
+ "examples": [
+  {
+   "mint": "E8HYPNXeXk5tjd1z3Se1qDBuVkjKvj7gEsKriRYtjups",
+   "venue": "Meteora DAMM v2",
+   "sig": "4s7xxb9jWDQ5ARNoRbvFNdZBn594mE39amnei6wXEbY5DUU12xC55WofPRCxPda9ub1wh9GDEkkgingu4p8yEsDR"
+  },
+  {
+   "mint": "D1iwTQtJUupvH76WNhZQME2bkM5rVbbW7fizkKXtjups",
+   "venue": "Meteora DAMM v2",
+   "sig": "5fLc8zhexaAynyutAbzjdWK2cvk98uzqGVTrdCytUiRmGh1jgsN4m5WBjqg8ncN3BTfd8mqf4ddu366sKyHKjKSX"
+  },
+  {
+   "mint": "ATjaHDw9tCvMpj1ifshTX9ydsStABN9Z5eC2u2Y9jups",
+   "venue": "Jupiter",
+   "sig": "5ApMuawmKErnL9EPXL537nrZF3dDgWDzDYeuQUYt1ArkDetjpXEawr5j6tXGqspjW1P5dDJWAbbgmRx5eTQuvaio"
+  },
+  {
+   "mint": "JBFJCKxrN5FXn8JENtK9LMHJx9NyHWGVjwmFEJg2jups",
+   "venue": "Jupiter",
+   "sig": "5S9MwYLFf6fgmhKZpNvA69hJgurhGykzNHXr5JxFKh8X91BHGMGedoYT2DfHLK1EMApF9N4D4ivnzY67Qmnc28YG"
+  },
+  {
+   "mint": "6fjCN5K2hQcGg4NCxUqf5qrC3wzFksQrMmaHqQSLjups",
+   "venue": "Jupiter",
+   "sig": "uC6wncEf96UUAKaN7fMgJy7vT55nBWdnXzqApESN4URiHshQhWtBWew5aJSaGZCUiqUJyULi7VJfyJ9DyTY9vAa"
+  }
+ ]
+}

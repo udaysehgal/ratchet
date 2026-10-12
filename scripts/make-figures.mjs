@@ -79,4 +79,50 @@ function svg(theme) {
 for (const theme of Object.keys(THEMES)) {
   writeFileSync(new URL(`../docs/img/preset-curves-${theme}.svg`, import.meta.url), svg(theme));
 }
+
+// ---------- Unlock study: what DBC teams did with unlocked tokens ----------
+import { readFileSync } from 'node:fs';
+const study = JSON.parse(readFileSync(new URL('../docs/evidence/unlock-study.json', import.meta.url), 'utf8'));
+const big = (x) => BigInt(x);
+const unlocked = study.escrows.filter((e) => big(e.vested) > 0n);
+const claimed = unlocked.filter((e) => big(e.claimed) > 0n);
+const movedMost = claimed.filter((e) => big(e.movedOfClaimed) * 10n >= big(e.claimed) * 9n).length;
+const keptMost = claimed.filter((e) => big(e.movedOfClaimed) * 10n <= big(e.claimed)).length;
+const bars = [
+  { label: 'Claimed, then moved ≥90% out of the team wallet', n: movedMost, highlight: true },
+  { label: 'Unlocked but never claimed', n: unlocked.length - claimed.length },
+  { label: 'Claimed and kept ≥90%', n: keptMost },
+  { label: 'Claimed, partly moved', n: claimed.length - movedMost - keptMost },
+];
+const SW = 760, SH = 300, LEFT = 330, RIGHT = 90, TOP = 74, ROW = 44;
+function studySvg(theme) {
+  const t = THEMES[theme];
+  const hi = theme === 'light' ? '#eb6834' : '#d95926';
+  const lo = theme === 'light' ? '#c4c9cf' : '#4a5058';
+  const max = Math.max(...bars.map((b) => b.n));
+  const o = [
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${SW} ${SH}" width="${SW}" height="${SH}" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" role="img" aria-labelledby="st sd">`,
+    `<title id="st">What Meteora DBC teams did with unlocked tokens</title>`,
+    `<desc id="sd">${esc(bars.map((b) => `${b.label}: ${b.n}`).join('. '))}. Out of ${unlocked.length} unlocked team allocations on mainnet.</desc>`,
+    `<rect width="${SW}" height="${SH}" rx="8" fill="${t.surface}"/>`,
+    `<text x="24" y="30" font-size="15" font-weight="600" fill="${t.text}">What DBC teams did with unlocked tokens</text>`,
+    `<text x="24" y="48" font-size="12" fill="${t.muted}">All ${unlocked.length.toLocaleString('en-US')} team allocations on Meteora DBC mainnet that have started unlocking (${study.generatedAt.slice(0, 10)})</text>`,
+  ];
+  bars.forEach((b, i) => {
+    const y = TOP + i * ROW;
+    const w = ((SW - LEFT - RIGHT) * b.n) / max;
+    const pct = ((100 * b.n) / unlocked.length).toFixed(0);
+    o.push(
+      `<text x="${LEFT - 12}" y="${y + 17}" font-size="12" text-anchor="end" fill="${b.highlight ? t.text : t.muted}" font-weight="${b.highlight ? 600 : 400}">${esc(b.label)}</text>`,
+      `<rect x="${LEFT}" y="${y + 4}" width="${Math.max(w, 2).toFixed(1)}" height="20" rx="4" fill="${b.highlight ? hi : lo}"/>`,
+      `<text x="${LEFT + w + 8}" y="${y + 18}" font-size="12" fill="${t.text}">${b.n.toLocaleString('en-US')} · ${pct}%</text>`
+    );
+  });
+  o.push(`<text x="24" y="${SH - 16}" font-size="11" fill="${t.muted}">Source: every Meteora Lock escrow created by the DBC pool authority, read from mainnet. Data: docs/evidence/unlock-study.json</text>`, '</svg>');
+  return o.join('\n');
+}
+for (const theme of Object.keys(THEMES)) {
+  writeFileSync(new URL(`../docs/img/unlock-study-${theme}.svg`, import.meta.url), studySvg(theme));
+}
+console.log('unlock study:', bars.map((b) => `${b.n}`).join(' / '), 'of', unlocked.length);
 console.log(lines.map((l) => `${l.label}: ${fmtMult(l.end)}x`).join(' | '));

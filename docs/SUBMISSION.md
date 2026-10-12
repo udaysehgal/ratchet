@@ -48,6 +48,10 @@ price, with a floor that only rises. It runs on devnet and passes 20/20 end-to-e
 against Meteora's deployed programs (docs/VAULT.md, docs/EVIDENCE.md).
 
 ## Impact
+We measured the problem on mainnet: of 1,413 DBC team allocations that have started unlocking,
+762 teams claimed and moved ≥90% of their tokens out (98.3% of all claimed team tokens have left
+team wallets), and in a sample, 88% of those sold through a DEX, most often straight into the
+graduated DAMM v2 pool (docs/UNLOCK-STUDY.md).
 Every launchpad on DBC can adopt the pattern: a preset plus a post-graduation unlock ladder.
 It's a better default for any asset class with a team or treasury allocation (memes, ICM, RWAs).
 

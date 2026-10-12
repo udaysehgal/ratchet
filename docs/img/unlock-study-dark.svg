@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" width="760" height="300" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" role="img" aria-labelledby="st sd">
+<title id="st">What Meteora DBC teams did with unlocked tokens</title>
+<desc id="sd">Claimed, then moved ≥90% out of the team wallet: 762. Unlocked but never claimed: 595. Claimed and kept ≥90%: 49. Claimed, partly moved: 7. Out of 1413 unlocked team allocations on mainnet.</desc>
+<rect width="760" height="300" rx="8" fill="#0d1117"/>
+<text x="24" y="30" font-size="15" font-weight="600" fill="#f0f6fc">What DBC teams did with unlocked tokens</text>
+<text x="24" y="48" font-size="12" fill="#9198a1">All 1,413 team allocations on Meteora DBC mainnet that have started unlocking (2026-10-12)</text>
+<text x="318" y="91" font-size="12" text-anchor="end" fill="#f0f6fc" font-weight="600">Claimed, then moved ≥90% out of the team wallet</text>
+<rect x="330" y="78" width="340.0" height="20" rx="4" fill="#d95926"/>
+<text x="678" y="92" font-size="12" fill="#f0f6fc">762 · 54%</text>
+<text x="318" y="135" font-size="12" text-anchor="end" fill="#9198a1" font-weight="400">Unlocked but never claimed</text>
+<rect x="330" y="122" width="265.5" height="20" rx="4" fill="#4a5058"/>
+<text x="603.485564304462" y="136" font-size="12" fill="#f0f6fc">595 · 42%</text>
+<text x="318" y="179" font-size="12" text-anchor="end" fill="#9198a1" font-weight="400">Claimed and kept ≥90%</text>
+<rect x="330" y="166" width="21.9" height="20" rx="4" fill="#4a5058"/>
+<text x="359.8635170603674" y="180" font-size="12" fill="#f0f6fc">49 · 3%</text>
+<text x="318" y="223" font-size="12" text-anchor="end" fill="#9198a1" font-weight="400">Claimed, partly moved</text>
+<rect x="330" y="210" width="3.1" height="20" rx="4" fill="#4a5058"/>
+<text x="341.12335958005247" y="224" font-size="12" fill="#f0f6fc">7 · 0%</text>
+<text x="24" y="284" font-size="11" fill="#9198a1">Source: every Meteora Lock escrow created by the DBC pool authority, read from mainnet. Data: docs/evidence/unlock-study.json</text>
+</svg>

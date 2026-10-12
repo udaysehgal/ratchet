@@ -8,7 +8,7 @@
 
 **A Meteora launchpad where team unlocks only sell into strength.**
 
-**[Live on Solana mainnet →](https://ratchet-olive.vercel.app)** · [Evidence](docs/EVIDENCE.md) · [Architecture](docs/ARCHITECTURE.md) · [Submission](docs/SUBMISSION.md)
+**[Live on Solana mainnet →](https://ratchet-olive.vercel.app)** · [Unlock study](docs/UNLOCK-STUDY.md) · [Vault](docs/VAULT.md) · [Evidence](docs/EVIDENCE.md) · [Architecture](docs/ARCHITECTURE.md) · [Submission](docs/SUBMISSION.md)
 
 ![Ratchet home page](docs/img/home.png)
 
@@ -17,6 +17,18 @@ holders. Ratchet launches every token on Meteora's bonding curve, graduates it i
 liquidity can never be pulled, and only lets the team's unlocked tokens reach the market as
 sell orders **at 1.25× the graduation price or higher**. If the team sells, it sells into
 strength.
+
+## The problem, measured
+
+We read every team allocation on Meteora DBC mainnet. Of **1,413** that have started unlocking,
+**762 teams claimed and moved ≥90% of their tokens out** (98.3% of all claimed team tokens have
+left team wallets), and in a sample of those, **88% sold through a DEX**: most often straight
+into the DAMM v2 pool holders trade in. Only 49 teams kept theirs. [Full study →](docs/UNLOCK-STUDY.md)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/unlock-study-dark.svg">
+  <img alt="Of 1,413 unlocked DBC team allocations: 762 claimed then moved out, 595 never claimed, 49 kept, 7 partly moved" src="docs/img/unlock-study-light.svg" width="760">
+</picture>
 
 ## How it works
 
@@ -48,7 +60,7 @@ wallet. Half of every DAMM v2 fee compounds back into the pool, so liquidity onl
 | **Depth of Meteora integration** | Four Meteora programs from one app: DBC presets and launches, DAMM v2 trading and locked-LP fees, DLMM limit-order ladder, Meteora Lock vesting, plus Invent studio for configs. Our own program calls DBC, Meteora Lock and DLMM directly. An xStock (TSLAx) preset using Meteora's token badge. [Call table](docs/ARCHITECTURE.md#meteora-integration) |
 | **Technical execution** | A native Solana program with conservative Q64.64 price checks, 20/20 end-to-end on public devnet and on Meteora's mainnet binaries locally. 30 unit tests and CI on every push. [Vault spec](docs/VAULT.md) · [tests](.github/workflows/ci.yml) |
 | **Originality** | DLMM limit orders as an *unlock commitment*, enforced by a vault that holds the DBC creator role. Nobody else addresses what happens at unlock. [Vault](#the-vault-enforcing-the-ladder-on-chain) |
-| **Impact** | Any DBC launchpad can adopt the preset + vault pattern. The launch check grades *any* DBC token; feed, check and MCP server are public. [What's in the box](#whats-in-the-box) |
+| **Impact** | The problem is everywhere: 93% of DBC teams that claim unlocks move them out ([study](docs/UNLOCK-STUDY.md)). Any DBC launchpad can adopt the preset + vault pattern. The launch check grades *any* DBC token; feed, check and MCP server are public. [What's in the box](#whats-in-the-box) |
 | **Traction** | Live on mainnet: a graduation through the app, 9 trading wallets, a sniper that paid ~37% in fees, 4 configs. [Evidence](docs/EVIDENCE.md) |
 
 ## Presets

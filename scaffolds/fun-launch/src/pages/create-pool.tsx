@@ -10,7 +10,7 @@ import { Keypair, Transaction } from '@solana/web3.js';
 import { useUnifiedWalletContext, useWallet } from '@jup-ag/wallet-adapter';
 import { toast } from 'sonner';
 import { signSubmitConfirm } from '@/lib/walletTx';
-import { PRESETS, type PresetId } from '@/presets';
+import { PRESETS, PRESET_GROUPS, type PresetId } from '@/presets';
 import { PresetPreview } from '@/components/Ratchet/PresetPreview';
 import { ProgressBar } from '@/components/Ratchet/ProgressBar';
 import { cn } from '@/lib/utils';
@@ -22,7 +22,7 @@ const poolSchema = z.object({
   tokenLogo: z.instanceof(File, { message: 'Token logo is required' }).optional(),
   website: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
   twitter: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
-  presetId: z.enum(['anti-sniper', 'fair-raise', 'micro-raise', 'equity-raise']),
+  presetId: z.string().refine((id) => PRESETS.some((p) => p.id === id), 'Pick a launch preset'),
 });
 
 const inputClassName =
@@ -168,17 +168,27 @@ export default function CreatePool() {
                   <form.Field name="presetId">
                     {(field) => (
                       <div role="radiogroup" className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                        {PRESETS.map((preset) => {
-                          const selected = field.state.value === preset.id;
+                        {PRESET_GROUPS.map(({ group, presets }) => {
+                          const active = presets.find((p) => p.id === field.state.value);
+                          const preset = active ?? presets[0]!;
+                          const selected = !!active;
+                          const isGroup = presets.length > 1;
+                          const choose = () => field.handleChange(preset.id);
                           return (
-                            <button
-                              key={preset.id}
-                              type="button"
+                            <div
+                              key={group}
                               role="radio"
+                              tabIndex={0}
                               aria-checked={selected}
-                              onClick={() => field.handleChange(preset.id)}
+                              onClick={choose}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  choose();
+                                }
+                              }}
                               className={cn(
-                                'group relative flex flex-col gap-3 rounded-xl border p-4 text-left transition-all',
+                                'group relative flex cursor-pointer flex-col gap-3 rounded-xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
                                 selected
                                   ? 'border-primary/70 bg-primary/10 '
                                   : 'border-neutral-750 hover:-translate-y-0.5 hover:border-neutral-600'
@@ -193,7 +203,7 @@ export default function CreatePool() {
                                       : 'bg-neutral-850 text-neutral-400'
                                   )}
                                 >
-                                  <span className={cn('iconify h-5 w-5', PRESET_ICONS[preset.id])} />
+                                  <span className={cn('iconify h-5 w-5', PRESET_ICONS[group])} />
                                 </span>
                                 <span
                                   className={cn(
@@ -205,9 +215,38 @@ export default function CreatePool() {
                                 </span>
                               </div>
                               <div>
-                                <div className="text-lg font-bold">{preset.name}</div>
+                                <div className="text-lg font-bold">
+                                  {isGroup ? `Equity raise · ${presets.length} stocks` : preset.name}
+                                </div>
                                 <p className="text-sm text-neutral-400">{preset.tagline}</p>
                               </div>
+                              {isGroup && (
+                                <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Stock to raise in">
+                                  {presets.map((p) => {
+                                    const on = p.id === field.state.value;
+                                    return (
+                                      <button
+                                        key={p.id}
+                                        type="button"
+                                        role="radio"
+                                        aria-checked={on}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          field.handleChange(p.id);
+                                        }}
+                                        className={cn(
+                                          'num rounded-full border px-2.5 py-1 text-xs transition-colors',
+                                          on
+                                            ? 'border-primary bg-primary text-white'
+                                            : 'border-neutral-750 text-neutral-300 hover:border-neutral-500'
+                                        )}
+                                      >
+                                        {p.variantLabel}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
                               <ul className="space-y-1.5 text-xs text-neutral-400">
                                 {preset.points.map((point) => (
                                   <li key={point} className="flex gap-2">
@@ -216,7 +255,7 @@ export default function CreatePool() {
                                   </li>
                                 ))}
                               </ul>
-                            </button>
+                            </div>
                           );
                         })}
                       </div>
@@ -358,7 +397,7 @@ export default function CreatePool() {
   );
 }
 
-const PRESET_ICONS: Record<PresetId, string> = {
+const PRESET_ICONS: Record<string, string> = {
   'anti-sniper': 'ph--shield-check-bold',
   'fair-raise': 'ph--scales-bold',
   'micro-raise': 'ph--lightning-bold',
