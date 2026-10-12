@@ -208,6 +208,7 @@ export function HomeFooter() {
         <Link className="hover:text-foreground" href="/unlocks">Unlock radar</Link>
         <Link className="hover:text-foreground" href="/vault">Vault</Link>
         <Link className="hover:text-foreground" href="/check">Check a token</Link>
+        <Link className="hover:text-foreground" href="/pitch">Pitch deck</Link>
       </nav>
     </footer>
   );
