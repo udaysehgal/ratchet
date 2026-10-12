@@ -126,6 +126,8 @@ On real mainnet configs it already flags launches that pay out 99% of the raise 
 | `GET /api/feed?minProgress=0.8&status=live` | Every Ratchet launch: mint, pool, config, quote token, amount raised, threshold, progress (CORS-open) |
 | `GET /api/launch/<mint>` | One launch: prices, DAMM v2 pool, vesting, DLMM ladder |
 | `GET /api/check/<mint>` | Launch check for any DBC token (CORS-open) |
+| `GET /api/badge/<mint>` | Embeddable SVG badge with the launch-check result |
+| `GET /api/vault/<address>` | Live state of a ratchet-vault on devnet: floor, holdings, open asks, history |
 | `GET /api/presets` | Live parameters and curve points of each preset |
 | `POST /api/tx` | Unsigned transaction: `swap`, `graduate`, `claim-vesting`, `create-dlmm-pair`, `ladder`, `claim-fees` |
 

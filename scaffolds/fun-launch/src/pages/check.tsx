@@ -92,10 +92,22 @@ export default function CheckPage() {
           </section>
         )}
 
-        <p className="text-sm text-neutral-500">
-          Also available as JSON for bots and terminals:{' '}
-          <code className="num text-neutral-300">GET /api/check/&lt;mint&gt;</code>
-        </p>
+        <div className="flex flex-col gap-2 text-sm text-neutral-500">
+          <p>
+            Also available as JSON for bots and terminals:{' '}
+            <code className="num text-neutral-300">GET /api/check/&lt;mint&gt;</code>
+          </p>
+          <p>
+            Embed the result anywhere (README, launchpad, terminal):{' '}
+            <code className="num break-all text-neutral-300">
+              ![launch check](https://ratchet-olive.vercel.app/api/badge/{data?.mint ?? '<mint>'})
+            </code>
+          </p>
+          {data && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={`/api/badge/${data.mint}`} alt={`${data.symbol} launch check`} className="h-5 w-fit" />
+          )}
+        </div>
       </div>
     </Page>
   );

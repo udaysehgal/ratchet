@@ -82,7 +82,7 @@ is generated from live config data by [`scripts/make-figures.mjs`](scripts/make-
 - **Unlock ladder**: vested team tokens become DLMM limit asks at 1.25× the graduation price or higher.
 - **Earnings**: one transaction claims creator, partner and locked-LP fees.
 - **For AI agents**: an [MCP server and Agent Skill](packages/ratchet-mcp) to list launches, check any DBC token and build unsigned transactions.
-- **Public APIs**: graduation feed, launch check and presets as CORS-open JSON ([endpoints](docs/ARCHITECTURE.md#apis-and-the-mcp-server)).
+- **Public APIs**: graduation feed, launch check and presets as CORS-open JSON ([endpoints](docs/ARCHITECTURE.md#apis-and-the-mcp-server)), plus an embeddable launch-check badge for any DBC token: ![CHRL launch check](https://ratchet-olive.vercel.app/api/badge/CrUN9NbRPTFeVJqeh8ytqDgAKUGHp3CN1pVXZeMKifx5)
 - **30 unit tests and CI** (app typecheck, tests and build; vault program tests) on every push.
 
 ## The vault: enforcing the ladder on-chain
