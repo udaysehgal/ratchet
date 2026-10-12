@@ -41,6 +41,10 @@ export default {
           from: { opacity: '1' },
           to: { opacity: '0' },
         },
+        marquee: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
         'bar-shine': {
           from: { transform: 'translateX(-100%)' },
           to: { transform: 'translateX(250%)' },
@@ -60,6 +64,7 @@ export default {
       animation: {
         'fade-in': 'fade-in 0.15s ease-out forwards',
         'fade-out': 'fade-out 0.15s ease-in forwards',
+        marquee: 'marquee var(--marquee-duration, 40s) linear infinite',
         'bar-shine': 'bar-shine 2.4s ease-in-out infinite',
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
         'flow-dash': 'flow-dash 0.8s linear infinite',

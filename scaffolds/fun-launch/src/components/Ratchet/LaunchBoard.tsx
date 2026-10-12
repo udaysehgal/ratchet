@@ -7,6 +7,7 @@ import { ProgressBar } from './ProgressBar';
 import { TokenAvatar } from './TokenAvatar';
 import { MeteorField } from './MeteorField';
 import { BeforeAfter, HomeFooter, LaunchTimeline, StorySection } from './HomeStory';
+import { ClosingBand, FaqSection, NumbersRow, RadarStrip, RaiseStrip } from './HomeExtras';
 
 const NEAR_GRADUATION = 0.8;
 
@@ -120,8 +121,11 @@ export function LaunchBoard() {
       </section>
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-28 py-24">
+        <NumbersRow />
         <StorySection />
+        <RaiseStrip />
         <LaunchTimeline />
+        <RadarStrip />
         <BeforeAfter />
 
         {/* Board */}
@@ -156,6 +160,12 @@ export function LaunchBoard() {
           )}
         </section>
 
+        <FaqSection />
+      </div>
+
+      <ClosingBand />
+
+      <div className="mx-auto w-full max-w-6xl py-12">
         <HomeFooter />
       </div>
     </div>
