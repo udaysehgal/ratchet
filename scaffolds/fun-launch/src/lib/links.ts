@@ -1,3 +1,4 @@
+export const VIDEO_URL = 'https://www.youtube.com/watch?v=8AmXQZ5kaMc';
 export const GITHUB_URL = 'https://github.com/udaysehgal/ratchet';
 /** X handle without the @. Links stay hidden while this is empty. */
 export const X_HANDLE = 'ratchetxyz';

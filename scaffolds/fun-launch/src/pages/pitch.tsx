@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { RatchetMark } from '@/components/Ratchet/Logo';
-import { GITHUB_URL, X_URL } from '@/lib/links';
+import { GITHUB_URL, VIDEO_URL, X_URL } from '@/lib/links';
 import { cn } from '@/lib/utils';
 
 /*
@@ -438,6 +438,9 @@ export default function Pitch() {
             <div className="mt-[3.4cqw] flex flex-col gap-[1cqw] font-mono text-[1.5cqw] text-neutral-300">
               <span>
                 <O>Try it</O> · {SITE}/try
+              </span>
+              <span>
+                <O>Demo</O> · {VIDEO_URL.replace('https://www.', '')}
               </span>
               <span>
                 <O>Code</O> · {GITHUB_URL.replace('https://', '')}

@@ -7,7 +7,9 @@ graduation price.
 **Live (mainnet):** https://www.useratchet.xyz
 **Code:** https://github.com/udaysehgal/ratchet
 **Vault program (devnet):** https://solscan.io/account/BrwQHeRJWXDbXgUVi1TKdoDbnfB5kcRTcieYmSH2NzWB?cluster=devnet
-**Demo video:** <link>
+**Demo video (2:06):** https://www.youtube.com/watch?v=8AmXQZ5kaMc
+**Pitch deck:** https://www.useratchet.xyz/pitch ([PDF](https://www.useratchet.xyz/ratchet-pitch.pdf))
+**X:** https://x.com/ratchetxyz
 
 ## What it does
 - **Launch** from DBC preset configs on mainnet: *Anti-sniper* (exponential fee decay 50% → 1%

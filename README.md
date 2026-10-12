@@ -10,7 +10,11 @@
 
 **A Meteora launchpad where team unlocks only sell into strength.**
 
-**[Live on Solana mainnet →](https://www.useratchet.xyz)** · **[Try the vault yourself →](https://www.useratchet.xyz/try)** · [Unlock study](docs/UNLOCK-STUDY.md) · [Vault](docs/VAULT.md) · [Evidence](docs/EVIDENCE.md) · [Architecture](docs/ARCHITECTURE.md) · [Submission](docs/SUBMISSION.md)
+**[Live on Solana mainnet →](https://www.useratchet.xyz)** · **[Demo video (2:06) →](https://www.youtube.com/watch?v=8AmXQZ5kaMc)** · [Pitch deck](https://www.useratchet.xyz/pitch) · **[Try the vault yourself →](https://www.useratchet.xyz/try)** · [Unlock study](docs/UNLOCK-STUDY.md) · [Vault](docs/VAULT.md) · [Evidence](docs/EVIDENCE.md) · [Architecture](docs/ARCHITECTURE.md) · [Submission](docs/SUBMISSION.md)
+
+[![Watch the Ratchet demo (2:06)](https://img.youtube.com/vi/8AmXQZ5kaMc/maxresdefault.jpg)](https://www.youtube.com/watch?v=8AmXQZ5kaMc)
+
+*Click to watch the demo: a team-token vault refusing to sell below 1.25× the graduation price.*
 
 ![Ratchet home page](docs/img/home.png)
 

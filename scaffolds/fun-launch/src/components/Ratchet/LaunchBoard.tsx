@@ -9,6 +9,7 @@ import { MeteorField } from './MeteorField';
 import { BeforeAfter, HomeFooter, LaunchTimeline, StorySection } from './HomeStory';
 import { ClosingBand, FaqSection, NumbersRow, RadarStrip, RaiseStrip } from './HomeExtras';
 import { NetworkStatus } from './NetworkStatus';
+import { VIDEO_URL } from '@/lib/links';
 
 const NEAR_GRADUATION = 0.8;
 
@@ -108,6 +109,10 @@ export function LaunchBoard() {
             <a href="#launches" className="inline-flex items-center gap-1 text-sm font-medium hover:text-primary">
               Browse launches
               <span className="iconify ph--caret-right-bold h-4 w-4" />
+            </a>
+            <a href={VIDEO_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm font-medium hover:text-primary">
+              Watch the demo
+              <span className="iconify ph--play-fill h-3.5 w-3.5" />
             </a>
             <a href="/pitch" className="inline-flex items-center gap-1 text-sm font-medium hover:text-primary">
               Pitch deck
