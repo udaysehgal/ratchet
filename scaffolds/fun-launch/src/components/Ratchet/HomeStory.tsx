@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import type { UnlockRadar } from '@/pages/api/unlocks';
 import { cn } from '@/lib/utils';
+import { GITHUB_URL, X_URL } from '@/lib/links';
 
 const STUDY_URL = 'https://github.com/udaysehgal/ratchet/blob/main/docs/UNLOCK-STUDY.md';
 const solscan = (tx: string) => `https://solscan.io/tx/${tx}`;
@@ -201,7 +202,8 @@ export function HomeFooter() {
         audited, so it isn’t on mainnet yet.
       </p>
       <nav className="flex flex-wrap gap-x-6 gap-y-2">
-        <a className="hover:text-foreground" href="https://github.com/udaysehgal/ratchet">Code</a>
+        <a className="hover:text-foreground" href={GITHUB_URL}>GitHub</a>
+        {X_URL && <a className="hover:text-foreground" href={X_URL}>X</a>}
         <a className="hover:text-foreground" href={STUDY_URL}>The study</a>
         <Link className="hover:text-foreground" href="/unlocks">Unlock radar</Link>
         <Link className="hover:text-foreground" href="/vault">Vault</Link>

@@ -5,6 +5,8 @@ import { CreatePoolButton } from './CreatePoolButton';
 import { ThemeToggle } from './ThemeToggle';
 import { useMemo } from 'react';
 import { shortenAddress } from '@/lib/utils';
+import { RatchetMark } from './Ratchet/Logo';
+import { GITHUB_URL, X_URL } from '@/lib/links';
 
 export const Header = () => {
   const { setShowModal } = useUnifiedWalletContext();
@@ -25,7 +27,7 @@ export const Header = () => {
           className="flex min-w-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-primary">
-            <span className="iconify h-6 w-6 ph--arrow-fat-lines-up-fill" />
+            <RatchetMark className="h-6 w-6" />
           </span>
           <span className="truncate whitespace-nowrap text-base font-semibold uppercase tracking-[0.08em] md:text-lg">
             Ratchet
@@ -68,6 +70,26 @@ export const Header = () => {
             >
               Earnings
             </Link>
+          )}
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Code on GitHub"
+            className="hidden h-9 w-9 items-center justify-center rounded-lg text-neutral-400 hover:text-foreground lg:flex"
+          >
+            <span className="iconify h-5 w-5 ph--github-logo-bold" />
+          </a>
+          {X_URL && (
+            <a
+              href={X_URL}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Ratchet on X"
+              className="hidden h-9 w-9 items-center justify-center rounded-lg text-neutral-400 hover:text-foreground lg:flex"
+            >
+              <span className="iconify h-5 w-5 ph--x-logo-bold" />
+            </a>
           )}
           <CreatePoolButton />
           {address ? (
