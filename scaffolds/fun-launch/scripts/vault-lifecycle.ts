@@ -6,7 +6,7 @@
  *
  * Launch → adopt (vault becomes creator) → buy to graduation → migrate to DAMM v2 → claim
  * vested tokens into the vault → DLMM pair → asks through the vault (and the ones it must
- * refuse) → raise floor → cancel → collect fees.
+ * refuse) → raise floor → cancel → collect fees → creator LP fees and surplus.
  */
 import fs from 'node:fs';
 import {
@@ -40,10 +40,13 @@ import DLMM, {
   getBinArrayInfoForNonContiguousBinIds,
   getQPriceFromId,
 } from '@meteora-ag/dlmm';
+import { CpAmm, derivePoolAuthority as deriveDammPoolAuthority } from '@meteora-ag/cp-amm-sdk';
 import {
   DLMM_PROGRAM,
+  VAULT_PROGRAM_ID,
   adoptLaunchIx,
   cancelAskIx,
+  claimPositionFeeIx,
   claimVestedIx,
   collectFeesIx,
   decodeVault,
@@ -51,6 +54,7 @@ import {
   placeAskIx,
   raiseFloorIx,
   vaultErrorName,
+  withdrawSurplusIx,
 } from '../src/lib/vault';
 
 const RPC = process.env.RPC_URL ?? 'http://127.0.0.1:8899';
@@ -79,6 +83,31 @@ async function expectRefusal(step: string, error: string, run: () => Promise<unk
   } catch (e) {
     const got = vaultErrorName(e);
     record(step, got === error, `refused with ${got ?? String(e).slice(0, 120)}`);
+  }
+}
+
+/**
+ * For CPIs whose Meteora program may legitimately refuse (nothing to claim). The run fails if
+ * the vault itself refused, or if Meteora refused over signers, accounts or Anchor constraints
+ * (the vault built the CPI wrong). Any other Meteora refusal is reported but not counted.
+ */
+const WIRING_ERRORS =
+  /signature|privilege|NotEnoughAccountKeys|Constraint|AccountNotInitialized|AccountDiscriminator|AccountOwnedByWrongProgram|InvalidProgramId|InvalidAccountData|IncorrectProgramId/i;
+async function expectSuccessOrMeteoraRefusal(step: string, run: () => Promise<string>) {
+  try {
+    record(step, true, await run());
+  } catch (e) {
+    const logs = ((e as { logs?: string[] })?.logs ?? []).join('\n');
+    const text = `${String(e)}\n${logs}`;
+    // The innermost program to fail is the first "failed" line in the logs
+    const failed = logs.match(/Program (\w+) failed/)?.[1];
+    if (failed === VAULT_PROGRAM_ID.toBase58()) {
+      record(step, false, `vault refused: ${vaultErrorName(e) ?? text.slice(0, 200)}`);
+    } else if (!failed || WIRING_ERRORS.test(text)) {
+      record(step, false, text.slice(0, 300));
+    } else {
+      console.log(`INFO  ${step}: ${failed} refused, not counted (${text.slice(0, 200)})`);
+    }
   }
 }
 
@@ -285,6 +314,43 @@ async function main() {
   );
   const quoteAfter = await balance(teamQuote);
   record('collect_fees: creator curve fees forwarded to the team in SOL', quoteAfter > quoteBefore, `+${quoteAfter - quoteBefore} lamports (wSOL)`);
+
+  // 11. The creator's DAMM v2 LP position: its NFT went to the pool creator, the vault
+  const cpAmm = new CpAmm(conn);
+  const damm = (await cpAmm.fetchPoolStatesByTokenAMint(baseMint.publicKey)).find((p) => p.account.tokenBMint.equals(NATIVE_MINT));
+  const vaultPositions = damm ? await cpAmm.getUserPositionByPool(damm.publicKey, vault) : [];
+  record('the vault holds the creator DAMM v2 position', vaultPositions.length > 0, `${vaultPositions.length} position(s)`);
+  for (const pos of vaultPositions) {
+    await expectSuccessOrMeteoraRefusal('claim_position_fee: the vault signs for its LP position', () =>
+      send(
+        [
+          claimPositionFeeIx({
+            vault, poolAuthority: deriveDammPoolAuthority(), pool: damm!.publicKey, position: pos.position,
+            vaultBaseToken: vaultBase, vaultQuoteToken: vaultQuote, tokenAVault: damm!.account.tokenAVault,
+            tokenBVault: damm!.account.tokenBVault, baseMint: baseMint.publicKey, quoteMint: NATIVE_MINT,
+            positionNftAccount: pos.positionNftAccount, baseTokenProgram: TOKEN_PROGRAM_ID, quoteTokenProgram: TOKEN_PROGRAM_ID,
+            beneficiaryQuoteToken: teamQuote,
+          }),
+        ],
+        [team]
+      )
+    );
+  }
+  record('vault quote account is empty after the claims (everything forwarded)', (await balance(vaultQuote)) === BigInt(0));
+
+  // 12. The creator's curve surplus, if the final buy overshot the threshold
+  await expectSuccessOrMeteoraRefusal('withdraw_surplus: the vault signs as creator, SOL to the team', () =>
+    send(
+      [
+        withdrawSurplusIx({
+          vault, poolAuthority: deriveDbcPoolAuthority(), config: CONFIG, pool, vaultQuoteToken: vaultQuote,
+          quoteVault: poolState.quoteVault, quoteMint: NATIVE_MINT, quoteTokenProgram: TOKEN_PROGRAM_ID,
+          beneficiaryQuoteToken: teamQuote,
+        }),
+      ],
+      [team]
+    )
+  );
 
   // Cross-check the program's price math against DLMM's own bin prices
   const floor125 = gradPrice * 1.25;
